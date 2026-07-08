@@ -9,3 +9,6 @@ npm install react-markdown remark-gfm github-markdown-css
 
 # 4. 개발 서버 실행 (코드 작성 완료 후 확인)
 npm run dev
+
+# 구문 강조
+npm install react-syntax-highlighter
