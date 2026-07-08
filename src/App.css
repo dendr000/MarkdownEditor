@@ -1,0 +1,23 @@
+/* src/App.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden; /* 브라우저 전체 스크롤 방지, 각 뷰어(왼/오) 내부에서만 스크롤 되도록 설정 */
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px); /* 헤더 영역(60px) 제외 */
+}

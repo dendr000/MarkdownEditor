@@ -1,0 +1,20 @@
+/* src/components/Editor.css */
+.editor-container {
+  flex: 1; /* 화면 양분 */
+  height: 100%;
+  background-color: #f6f8fa; /* 에디터는 살짝 어두운 깃허브 배경색 */
+}
+
+.editor-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 32px 40px;
+  border: none;
+  background-color: transparent;
+  color: #24292f;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}

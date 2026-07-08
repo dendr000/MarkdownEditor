@@ -1,0 +1,20 @@
+/* src/components/Preview.css v1.1 */
+/* 파일 설명: 실시간 뷰어 영역의 레이아웃 및 깃허브 마크다운 스타일 호환을 제어하는 CSS */
+/* 연결 위치: src/components/Preview.jsx 파일 내 Preview 컴포넌트의 .preview-container 및 .preview-content 요소와 연결됨 */
+
+.preview-container {
+  flex: 1; /* 화면 양분을 위해 공간의 절반을 차지하도록 설정 */
+  height: 100%; /* 부모 컨테이너의 높이를 100% 상속 */
+  overflow-y: auto; /* 내용이 길어질 경우 y축 스크롤바 생성 */
+  background-color: #ffffff; /* 깃허브 기본 배경색인 흰색 적용 */
+  border-right: 1px solid #d0d7de; /* 에디터와의 경계를 구분하기 위한 우측 테두리 */
+}
+
+.preview-content {
+  padding: 32px 40px; /* 상하 32px, 좌우 40px의 내부 여백 설정 */
+  box-sizing: border-box; /* 패딩을 포함하여 요소의 전체 크기를 계산하도록 설정 */
+  min-width: 200px; /* 창을 줄였을 때 찌그러짐을 방지하기 위한 최소 너비 */
+  max-width: 980px; /* 깃허브 본문과 유사한 최대 너비 제한 설정 */
+  margin: 0; /* 중앙 정렬을 해제하고 좌측부터 배치되도록 여백 초기화 */
+  text-align: left; /* 제목(#)을 포함한 모든 텍스트가 깃허브처럼 좌측 정렬되도록 강제 지정 */
+}
