@@ -87,9 +87,10 @@
   color: #24292f; /* 제목 색상 설정 */
 }
 
-/* 행/열 개수를 조절하는 버튼들이 위치한 컨트롤 영역 */
+/* 행/열 개수를 조절하는 버튼들이 위치한 컨트롤 영역 (줄바꿈 허용 추가) */
 .table-modal-controls {
   display: flex; /* 컨트롤 그룹들을 가로로 나열하기 위한 flex 설정 */
+  flex-wrap: wrap; /* 요소들이 모달 너비를 초과할 경우 자연스럽게 아래로 줄바꿈되도록 허용 */
   gap: 20px; /* 컨트롤 그룹 사이의 간격을 20px로 설정 */
   margin-bottom: 20px; /* 표 그리드와의 간격을 위해 하단 여백 20px 설정 */
 }
@@ -103,16 +104,19 @@
   font-weight: 500; /* 텍스트 굵기 중간 수준으로 설정 */
 }
 
-/* 컨트롤 그룹 내부의 버튼 (+, -) 스타일 */
+/* 컨트롤 그룹 내부의 버튼 (+, - 및 텍스트 버튼) 스타일 (너비 유동성 및 텍스트 줄바꿈 방지 추가) */
 .control-group button {
-  width: 28px; /* 버튼 가로 길이 28px */
-  height: 28px; /* 버튼 세로 길이 28px (정사각형 형태) */
+  min-width: 28px; /* 기호 버튼(+, -)의 최소 크기를 보장하기 위한 설정 */
+  width: auto; /* 텍스트 길이에 맞춰 버튼 가로 길이가 유동적으로 늘어나도록 설정 */
+  height: 28px; /* 버튼 세로 길이 28px 고정 */
+  padding: 0 8px; /* 텍스트가 버튼 테두리에 밀착되지 않도록 좌우 내부 여백 추가 */
+  white-space: nowrap; /* 텍스트가 버튼 내부에서 줄바꿈되어 레이아웃이 붕괴되는 현상 방지 */
   background-color: #f6f8fa; /* 버튼 배경색 밝은 회색 */
   border: 1px solid #d0d7de; /* 버튼 테두리 색상 */
   border-radius: 4px; /* 버튼 모서리 4px 둥글게 처리 */
   cursor: pointer; /* 마우스 오버 시 포인터 커서 */
-  font-size: 16px; /* +, - 기호 크기 설정 */
-  display: flex; /* 기호를 버튼 중앙에 배치하기 위한 flex 설정 */
+  font-size: 14px; /* 텍스트가 포함되므로 폰트 크기를 14px로 조정 */
+  display: flex; /* 내부 텍스트 및 기호를 중앙에 배치하기 위한 flex 설정 */
   align-items: center; /* 세로 중앙 정렬 */
   justify-content: center; /* 가로 중앙 정렬 */
   transition: background-color 0.2s; /* 부드러운 배경색 전환 효과 */
@@ -211,4 +215,18 @@
 /* 적용 버튼 마우스 오버 시 스타일 */
 .btn-apply:hover {
   background-color: #2c974b; /* 마우스 오버 시 초록색을 조금 더 진하게 변경 */
+}
+
+/* 활성화되지 않은 상태의 버튼(disabled)을 시각적으로 구분 처리 */
+.control-group button:disabled {
+  background-color: #f3f4f6; /* 바탕색을 투명도 없는 칙칙한 회색으로 */
+  color: #a1aab3; /* 텍스트 색상을 희미하게 변경 */
+  cursor: not-allowed; /* 마우스 오버 시 금지 아이콘 표시 */
+  border-color: #e1e4e8; /* 테두리도 흐리게 처리 */
+  box-shadow: none; /* 활성화 시의 눌림 효과 제거 */
+}
+
+/* 비활성화된 버튼은 마우스를 올려도 색상이 변하지 않도록 고정 */
+.control-group button:disabled:hover {
+  background-color: #f3f4f6; 
 }
