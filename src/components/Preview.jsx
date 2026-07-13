@@ -1,10 +1,7 @@
-// src/components/Preview.jsx v1.2
-/* * 파일 설명: 실시간 뷰어 영역. 마크다운 렌더링, 코드 블록 구문 강조(Syntax Highlighting) 및 개별 복사 버튼 기능을 제공함
- * 연결 위치: src/App.jsx 파일에서 호출되며, src/components/Preview.css를 통해 스타일링됨 
- */
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'; // 마크다운 내 HTML 태그 렌더링을 위한 플러그인 추가
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // 깃허브와 유사한 밝은 테마 적용
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -12,8 +9,6 @@ import { copyToClipboard } from '../utils/clipboard';
 import 'github-markdown-css/github-markdown.css'; 
 import './Preview.css';
 
-/* * 컴포넌트 설명: 마크다운 내부의 코드 블록(```)을 감지하여 구문 강조와 복사 버튼을 렌더링하는 내부 컴포넌트 
- */
 const CodeBlock = ({ inline, className, children, ...props }) => {
   console.log("CodeBlock 컴포넌트(v1.3) 렌더링 시작. inline 여부:", inline, "className:", className);
   
@@ -86,13 +81,14 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
 /* * 컴포넌트 설명: 마크다운 텍스트를 전달받아 HTML로 파싱하고 렌더링하는 실시간 뷰어 
  */
 function Preview({ markdown }) {
-  console.log("Preview 컴포넌트(v1.2) 렌더링 시작");
+  console.log("Preview 컴포넌트(v1.4) 렌더링 시작");
   return (
     <div className="preview-container">
       <div className="preview-content markdown-body">
         {/* components 속성을 통해 기본 code 태그 렌더링 방식을 커스텀 CodeBlock으로 덮어씌움 */}
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]} // HTML 태그를 안전하게 렌더링하기 위한 rehype-raw 적용
           components={{
             code: CodeBlock
           }}

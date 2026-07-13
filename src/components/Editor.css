@@ -1,50 +1,214 @@
-/* src/components/Editor.css v1.1 */
-/* 
- * 파일 설명: 에디터 컴포넌트 및 상단 툴바의 스타일을 정의하는 CSS
- * 연결 위치: src/components/Editor.jsx 내 .editor-container, .editor-toolbar, .editor-textarea 클래스에 적용됨
+/* src/components/Editor.css v1.2 */
+/* * 파일 설명: 에디터 영역, 상단 툴바 및 표 생성 모달의 스타일을 정의하는 CSS
+ * 연결 위치: src/components/Editor.jsx 내 요소들과 src/components/TableModal.jsx 내 모달 요소들에 적용됨
  */
+
+/* 에디터 전체를 감싸는 컨테이너 */
 .editor-container {
   flex: 1; /* 화면 양분을 위해 절반 차지 */
-  height: 100%;
+  height: 100%; /* 부모 요소의 높이를 100% 상속 */
   display: flex; /* 툴바와 에디터 영역을 세로로 배치하기 위한 flex 설정 */
-  flex-direction: column;
+  flex-direction: column; /* 자식 요소들을 위에서 아래로 세로 배치 */
   background-color: #f6f8fa; /* 깃허브 에디터 배경색상 적용 */
 }
 
+/* 서식 지정 버튼들이 모여있는 상단 툴바 영역 */
 .editor-toolbar {
-  display: flex;
-  gap: 8px; /* 버튼 사이 간격 */
-  padding: 12px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #d0d7de; /* 에디터와 구분하는 하단 테두리 */
+  display: flex; /* 버튼들을 가로로 나열하기 위한 flex 설정 */
+  gap: 8px; /* 버튼 사이의 간격을 8px로 설정 */
+  padding: 12px 20px; /* 상하 12px, 좌우 20px의 내부 여백 설정 */
+  background-color: #ffffff; /* 툴바 배경을 흰색으로 설정 */
+  border-bottom: 1px solid #d0d7de; /* 에디터 입력 영역과 구분하는 하단 테두리 */
 }
 
+/* 툴바 내부의 개별 버튼 스타일 */
 .editor-toolbar button {
-  padding: 6px 12px;
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
-  border-radius: 6px; /* 버튼 모서리 둥글게 */
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: #24292f;
-  transition: background-color 0.2s;
+  padding: 6px 12px; /* 버튼 내부 상하 6px, 좌우 12px 여백 설정 */
+  background-color: #f6f8fa; /* 버튼 배경을 밝은 회색으로 설정 */
+  border: 1px solid #d0d7de; /* 버튼 테두리 색상 설정 */
+  border-radius: 6px; /* 버튼 모서리를 6px 둥글게 처리 */
+  cursor: pointer; /* 마우스 오버 시 클릭 가능한 포인터 커서로 변경 */
+  font-size: 14px; /* 버튼 텍스트 크기 설정 */
+  font-weight: 600; /* 버튼 텍스트 굵기를 굵게 설정 */
+  color: #24292f; /* 버튼 텍스트 색상을 어두운 색상으로 설정 */
+  transition: background-color 0.2s; /* 배경색 변경 시 0.2초 동안 부드럽게 전환되도록 애니메이션 추가 */
 }
 
+/* 툴바 버튼 마우스 오버 시 스타일 */
 .editor-toolbar button:hover {
-  background-color: #e2e6eb; /* 마우스 오버 시 색상 어둡게 변경 */
+  background-color: #e2e6eb; /* 마우스 오버 시 버튼 배경색을 조금 더 어둡게 변경 */
 }
 
+/* 사용자가 마크다운 텍스트를 입력하는 textarea 영역 */
 .editor-textarea {
-  flex: 1; /* 툴바 영역을 제외한 나머지 공간을 100% 채움 */
-  width: 100%;
-  padding: 20px 40px;
-  border: none;
-  background-color: transparent;
-  color: #24292f;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 15px;
-  line-height: 1.6;
-  resize: none;
-  outline: none; /* 클릭 시 생기는 기본 테두리 제거 */
+  flex: 1; /* 툴바 영역을 제외한 나머지 남은 공간을 100% 채움 */
+  width: 100%; /* 가로 너비 100% 사용 */
+  padding: 20px 40px; /* 상하 20px, 좌우 40px 내부 여백 설정 */
+  border: none; /* 기본 테두리 제거 */
+  background-color: transparent; /* 배경을 투명하게 하여 컨테이너 배경색이 보이도록 함 */
+  color: #24292f; /* 입력 텍스트 색상 설정 */
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; /* 코딩용 고정폭 폰트 적용 */
+  font-size: 15px; /* 입력 텍스트 크기 설정 */
+  line-height: 1.6; /* 텍스트 줄 간격을 1.6배로 설정하여 가독성 확보 */
+  resize: none; /* 사용자가 임의로 텍스트창 크기를 조절할 수 없도록 차단 */
+  outline: none; /* 텍스트창 클릭(포커스) 시 생기는 기본 테두리 제거 */
+}
+
+/* 표 생성 모달이 열렸을 때 화면 전체를 덮는 반투명 검은색 배경 오버레이 */
+.table-modal-overlay {
+  position: fixed; /* 화면 스크롤과 무관하게 브라우저 창 기준으로 위치 고정 */
+  top: 0; /* 상단 끝에 밀착 */
+  left: 0; /* 좌측 끝에 밀착 */
+  width: 100vw; /* 브라우저 전체 가로 너비 차지 */
+  height: 100vh; /* 브라우저 전체 세로 높이 차지 */
+  background-color: rgba(0, 0, 0, 0.5); /* 검은색 배경에 투명도 50% 적용 */
+  display: flex; /* 모달 창을 화면 중앙에 배치하기 위해 flex 설정 */
+  align-items: center; /* 세로 기준 중앙 정렬 */
+  justify-content: center; /* 가로 기준 중앙 정렬 */
+  z-index: 1000; /* 다른 모든 화면 요소보다 최상단에 띄우기 위해 z-index 값을 높게 설정 */
+}
+
+/* 표 생성 모달 창 본체 */
+.table-modal {
+  background-color: #ffffff; /* 모달 창 배경을 흰색으로 설정 */
+  padding: 24px; /* 모달 창 내부 여백 24px 설정 */
+  border-radius: 8px; /* 모달 창 모서리를 8px 둥글게 처리 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 모달 창에 그림자를 부여하여 입체감 형성 */
+  width: 90%; /* 화면이 작을 때 가로 90% 차지하도록 설정 */
+  max-width: 600px; /* 화면이 커지더라도 모달 창의 최대 가로 길이를 600px로 제한 */
+  max-height: 80vh; /* 모달 창의 최대 세로 길이를 브라우저 높이의 80%로 제한 */
+  overflow-y: auto; /* 내용이 길어질 경우 모달 창 내부에 y축 스크롤바 생성 */
+}
+
+/* 모달 창 상단 제목 */
+.table-modal h3 {
+  margin-top: 0; /* 제목 위쪽 여백 제거 */
+  margin-bottom: 20px; /* 제목 아래쪽 여백 20px 설정 */
+  color: #24292f; /* 제목 색상 설정 */
+}
+
+/* 행/열 개수를 조절하는 버튼들이 위치한 컨트롤 영역 */
+.table-modal-controls {
+  display: flex; /* 컨트롤 그룹들을 가로로 나열하기 위한 flex 설정 */
+  gap: 20px; /* 컨트롤 그룹 사이의 간격을 20px로 설정 */
+  margin-bottom: 20px; /* 표 그리드와의 간격을 위해 하단 여백 20px 설정 */
+}
+
+/* 개별 컨트롤 그룹 (행 컨트롤, 열 컨트롤) */
+.control-group {
+  display: flex; /* 텍스트와 버튼들을 가로로 배치하기 위한 flex 설정 */
+  align-items: center; /* 세로 기준 중앙 정렬 */
+  gap: 8px; /* 내부 요소 간격 8px 설정 */
+  font-size: 14px; /* 텍스트 크기 14px 설정 */
+  font-weight: 500; /* 텍스트 굵기 중간 수준으로 설정 */
+}
+
+/* 컨트롤 그룹 내부의 버튼 (+, -) 스타일 */
+.control-group button {
+  width: 28px; /* 버튼 가로 길이 28px */
+  height: 28px; /* 버튼 세로 길이 28px (정사각형 형태) */
+  background-color: #f6f8fa; /* 버튼 배경색 밝은 회색 */
+  border: 1px solid #d0d7de; /* 버튼 테두리 색상 */
+  border-radius: 4px; /* 버튼 모서리 4px 둥글게 처리 */
+  cursor: pointer; /* 마우스 오버 시 포인터 커서 */
+  font-size: 16px; /* +, - 기호 크기 설정 */
+  display: flex; /* 기호를 버튼 중앙에 배치하기 위한 flex 설정 */
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: center; /* 가로 중앙 정렬 */
+  transition: background-color 0.2s; /* 부드러운 배경색 전환 효과 */
+}
+
+/* 컨트롤 그룹 버튼 마우스 오버 시 스타일 */
+.control-group button:hover {
+  background-color: #e2e6eb; /* 마우스 오버 시 배경색 약간 어둡게 변경 */
+}
+
+/* 새로 추가된 칸 정렬 툴바 영역에 대한 왼쪽 여백 부여 */
+.alignment-controls {
+  margin-left: auto; /* 행/열 추가 버튼들과 간격을 두고 우측으로 밀어냄 */
+}
+
+/* 칸 정렬 버튼 중 현재 선택된 정렬 상태(.active)를 나타내는 스타일 */
+.alignment-controls button.active {
+  background-color: #d0d7de; /* 선택된 상태임을 알 수 있도록 조금 더 진한 회색 배경 적용 */
+  border-color: #8c959f; /* 테두리를 진하게 설정하여 강조 */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); /* 눌려 있는 듯한 내부 그림자 효과 추가 */
+}
+
+/* 데이터 입력 표를 감싸는 컨테이너 */
+.table-modal-grid-container {
+  overflow-x: auto; /* 열이 너무 많아질 경우 가로 스크롤바 생성 */
+  margin-bottom: 24px; /* 하단 버튼 영역과의 간격 24px 설정 */
+  border: 1px solid #d0d7de; /* 표 전체 외곽 테두리 생성 */
+  border-radius: 6px; /* 표 외곽선 모서리 둥글게 처리 */
+}
+
+/* 실제 데이터 입력 표 요소 */
+.table-modal-grid {
+  width: 100%; /* 컨테이너 너비를 100% 채움 */
+  border-collapse: collapse; /* 셀 사이의 이중 테두리를 단일 선으로 병합 */
+}
+
+/* 표 내부의 개별 셀 */
+.table-modal-grid td {
+  border: 1px solid #d0d7de; /* 각 셀에 테두리 설정 */
+  padding: 0; /* 인풋 박스가 셀을 꽉 채우도록 내부 패딩 제거 */
+  min-width: 100px; /* 각 셀의 최소 가로 길이를 100px로 보장 */
+}
+
+/* 셀 내부에 위치한 텍스트 입력 칸 */
+.table-modal-grid input {
+  width: 100%; /* 셀의 가로 너비를 100% 채움 */
+  padding: 10px 12px; /* 상하 10px, 좌우 12px 내부 여백 설정 */
+  box-sizing: border-box; /* 패딩을 너비에 포함시킴 */
+  border: none; /* 인풋 박스 자체의 기본 테두리 제거 */
+  background-color: transparent; /* 배경색 투명화 */
+  font-size: 14px; /* 입력 텍스트 크기 14px */
+  outline: none; /* 클릭 시 발생하는 기본 아웃라인 제거 */
+}
+
+/* 인풋 박스 클릭 시 시각적 피드백 */
+.table-modal-grid input:focus {
+  background-color: #f6f8fa; /* 포커스 된 셀의 배경색을 살짝 어둡게 처리하여 위치 표시 */
+}
+
+/* 취소 및 표 적용 버튼이 위치한 하단 액션 영역 */
+.table-modal-actions {
+  display: flex; /* 버튼들을 가로로 배치하기 위한 flex 설정 */
+  justify-content: flex-end; /* 버튼들을 우측 끝으로 정렬 */
+  gap: 12px; /* 버튼 사이 간격 12px 설정 */
+}
+
+/* 하단 액션 버튼의 공통 스타일 */
+.table-modal-actions button {
+  padding: 8px 16px; /* 상하 8px, 좌우 16px 여백 설정 */
+  border-radius: 6px; /* 버튼 모서리 6px 둥글게 처리 */
+  font-size: 14px; /* 텍스트 크기 14px */
+  font-weight: 500; /* 텍스트 굵기 중간 수준 설정 */
+  cursor: pointer; /* 포인터 커서 적용 */
+  transition: background-color 0.2s; /* 부드러운 전환 효과 적용 */
+}
+
+/* 모달 취소 버튼 고유 스타일 */
+.btn-cancel {
+  background-color: #f6f8fa; /* 깃허브 기본 취소 버튼 스타일과 유사하게 설정 */
+  border: 1px solid #d0d7de; /* 테두리 추가 */
+  color: #24292f; /* 어두운 텍스트 색상 적용 */
+}
+
+/* 취소 버튼 마우스 오버 시 스타일 */
+.btn-cancel:hover {
+  background-color: #e2e6eb; /* 마우스 오버 시 배경색 약간 어둡게 변경 */
+}
+
+/* 모달 표 적용 버튼 고유 스타일 */
+.btn-apply {
+  background-color: #2da44e; /* 깃허브 긍정(성공) 액션의 고유 초록색 적용 */
+  border: 1px solid rgba(27, 31, 36, 0.15); /* 반투명한 테두리 추가 */
+  color: #ffffff; /* 흰색 텍스트 적용 */
+}
+
+/* 적용 버튼 마우스 오버 시 스타일 */
+.btn-apply:hover {
+  background-color: #2c974b; /* 마우스 오버 시 초록색을 조금 더 진하게 변경 */
 }
