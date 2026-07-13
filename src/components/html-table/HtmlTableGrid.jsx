@@ -1,11 +1,11 @@
-// src/components/html-table/HtmlTableGrid.jsx v1.0
+// src/components/html-table/HtmlTableGrid.jsx v3.0
 /*
- * 파일 설명: 배열 상태를 기반으로 시각적인 인풋 표를 렌더링하는 컴포넌트
- * 연결 위치: src/components/HtmlTableModal.jsx 내에서 렌더링됨
+ * 파일 설명: 배열 상태를 기반으로 시각적인 인풋 표를 렌더링하며, 각 셀에 적용된 서식(색상, 굵기 등)을 실시간으로 표시하는 컴포넌트
+ * 연결 위치: src/components/HtmlTableModal.jsx
  */
 
 function HtmlTableGrid({ grid, setFocusedCell, handleCellChange }) {
-  console.log("HtmlTableGrid 렌더링 시작");
+  console.log("HtmlTableGrid(v3.0) 렌더링 시작");
 
   return (
     <div className="table-modal-grid-container">
@@ -14,19 +14,29 @@ function HtmlTableGrid({ grid, setFocusedCell, handleCellChange }) {
           {grid.map((row, rIndex) => (
             <tr key={`grid-row-${rIndex}`}>
               {row.map((cell, cIndex) => {
-                // 병합 처리가 되어 구조적으로 숨겨져야 하는 칸은 렌더링을 완전히 스킵함
                 if (cell.isHidden) return null;
+
+                // 셀 상태를 인풋창의 CSS로 변환
+                const cellStyle = {
+                  textAlign: cell.align,
+                  fontWeight: cell.bold ? 'bold' : 'normal',
+                  fontStyle: cell.italic ? 'italic' : 'normal',
+                  textDecoration: cell.strike ? 'line-through' : 'none',
+                  color: cell.color !== 'inherit' ? cell.color : 'inherit',
+                  backgroundColor: cell.bgColor !== 'transparent' ? cell.bgColor : 'transparent'
+                };
 
                 return (
                   <td 
                     key={`grid-cell-${rIndex}-${cIndex}`} 
                     rowSpan={cell.rowSpan} 
                     colSpan={cell.colSpan}
+                    style={{ backgroundColor: cellStyle.backgroundColor }} // td에도 배경색을 주어 빈 공간 칠함
                   >
                     <input
                       type="text"
                       value={cell.text}
-                      style={{ textAlign: cell.align }}
+                      style={cellStyle}
                       onFocus={() => {
                         console.log(`[${rIndex}, ${cIndex}] 셀 포커스 감지`);
                         setFocusedCell({ r: rIndex, c: cIndex });

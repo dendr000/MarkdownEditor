@@ -1,0 +1,70 @@
+/* src/components/html-table/HtmlTable.css v1.0 */
+/* * 파일 설명: HTML 표의 정밀 제어 툴바(병합, 분할, 정렬, 비활성화 상태, 경고 버튼 등)에 특화된 추가 스타일
+ * 연결 위치: src/components/HtmlTableModal.jsx 파일에서 임포트되어 적용됨
+ */
+
+.control-label {
+  font-size: 13px;
+  color: #57606a;
+  margin-right: 4px;
+}
+
+.alignment-controls {
+  margin-left: auto;
+}
+
+.alignment-controls button.active {
+  background-color: #d0d7de;
+  border-color: #8c959f;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: #d0d7de;
+  margin: 0 4px;
+}
+
+.rotate-icon-90 {
+  transform: rotate(-90deg);
+}
+
+.control-group button.btn-danger {
+  color: #cf222e;
+}
+
+.control-group button.btn-danger:hover:not(:disabled) {
+  background-color: #ffebe9;
+  border-color: #ff8182;
+}
+
+.control-group button:disabled {
+  background-color: #f3f4f6;
+  color: #a1aab3;
+  cursor: not-allowed;
+  border-color: #e1e4e8;
+  box-shadow: none;
+}
+
+/* 서식 툴바의 select 박스 스타일 */
+.color-select {
+  padding: 4px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  background-color: #f6f8fa;
+  font-size: 13px;
+  color: #24292f;
+  cursor: pointer;
+  outline: none;
+}
+
+.color-select:disabled {
+  background-color: #f3f4f6;
+  color: #a1aab3;
+  cursor: not-allowed;
+}
+
+.style-toolbar {
+  margin-top: -10px; /* 위쪽 구조 툴바와의 간격을 조금 좁혀 일체감 부여 */
+}

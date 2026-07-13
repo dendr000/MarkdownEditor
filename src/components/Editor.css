@@ -230,3 +230,44 @@
 .control-group button:disabled:hover {
   background-color: #f3f4f6; 
 }
+
+/* 컨트롤 라벨 (삽입/삭제:, 병합: 등 텍스트) 스타일 */
+.control-label {
+  font-size: 13px;
+  color: #57606a;
+  margin-right: 4px;
+}
+
+/* 툴바 내부 그룹 간 시각적 구분을 위한 수직선 */
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: #d0d7de;
+  margin: 0 4px;
+}
+
+/* 아이콘과 텍스트가 함께 있는 버튼 내부 정렬을 위해 갭 추가 */
+.control-group button {
+  gap: 4px;
+}
+
+/* 병합 방향 아이콘을 90도 회전시키기 위한 유틸리티 클래스 */
+.rotate-icon-90 {
+  transform: rotate(-90deg);
+}
+
+/* 삭제 기능과 같은 위험(Danger) 액션을 붉은색으로 강조 */
+.control-group button.btn-danger {
+  color: #cf222e; /* 깃허브 경고 붉은색 */
+}
+
+/* 위험 버튼 마우스 오버 시 스타일 변경 */
+.control-group button.btn-danger:hover:not(:disabled) {
+  background-color: #ffebe9;
+  border-color: #ff8182;
+}
+
+/* 비활성화된 위험 버튼은 일반 버튼과 동일하게 흐리게 처리 */
+.control-group button.btn-danger:disabled {
+  color: #a1aab3;
+}
