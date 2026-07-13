@@ -1,6 +1,7 @@
-// src/utils/tableConverter.js v1.0
+// src/utils/tableConverter.js v2.0
 /*
- * 파일 설명: 마크다운 표 문자열을 2차원 그리드 객체 배열로 파싱하고, 역으로 그리드 배열을 마크다운 표 문법으로 생성하는 상호 변환 유틸리티 함수 모음입니다.
+ * 파일 설명: 마크다운 표 문자열을 2차원 그리드 객체 배열로 파싱하고, 역으로 그리드 배열을 마크다운 표 문법으로 생성하는 상호 변환 유틸리티입니다.
+ * 깃허브 마크다운(GFM)의 인라인 서식(굵게, 기울임, 취소선) 파싱 및 표 내부 파이프(|) 특수기호 이스케이프 처리가 포함되어 있습니다.
  * 연결 위치: 표 모달 컴포넌트 또는 에디터 툴바의 변환 기능 트리거 시 호출되어 사용됩니다.
  */
 
@@ -32,7 +33,6 @@ export const parseMdToGrid = (mdText) => {
 
   // 구분선 행을 파이프(|) 기준으로 분리하여 각 열의 정렬 상태 파악
   const separatorParts = lines[separatorIndex].split('|').map(p => p.trim()).filter((_, i, arr) => {
-    // 양 끝이 파이프로 감싸진 경우 발생하는 빈 요소 제거
     if (i === 0 && arr[i] === '') return false;
     if (i === arr.length - 1 && arr[i] === '') return false;
     return true;
@@ -51,52 +51,73 @@ export const parseMdToGrid = (mdText) => {
   const dataLines = lines.filter((_, idx) => idx !== separatorIndex);
   const maxRows = dataLines.length;
   
-  // 데이터 행을 파싱하여 text를 추출하고 정렬 속성 매핑
+  // 데이터 행을 파싱하여 text를 추출하고 정렬 및 깃허브 지원 서식(Bold, Italic, Strike) 매핑
   const parsedRows = dataLines.map((line, rIndex) => {
     let cleanLine = line;
+    // 양 끝 장식용 파이프 제거 (단, 이스케이프된 \| 는 건드리지 않음)
     if (cleanLine.startsWith('|')) cleanLine = cleanLine.substring(1);
-    if (cleanLine.endsWith('|')) cleanLine = cleanLine.substring(0, cleanLine.length - 1);
+    if (cleanLine.endsWith('|') && !cleanLine.endsWith('\\|')) {
+      cleanLine = cleanLine.substring(0, cleanLine.length - 1);
+    }
     
-    return cleanLine.split('|').map((cell, cIndex) => {
-      const text = cell.trim();
+    // 이스케이프되지 않은 정규 파이프(|)를 기준으로만 셀을 분할하기 위한 정규식 처리
+    // 긍정형 후방 탐색을 지원하지 않는 환경도 고려하여 임시 문자 치환 기법 사용
+    const tempLine = cleanLine.replace(/\\\|/g, '@@PIPE@@');
+    const splitCells = tempLine.split('|').map(cell => cell.replace(/@@PIPE@@/g, '\\|'));
+
+    return splitCells.map((cell, cIndex) => {
+      let text = cell.trim();
+      let bold = false;
+      let italic = false;
+      let strike = false;
+
+      // 마크다운 서식 태그 추출 로직 (단순 매핑용)
+      if (text.startsWith('**') && text.endsWith('**')) {
+        bold = true;
+        text = text.substring(2, text.length - 2).trim();
+      }
+      if (text.startsWith('~~') && text.endsWith('~~')) {
+        strike = true;
+        text = text.substring(2, text.length - 2).trim();
+      }
+      if ((text.startsWith('*') && text.endsWith('*') && !text.startsWith('**')) ||
+          (text.startsWith('_') && text.endsWith('_') && !text.startsWith('__'))) {
+        italic = true;
+        text = text.substring(1, text.length - 1).trim();
+      }
+
+      // 파싱이 끝난 텍스트 내부의 이스케이프된 파이프 기호를 일반 문자로 복구
+      text = text.replace(/\\\|/g, '|');
+
       const align = columnAlignments[cIndex] || (rIndex === 0 ? 'center' : 'left');
       
       return {
         text,
         align,
-        rowSpan: 1,
+        rowSpan: 1, // MD 표는 병합 지원 안 함
         colSpan: 1,
         isHidden: false,
-        bold: false,
-        italic: false,
-        strike: false,
-        color: '',
-        bgColor: ''
+        bold,
+        italic,
+        strike,
+        color: '',   // MD 표는 색상 지원 안 함
+        bgColor: ''  // MD 표는 색상 지원 안 함
       };
     });
   });
 
   if (parsedRows.length === 0) return null;
 
-  // 불규칙한 표에 대응하기 위해 최대 열 개수 연산
   const maxCols = Math.max(...parsedRows.map(r => r.length));
   console.log(`[로그] 마크다운 파싱 완료. 크기 - 행: ${maxRows}, 열: ${maxCols}`);
 
-  // 규격에 맞게 부족한 셀을 채워 넣는 정규화 진행
+  // 규격 정규화
   const finalGrid = parsedRows.map((row, rIndex) => {
     const newRow = [...row];
     while (newRow.length < maxCols) {
       newRow.push({
-        text: '',
-        align: rIndex === 0 ? 'center' : 'left',
-        rowSpan: 1,
-        colSpan: 1,
-        isHidden: false,
-        bold: false,
-        italic: false,
-        strike: false,
-        color: '',
-        bgColor: ''
+        text: '', align: rIndex === 0 ? 'center' : 'left', rowSpan: 1, colSpan: 1, isHidden: false,
+        bold: false, italic: false, strike: false, color: '', bgColor: ''
       });
     }
     return newRow;
@@ -125,14 +146,16 @@ export const generateMdFromGrid = (grid) => {
     const rowCells = [];
     
     row.forEach((cell) => {
-      // 마크다운은 병합을 지원하지 않으므로 숨겨진 셀(isHidden) 영역도 일반 빈 칸으로 복구하여 출력 구조 유지
+      // 마크다운은 병합을 지원하지 않으므로 HTML에서 넘어온 구조일지라도 숨겨진 빈 텍스트로 펼쳐서 출력
       if (cell.isHidden) {
         rowCells.push(' ');
         return;
       }
 
-      // 인라인 태그 형태의 서식이 있으면 텍스트와 합성
-      let cellText = cell.text;
+      // 깃허브 표 문법 파괴를 방지하기 위해 텍스트 내부에 사용자가 입력한 파이프(|) 기호를 이스케이프(\|) 처리
+      let cellText = cell.text.replace(/\|/g, '\\|');
+
+      // 마크다운 서식 지원 결합
       if (cell.bold) cellText = `**${cellText}**`;
       if (cell.italic) cellText = `*${cellText}*`;
       if (cell.strike) cellText = `~~${cellText}~~`;
@@ -140,14 +163,12 @@ export const generateMdFromGrid = (grid) => {
       rowCells.push(cellText);
     });
 
-    // 행 데이터 조립
     mdOutput += '| ' + rowCells.join(' | ') + ' |\n';
 
-    // 헤더(첫 번째 행) 바로 아래에 구분선 및 정렬 속성 행 주입
+    // 헤더(첫 번째 행) 아래에 정렬 구분선 주입
     if (rIndex === 0) {
       const separatorCells = [];
       for (let c = 0; c < colsCount; c++) {
-        // 첫 번째 행에 지정된 각 열별 align 값에 맞춰 구분선 기호 매핑
         const align = grid[0][c].align;
         if (align === 'center') separatorCells.push(':---:');
         else if (align === 'right') separatorCells.push('---:');
