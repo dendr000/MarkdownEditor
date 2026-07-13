@@ -81,7 +81,7 @@ export const parseHtmlToGrid = (html) => {
 };
 
 export const generateHtmlFromGrid = (grid, caption = '') => {
-  console.log("generateHtmlFromGrid 실행 - Grid 및 캡션을 HTML 태그로 변환");
+  console.log("generateHtmlFromGrid 실행 - Grid 및 캡션을 HTML 태그로 변환 (깃허브 얼룩말 무늬 방지 적용)");
   let htmlOutput = '\n<table>\n';
   
   if (caption.trim() !== '') {
@@ -91,9 +91,11 @@ export const generateHtmlFromGrid = (grid, caption = '') => {
   htmlOutput += '  <thead>\n';
   
   grid.forEach((row, rIndex) => {
-    if (rIndex === 0) htmlOutput += '    <tr>\n';
-    else if (rIndex === 1) htmlOutput += '  </thead>\n  <tbody>\n    <tr>\n';
-    else htmlOutput += '    <tr>\n';
+    // 깃허브의 짝수 행 회색 배경(Zebra striping)을 무력화하기 위해 모든 tr 태그에 투명 배경색을 인라인으로 강제 주입합니다.
+    // 다크모드/라이트모드 환경에 구애받지 않도록 transparent 속성을 사용합니다.
+    if (rIndex === 0) htmlOutput += '    <tr style="background-color: transparent;">\n';
+    else if (rIndex === 1) htmlOutput += '  </thead>\n  <tbody>\n    <tr style="background-color: transparent;">\n';
+    else htmlOutput += '    <tr style="background-color: transparent;">\n';
 
     row.forEach((cell) => {
       if (cell.isHidden) return;
