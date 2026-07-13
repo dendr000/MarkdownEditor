@@ -1,6 +1,7 @@
-// src/utils/htmlTableParser.js v4.0
+// src/utils/htmlTableParser.js v5.0
 /*
- * 파일 설명: HTML 표의 DOM을 분석하여 상태로 반환하고, 상태를 다시 HTML 태그로 렌더링하는 유틸리티 (캡션 지원 추가)
+ * 파일 설명: HTML 표의 DOM을 분석하여 상태로 반환하고, 상태를 다시 HTML 태그로 렌더링하는 유틸리티
+ * 깃허브 얼룩말 무늬 회피 트릭(다중 tbody) 적용
  */
 
 export const parseHtmlToGrid = (html) => {
@@ -14,7 +15,6 @@ export const parseHtmlToGrid = (html) => {
     return null;
   }
 
-  // 캡션 파싱
   const captionNode = table.querySelector('caption');
   const caption = captionNode ? captionNode.textContent.trim() : '';
 
@@ -76,12 +76,11 @@ export const parseHtmlToGrid = (html) => {
     r++;
   });
 
-  // grid 배열과 caption 문자열을 묶어서 반환
   return { grid, caption };
 };
 
 export const generateHtmlFromGrid = (grid, caption = '') => {
-  console.log("generateHtmlFromGrid 실행 - Grid 및 캡션을 HTML 태그로 변환 (깃허브 얼룩말 무늬 방지 적용)");
+  console.log("generateHtmlFromGrid 실행 - Grid를 HTML 태그로 변환 (다중 tbody 롤백)");
   let htmlOutput = '\n<table>\n';
   
   if (caption.trim() !== '') {
@@ -91,11 +90,13 @@ export const generateHtmlFromGrid = (grid, caption = '') => {
   htmlOutput += '  <thead>\n';
   
   grid.forEach((row, rIndex) => {
-    // 깃허브의 짝수 행 회색 배경(Zebra striping)을 무력화하기 위해 모든 tr 태그에 투명 배경색을 인라인으로 강제 주입합니다.
-    // 다크모드/라이트모드 환경에 구애받지 않도록 transparent 속성을 사용합니다.
-    if (rIndex === 0) htmlOutput += '    <tr style="background-color: transparent;">\n';
-    else if (rIndex === 1) htmlOutput += '  </thead>\n  <tbody>\n    <tr style="background-color: transparent;">\n';
-    else htmlOutput += '    <tr style="background-color: transparent;">\n';
+    if (rIndex === 0) {
+      htmlOutput += '    <tr>\n'; 
+    } else if (rIndex === 1) {
+      htmlOutput += '  </thead>\n  <tbody>\n    <tr>\n'; 
+    } else {
+      htmlOutput += '    <tr>\n';
+    }
 
     row.forEach((cell) => {
       if (cell.isHidden) return;
