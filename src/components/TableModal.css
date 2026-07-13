@@ -1,7 +1,5 @@
-/* src/components/TableModal.css v1.0 */
-/* * 파일 설명: 마크다운 및 HTML 표 생성 모달의 공통 레이아웃(오버레이, 그리드, 컨트롤 그룹)을 정의하는 CSS
- * 연결 위치: src/components/TableModal.jsx 및 src/components/HtmlTableModal.jsx 내 요소들에 적용됨
- */
+/* src/components/TableModal.css v2.0 */
+/* * 파일 설명: 모달 창 전체가 스크롤되는 것을 막고, 그리드 영역 내부에서만 스크롤되도록 Flexbox 구조로 뼈대를 재설계함 */
 
 .table-modal-overlay {
   position: fixed;
@@ -23,8 +21,19 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 90%;
   max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  display: flex; /* 상단 고정을 위한 flex 레이아웃 도입 */
+  flex-direction: column; 
+  overflow: hidden; /* 모달 전체 스크롤바 제거 */
+}
+
+/* 제목, 컨트롤 그룹, 액션 버튼은 스크롤에서 제외하고 공간을 보장(shrink: 0) */
+.table-modal h3, 
+.table-modal-controls, 
+.table-modal-controls-container, 
+.caption-input-wrapper, 
+.table-modal-actions {
+  flex-shrink: 0;
 }
 
 .table-modal h3 {
@@ -70,11 +79,14 @@
   background-color: #e2e6eb;
 }
 
+/* 표 영역에만 남는 공간을 모두 할당(grow: 1)하고 내부에 스크롤 생성 */
 .table-modal-grid-container {
-  overflow-x: auto;
+  flex-grow: 1;
+  overflow: auto; 
   margin-bottom: 24px;
   border: 1px solid #d0d7de;
   border-radius: 6px;
+  min-height: 150px;
 }
 
 .table-modal-grid {

@@ -1,32 +1,34 @@
-/* src/hooks/table/useTableGrid.js v5.0 */
+/* src/hooks/table/useTableGrid.js v6.0 */
 /*
- * 파일 설명: 표의 데이터, 구조, 서식 상태와 함께 캡션(Caption) 상태를 관리하고 일괄 삭제 기능을 지원하는 훅
+ * 파일 설명: 다중 삽입(count), 다중 비연속 셀 선택(selectedCellKeys), 일괄 붙여넣기 및 히스토리 관리를 모두 통제하는 상태 관리 훅
  */
 import { useState, useCallback } from 'react';
 import { parseHtmlToGrid } from '../../utils/htmlTableParser';
 
 export const useTableGrid = () => {
-  console.log("useTableGrid 훅(v5.0) 초기화 시작 - Caption 및 단축키 삭제 지원");
+  console.log("useTableGrid 훅(v6.0) 초기화 - Ctrl 다중 선택 및 다중 삽입 지원");
   
   const [grid, setGridState] = useState([]);
-  const [caption, setCaptionState] = useState(''); // 캡션 상태 추가
+  const [caption, setCaptionState] = useState('');
   const [focusedCell, setFocusedCell] = useState(null);
-  const [selectionArea, setSelectionArea] = useState(null);
+  
+  // Ctrl 키를 이용한 다중 선택 및 드래그 영역을 모두 저장하는 배열 (형태: ["0,0", "0,1", "2,3"])
+  const [selectedCellKeys, setSelectedCellKeys] = useState([]);
+  
+  // 삽입할 행/열의 개수를 관리하는 State (기본값 1)
+  const [insertCount, setInsertCount] = useState(1);
   
   const [history, setHistory] = useState({ past: [], future: [] });
 
-  // 그리드 업데이트 시 캡션도 함께 히스토리에 저장
   const setGrid = useCallback((action) => {
     setGridState(prev => {
       const nextGrid = typeof action === 'function' ? action(prev) : action;
       const snapshot = prev.map(row => row.map(cell => ({ ...cell })));
-      // caption은 상태 변경 시점의 클로저 값을 캡처
       setHistory(h => ({ past: [...h.past, { grid: snapshot, caption }], future: [] }));
       return nextGrid;
     });
   }, [caption]);
 
-  // 캡션 업데이트 시에도 히스토리 저장
   const updateCaption = (newCaption) => {
     setHistory(h => {
       const snapshot = grid.map(row => row.map(cell => ({ ...cell })));
@@ -58,7 +60,6 @@ export const useTableGrid = () => {
   };
 
   const initGrid = useCallback((initialHtml) => {
-    console.log("initGrid 실행");
     if (initialHtml && initialHtml.includes('<table')) {
       const parsed = parseHtmlToGrid(initialHtml);
       if (parsed && parsed.grid) {
@@ -66,7 +67,7 @@ export const useTableGrid = () => {
         setCaptionState(parsed.caption || '');
         setHistory({ past: [], future: [] });
         setFocusedCell(null);
-        setSelectionArea(null);
+        setSelectedCellKeys([]);
         return;
       }
     }
@@ -81,7 +82,7 @@ export const useTableGrid = () => {
     setCaptionState('');
     setHistory({ past: [], future: [] });
     setFocusedCell(null);
-    setSelectionArea(null);
+    setSelectedCellKeys([]);
   }, []);
 
   const handleCellChange = (r, c, value) => {
@@ -92,16 +93,18 @@ export const useTableGrid = () => {
     });
   };
 
+  // 선택된 배열의 모든 셀에 함수를 적용하는 유틸리티
   const applyToSelection = (callback) => {
-    if (!focusedCell && !selectionArea) return;
+    if (!focusedCell && selectedCellKeys.length === 0) return;
     setGrid(prev => {
       const newGrid = prev.map(row => [...row]);
-      if (selectionArea) {
-        for (let r = selectionArea.minR; r <= selectionArea.maxR; r++) {
-          for (let c = selectionArea.minC; c <= selectionArea.maxC; c++) {
-            if (!newGrid[r][c].isHidden) callback(newGrid[r][c]);
+      if (selectedCellKeys.length > 0) {
+        selectedCellKeys.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          if (newGrid[r] && newGrid[r][c] && !newGrid[r][c].isHidden) {
+            callback(newGrid[r][c]);
           }
-        }
+        });
       } else if (focusedCell) {
         callback(newGrid[focusedCell.r][focusedCell.c]);
       }
@@ -115,32 +118,37 @@ export const useTableGrid = () => {
   const clearFormatting = () => applyToSelection(cell => {
     cell.bold = false; cell.italic = false; cell.strike = false; cell.color = ''; cell.bgColor = '';
   });
-  
-  // [신규 편의 기능] 선택된 영역의 텍스트만 싹 비우기
-  const clearSelectedContents = () => {
-    console.log("선택 영역 콘텐츠 일괄 삭제");
-    applyToSelection(cell => { cell.text = ''; });
+  const clearSelectedContents = () => applyToSelection(cell => { cell.text = ''; });
+
+  // [신규 기능] 다중 선택 영역에 텍스트 일괄 붙여넣기
+  const pasteToSelectedCells = (text) => {
+    applyToSelection(cell => { cell.text = text; });
   };
 
-  const insertRowAt = (targetRIndex) => {
+  // 다중 행 삽입 로직 (insertCount 만큼 반복)
+  const insertRowAt = (targetRIndex, count = 1) => {
     setGrid(prev => {
-      const cols = prev[0].length;
-      const newRow = [];
-      const newGrid = prev.map(row => row.map(c => ({ ...c })));
-      for (let c = 0; c < cols; c++) {
-        let spanningCellFound = false;
-        for (let checkR = targetRIndex - 1; checkR >= 0; checkR--) {
-          const cell = newGrid[checkR][c];
-          if (!cell.isHidden && cell.rowSpan > (targetRIndex - checkR)) {
-            cell.rowSpan += 1;
-            newRow.push({ text: '', align: cell.align, rowSpan: 1, colSpan: 1, isHidden: true, bold: false, italic: false, strike: false, color: '', bgColor: '' });
-            spanningCellFound = true;
-            break;
+      let newGrid = prev.map(row => row.map(c => ({ ...c })));
+      for (let step = 0; step < count; step++) {
+        const currentTargetRIndex = targetRIndex + step;
+        const cols = newGrid[0].length;
+        const newRow = [];
+        
+        for (let c = 0; c < cols; c++) {
+          let spanningCellFound = false;
+          for (let checkR = currentTargetRIndex - 1; checkR >= 0; checkR--) {
+            const cell = newGrid[checkR][c];
+            if (!cell.isHidden && cell.rowSpan > (currentTargetRIndex - checkR)) {
+              cell.rowSpan += 1;
+              newRow.push({ text: '', align: cell.align, rowSpan: 1, colSpan: 1, isHidden: true, bold: false, italic: false, strike: false, color: '', bgColor: '' });
+              spanningCellFound = true;
+              break;
+            }
           }
+          if (!spanningCellFound) newRow.push({ text: '', align: 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
         }
-        if (!spanningCellFound) newRow.push({ text: '', align: 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
+        newGrid.splice(currentTargetRIndex, 0, newRow);
       }
-      newGrid.splice(targetRIndex, 0, newRow);
       return newGrid;
     });
   };
@@ -166,26 +174,30 @@ export const useTableGrid = () => {
         }
       }
       newGrid.splice(targetRIndex, 1);
-      setFocusedCell(null); setSelectionArea(null);
+      setFocusedCell(null); setSelectedCellKeys([]);
       return newGrid;
     });
   };
 
-  const insertColAt = (targetCIndex) => {
+  // 다중 열 삽입 로직 (insertCount 만큼 반복)
+  const insertColAt = (targetCIndex, count = 1) => {
     setGrid(prev => {
-      const newGrid = prev.map(row => row.map(c => ({ ...c })));
-      for (let r = 0; r < newGrid.length; r++) {
-        let spanningCellFound = false;
-        for (let checkC = targetCIndex - 1; checkC >= 0; checkC--) {
-          const cell = newGrid[r][checkC];
-          if (!cell.isHidden && cell.colSpan > (targetCIndex - checkC)) {
-            cell.colSpan += 1;
-            newGrid[r].splice(targetCIndex, 0, { text: '', align: cell.align, rowSpan: 1, colSpan: 1, isHidden: true, bold: false, italic: false, strike: false, color: '', bgColor: '' });
-            spanningCellFound = true;
-            break;
+      let newGrid = prev.map(row => row.map(c => ({ ...c })));
+      for (let step = 0; step < count; step++) {
+        const currentTargetCIndex = targetCIndex + step;
+        for (let r = 0; r < newGrid.length; r++) {
+          let spanningCellFound = false;
+          for (let checkC = currentTargetCIndex - 1; checkC >= 0; checkC--) {
+            const cell = newGrid[r][checkC];
+            if (!cell.isHidden && cell.colSpan > (currentTargetCIndex - checkC)) {
+              cell.colSpan += 1;
+              newGrid[r].splice(currentTargetCIndex, 0, { text: '', align: cell.align, rowSpan: 1, colSpan: 1, isHidden: true, bold: false, italic: false, strike: false, color: '', bgColor: '' });
+              spanningCellFound = true;
+              break;
+            }
           }
+          if (!spanningCellFound) newGrid[r].splice(currentTargetCIndex, 0, { text: '', align: r === 0 ? 'center' : 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
         }
-        if (!spanningCellFound) newGrid[r].splice(targetCIndex, 0, { text: '', align: r === 0 ? 'center' : 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
       }
       return newGrid;
     });
@@ -211,15 +223,15 @@ export const useTableGrid = () => {
         }
       }
       newGrid.forEach(row => row.splice(targetCIndex, 1));
-      setFocusedCell(null); setSelectionArea(null);
+      setFocusedCell(null); setSelectedCellKeys([]);
       return newGrid;
     });
   };
 
-  const insertRowAbove = () => focusedCell ? insertRowAt(focusedCell.r) : null;
-  const insertRowBelow = () => focusedCell ? insertRowAt(focusedCell.r + 1) : null;
-  const insertColLeft = () => focusedCell ? insertColAt(focusedCell.c) : null;
-  const insertColRight = () => focusedCell ? insertColAt(focusedCell.c + 1) : null;
+  const insertRowAbove = () => focusedCell ? insertRowAt(focusedCell.r, insertCount) : null;
+  const insertRowBelow = () => focusedCell ? insertRowAt(focusedCell.r + 1, insertCount) : null;
+  const insertColLeft = () => focusedCell ? insertColAt(focusedCell.c, insertCount) : null;
+  const insertColRight = () => focusedCell ? insertColAt(focusedCell.c + 1, insertCount) : null;
   const deleteFocusedRow = () => focusedCell ? removeRowAt(focusedCell.r) : null;
   const deleteFocusedCol = () => focusedCell ? removeColAt(focusedCell.c) : null;
 
@@ -291,11 +303,12 @@ export const useTableGrid = () => {
 
   return {
     grid, caption, updateCaption,
+    insertCount, setInsertCount, // 다중 삽입 상태 전달
     focusedCell, setFocusedCell, initGrid, handleCellChange, handleAlignChange,
     insertRowAbove, insertRowBelow, insertColLeft, insertColRight, deleteFocusedRow, deleteFocusedCol,
     mergeRight, mergeDown, unmerge,
-    toggleFormat, applyColor, clearFormatting, clearSelectedContents,
-    selectionArea, setSelectionArea,
+    toggleFormat, applyColor, clearFormatting, clearSelectedContents, pasteToSelectedCells,
+    selectedCellKeys, setSelectedCellKeys, // 새로운 배열 형태의 선택 영역 전달
     undo, redo, canUndo: history.past.length > 0, canRedo: history.future.length > 0
   };
 };

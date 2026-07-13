@@ -1,7 +1,6 @@
-// src/components/html-table/ToolbarStructure.jsx v5.0
+/* src/components/html-table/ToolbarStructure.jsx v6.0 */
 /*
- * 파일 설명: 구조(삽입/삭제)는 좌측에, 병합 및 Undo/Redo는 우측에 완벽히 고정되도록 분할된 툴바 컴포넌트
- * 연결 위치: src/components/HtmlTableModal.jsx
+ * 파일 설명: 삽입할 개수(N개)를 지정할 수 있는 입력창이 추가된 구조 제어 툴바
  */
 import { 
   ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine, 
@@ -9,35 +8,46 @@ import {
 } from 'lucide-react';
 
 function ToolbarStructure({ 
-  grid, focusedCell, selectionArea,
+  grid, focusedCell, selectedCellKeys,
+  insertCount, setInsertCount,
   insertRowAbove, insertRowBelow, insertColLeft, insertColRight, 
   deleteFocusedRow, deleteFocusedCol,
   mergeRight, mergeDown, unmerge,
   undo, redo, canUndo, canRedo
 }) {
   const activeCell = focusedCell ? grid[focusedCell.r][focusedCell.c] : null;
-  const hasActiveArea = !!activeCell || !!selectionArea;
+  const hasActiveArea = !!activeCell || selectedCellKeys.length > 0;
   const isMerged = activeCell ? (activeCell.rowSpan > 1 || activeCell.colSpan > 1) : false;
 
   return (
     <div className="toolbar-row">
-      {/* 좌측 영역: 구조 제어 */}
       <div className="toolbar-left">
         <div className="control-group">
           <span className="control-label">구조:</span>
-          <button onClick={insertRowAbove} disabled={!hasActiveArea} title="행 삽입 (위)">
+          {/* 다중 삽입 개수 지정 인풋 */}
+          <input 
+            type="number" 
+            min="1" max="50" 
+            value={insertCount} 
+            onChange={(e) => setInsertCount(Number(e.target.value))} 
+            className="insert-count-input" 
+            title="한 번에 삽입할 행/열의 개수"
+          />
+          <button onClick={insertRowAbove} disabled={!hasActiveArea} title="위로 행 삽입">
             <ArrowUpToLine size={16} />
           </button>
-          <button onClick={insertRowBelow} disabled={!hasActiveArea} title="행 삽입 (아래)">
+          <button onClick={insertRowBelow} disabled={!hasActiveArea} title="아래로 행 삽입">
             <ArrowDownToLine size={16} />
           </button>
-          <button onClick={insertColLeft} disabled={!hasActiveArea} title="열 삽입 (좌)">
+          <button onClick={insertColLeft} disabled={!hasActiveArea} title="좌측으로 열 삽입">
             <ArrowLeftToLine size={16} />
           </button>
-          <button onClick={insertColRight} disabled={!hasActiveArea} title="열 삽입 (우)">
+          <button onClick={insertColRight} disabled={!hasActiveArea} title="우측으로 열 삽입">
             <ArrowRightToLine size={16} />
           </button>
+          
           <div className="toolbar-divider"></div>
+          
           <button onClick={deleteFocusedRow} disabled={!hasActiveArea} title="행 삭제" className="btn-danger">
             <Trash2 size={16} /> 행
           </button>
@@ -47,7 +57,6 @@ function ToolbarStructure({
         </div>
       </div>
 
-      {/* 우측 영역: 병합 및 히스토리 제어 */}
       <div className="toolbar-right">
         <div className="control-group">
           <span className="control-label">병합:</span>

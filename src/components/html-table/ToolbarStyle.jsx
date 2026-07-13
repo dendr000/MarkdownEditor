@@ -1,7 +1,6 @@
-// src/components/html-table/ToolbarStyle.jsx v3.0
+/* src/components/html-table/ToolbarStyle.jsx v4.0 */
 /*
- * 파일 설명: 텍스트 서식/정렬은 좌측에, 색상 조작은 우측에 고정되도록 분할된 서식 툴바 컴포넌트
- * 연결 위치: src/components/HtmlTableModal.jsx
+ * 파일 설명: selectedCellKeys 배열 기반으로 활성화 상태를 계산하는 텍스트/색상 서식 툴바
  */
 import { 
   Bold, Italic, Strikethrough, Eraser, Baseline, PaintBucket,
@@ -10,14 +9,13 @@ import {
 import { PRESET_COLORS } from '../../utils/colorPresets';
 
 function ToolbarStyle({ 
-  grid, focusedCell, selectionArea, toggleFormat, applyColor, clearFormatting, handleAlignChange
+  grid, focusedCell, selectedCellKeys, toggleFormat, applyColor, clearFormatting, handleAlignChange
 }) {
   const activeCell = focusedCell ? grid[focusedCell.r][focusedCell.c] : null;
-  const hasActiveArea = !!activeCell || !!selectionArea;
+  const hasActiveArea = !!activeCell || selectedCellKeys.length > 0;
 
   return (
     <div className="toolbar-row">
-      {/* 좌측 영역: 정렬 및 기본 텍스트 서식 */}
       <div className="toolbar-left">
         <div className="control-group">
           <span className="control-label">정렬:</span>
@@ -51,7 +49,6 @@ function ToolbarStyle({
         </div>
       </div>
 
-      {/* 우측 영역: 색상 조작 */}
       <div className="toolbar-right">
         <div className="control-group">
           <span className="control-label"><Baseline size={14} />글자색:</span>

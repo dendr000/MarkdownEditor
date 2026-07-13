@@ -1,5 +1,5 @@
-/* src/components/html-table/HtmlTable.css v4.0 */
-/* * 파일 설명: 툴바 항목들을 양쪽으로 깔끔하게 벌려주는(Space-between) flex 레이아웃 구조가 도입된 스타일 파일 */
+/* src/components/html-table/HtmlTable.css v5.0 */
+/* * 파일 설명: 다중 삽입 개수(insert-count-input) 스타일 추가 및 레이아웃 정리 */
 
 .html-modal-extra-wide {
   max-width: 900px;
@@ -16,26 +16,21 @@
   border: 1px solid #d0d7de;
 }
 
-/* 양쪽 정렬의 핵심 클래스 */
 .toolbar-row {
   display: flex;
-  justify-content: space-between; /* 좌/우 그룹을 양 끝으로 밀어냄 */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   gap: 16px;
-  flex-wrap: wrap; /* 화면이 극도로 좁아질 경우에만 줄바꿈 허용 */
+  flex-wrap: wrap;
 }
 
-/* 좌측 및 우측 요소들이 뭉치도록 잡아주는 컨테이너 */
 .toolbar-left, .toolbar-right {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
-
-/* 기존 margin-left: auto 방식 폐기 (삭제됨) */
-/* .align-right-group { margin-left: auto; } */
 
 .control-label {
   font-size: 13px;
@@ -44,6 +39,24 @@
   font-weight: 600;
   display: flex;
   align-items: center;
+}
+
+/* 새로 추가된 다중 삽입 입력칸 스타일 */
+.insert-count-input {
+  width: 48px;
+  height: 28px;
+  padding: 0 4px;
+  text-align: center;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  outline: none;
+  font-size: 13px;
+  color: #24292f;
+  background-color: #ffffff;
+}
+
+.insert-count-input:focus {
+  border-color: #0969da;
 }
 
 .toolbar-divider {
