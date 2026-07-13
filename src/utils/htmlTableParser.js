@@ -1,7 +1,6 @@
-// src/utils/htmlTableParser.js v3.0
+// src/utils/htmlTableParser.js v4.0
 /*
- * 파일 설명: HTML <table> 문자열을 분석하여 DOM을 통해 병합 속성 및 서식(굵기, 기울임, 취소선, 색상)을 상태 객체로 파싱/생성하는 유틸리티
- * 연결 위치: src/hooks/table/useTableGrid.js 에서 데이터 변환 시 호출됨
+ * 파일 설명: HTML 표의 DOM을 분석하여 상태로 반환하고, 상태를 다시 HTML 태그로 렌더링하는 유틸리티 (캡션 지원 추가)
  */
 
 export const parseHtmlToGrid = (html) => {
@@ -15,6 +14,10 @@ export const parseHtmlToGrid = (html) => {
     return null;
   }
 
+  // 캡션 파싱
+  const captionNode = table.querySelector('caption');
+  const caption = captionNode ? captionNode.textContent.trim() : '';
+
   const rows = Array.from(table.rows);
   if (rows.length === 0) return null;
 
@@ -27,8 +30,6 @@ export const parseHtmlToGrid = (html) => {
     if (colsInRow > maxCols) maxCols = colsInRow;
   });
   const maxRows = rows.length;
-
-  console.log(`DOM 분석 완료. 예상 그리드 크기 - 행: ${maxRows}, 열: ${maxCols}`);
 
   const grid = Array.from({ length: maxRows }, () =>
     Array.from({ length: maxCols }, () => ({
@@ -50,7 +51,6 @@ export const parseHtmlToGrid = (html) => {
       const colSpan = parseInt(cell.getAttribute('colspan') || '1', 10);
       const align = cell.getAttribute('align') || (r === 0 ? 'center' : 'left');
       
-      // 서식 태그 및 스타일 파싱
       const text = cell.textContent.trim();
       const bold = cell.querySelector('b, strong') !== null;
       const italic = cell.querySelector('i, em') !== null;
@@ -59,7 +59,6 @@ export const parseHtmlToGrid = (html) => {
       const bgColor = cell.style.backgroundColor || '';
 
       grid[r][c] = { text, align, rowSpan, colSpan, isHidden: false, bold, italic, strike, color, bgColor };
-      console.log(`[${r}, ${c}] 파싱 완료 - 서식 포함`);
 
       for (let spanR = 0; spanR < rowSpan; spanR++) {
         for (let spanC = 0; spanC < colSpan; spanC++) {
@@ -77,12 +76,19 @@ export const parseHtmlToGrid = (html) => {
     r++;
   });
 
-  return grid;
+  // grid 배열과 caption 문자열을 묶어서 반환
+  return { grid, caption };
 };
 
-export const generateHtmlFromGrid = (grid) => {
-  console.log("generateHtmlFromGrid 실행 - Grid 배열을 HTML 태그로 변환 시작");
-  let htmlOutput = '\n<table>\n  <thead>\n';
+export const generateHtmlFromGrid = (grid, caption = '') => {
+  console.log("generateHtmlFromGrid 실행 - Grid 및 캡션을 HTML 태그로 변환");
+  let htmlOutput = '\n<table>\n';
+  
+  if (caption.trim() !== '') {
+    htmlOutput += `  <caption>${caption.trim()}</caption>\n`;
+  }
+  
+  htmlOutput += '  <thead>\n';
   
   grid.forEach((row, rIndex) => {
     if (rIndex === 0) htmlOutput += '    <tr>\n';
@@ -97,13 +103,11 @@ export const generateHtmlFromGrid = (grid) => {
       const colSpanAttr = cell.colSpan > 1 ? ` colspan="${cell.colSpan}"` : '';
       const alignAttr = ` align="${cell.align}"`;
 
-      // 인라인 스타일 조립
       const styles = [];
       if (cell.color && cell.color !== 'inherit') styles.push(`color: ${cell.color}`);
       if (cell.bgColor && cell.bgColor !== 'transparent') styles.push(`background-color: ${cell.bgColor}`);
       const styleAttr = styles.length > 0 ? ` style="${styles.join('; ')}"` : '';
 
-      // 텍스트 서식 태그 조립
       let innerText = cell.text;
       if (cell.bold) innerText = `<b>${innerText}</b>`;
       if (cell.italic) innerText = `<i>${innerText}</i>`;

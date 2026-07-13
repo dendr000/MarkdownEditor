@@ -1,64 +1,69 @@
-/* src/hooks/table/useTableGrid.js v4.0 */
+/* src/hooks/table/useTableGrid.js v5.0 */
 /*
- * 파일 설명: 표의 데이터, 구조, 서식 상태뿐만 아니라 다중 선택(Drag) 영역과 실행 취소(History) 로직까지 총괄하는 훅
- * 연결 위치: src/components/HtmlTableModal.jsx
+ * 파일 설명: 표의 데이터, 구조, 서식 상태와 함께 캡션(Caption) 상태를 관리하고 일괄 삭제 기능을 지원하는 훅
  */
 import { useState, useCallback } from 'react';
 import { parseHtmlToGrid } from '../../utils/htmlTableParser';
 
 export const useTableGrid = () => {
-  console.log("useTableGrid 훅(v4.0) 초기화 시작 - History 및 Selection 기능 포함");
+  console.log("useTableGrid 훅(v5.0) 초기화 시작 - Caption 및 단축키 삭제 지원");
   
   const [grid, setGridState] = useState([]);
+  const [caption, setCaptionState] = useState(''); // 캡션 상태 추가
   const [focusedCell, setFocusedCell] = useState(null);
-  
-  // 다중 셀 선택 영역 상태: { minR, maxR, minC, maxC }
   const [selectionArea, setSelectionArea] = useState(null);
   
-  // 실행 취소/다시 실행을 위한 히스토리 스택
   const [history, setHistory] = useState({ past: [], future: [] });
 
-  // 상태를 업데이트하면서 과거(past) 스택에 현재 상태를 저장하는 래퍼 함수
+  // 그리드 업데이트 시 캡션도 함께 히스토리에 저장
   const setGrid = useCallback((action) => {
     setGridState(prev => {
       const nextGrid = typeof action === 'function' ? action(prev) : action;
-      // 깊은 복사를 통해 이전 상태를 히스토리에 저장
       const snapshot = prev.map(row => row.map(cell => ({ ...cell })));
-      setHistory(h => ({ past: [...h.past, snapshot], future: [] }));
+      // caption은 상태 변경 시점의 클로저 값을 캡처
+      setHistory(h => ({ past: [...h.past, { grid: snapshot, caption }], future: [] }));
       return nextGrid;
     });
-  }, []);
+  }, [caption]);
+
+  // 캡션 업데이트 시에도 히스토리 저장
+  const updateCaption = (newCaption) => {
+    setHistory(h => {
+      const snapshot = grid.map(row => row.map(cell => ({ ...cell })));
+      return { past: [...h.past, { grid: snapshot, caption }], future: [] };
+    });
+    setCaptionState(newCaption);
+  };
 
   const undo = () => {
-    setGridState(prev => {
-      if (history.past.length === 0) return prev;
-      const previousGrid = history.past[history.past.length - 1];
-      setHistory(h => ({
-        past: h.past.slice(0, -1),
-        future: [prev, ...h.future]
-      }));
-      return previousGrid;
-    });
+    if (history.past.length === 0) return;
+    const previous = history.past[history.past.length - 1];
+    setHistory(h => ({
+      past: h.past.slice(0, -1),
+      future: [{ grid, caption }, ...h.future]
+    }));
+    setGridState(previous.grid);
+    setCaptionState(previous.caption);
   };
 
   const redo = () => {
-    setGridState(prev => {
-      if (history.future.length === 0) return prev;
-      const nextGrid = history.future[0];
-      setHistory(h => ({
-        past: [...h.past, prev],
-        future: h.future.slice(1)
-      }));
-      return nextGrid;
-    });
+    if (history.future.length === 0) return;
+    const next = history.future[0];
+    setHistory(h => ({
+      past: [...h.past, { grid, caption }],
+      future: h.future.slice(1)
+    }));
+    setGridState(next.grid);
+    setCaptionState(next.caption);
   };
 
   const initGrid = useCallback((initialHtml) => {
     console.log("initGrid 실행");
     if (initialHtml && initialHtml.includes('<table')) {
-      const parsedGrid = parseHtmlToGrid(initialHtml);
-      if (parsedGrid) {
-        setGridState(parsedGrid);
+      const parsed = parseHtmlToGrid(initialHtml);
+      if (parsed && parsed.grid) {
+        setGridState(parsed.grid);
+        setCaptionState(parsed.caption || '');
         setHistory({ past: [], future: [] });
         setFocusedCell(null);
         setSelectionArea(null);
@@ -73,12 +78,12 @@ export const useTableGrid = () => {
         }))
       )
     );
+    setCaptionState('');
     setHistory({ past: [], future: [] });
     setFocusedCell(null);
     setSelectionArea(null);
   }, []);
 
-  // 텍스트 입력은 타자마다 히스토리가 쌓이면 불편하므로 setGridState로 직접 변경 (입력 완료 시점에만 히스토리 저장 고려 가능)
   const handleCellChange = (r, c, value) => {
     setGridState(prev => {
       const newGrid = prev.map(row => [...row]);
@@ -87,7 +92,6 @@ export const useTableGrid = () => {
     });
   };
 
-  // 선택된 단일 셀 또는 다중 영역의 모든 셀에 콜백을 적용하는 유틸리티 함수
   const applyToSelection = (callback) => {
     if (!focusedCell && !selectionArea) return;
     setGrid(prev => {
@@ -105,36 +109,24 @@ export const useTableGrid = () => {
     });
   };
 
-  const handleAlignChange = (align) => {
-    console.log(`정렬 일괄 변경: ${align}`);
-    applyToSelection(cell => { cell.align = align; });
+  const handleAlignChange = (align) => applyToSelection(cell => { cell.align = align; });
+  const toggleFormat = (formatType) => applyToSelection(cell => { cell[formatType] = !cell[formatType]; });
+  const applyColor = (colorType, colorValue) => applyToSelection(cell => { cell[colorType] = colorValue; });
+  const clearFormatting = () => applyToSelection(cell => {
+    cell.bold = false; cell.italic = false; cell.strike = false; cell.color = ''; cell.bgColor = '';
+  });
+  
+  // [신규 편의 기능] 선택된 영역의 텍스트만 싹 비우기
+  const clearSelectedContents = () => {
+    console.log("선택 영역 콘텐츠 일괄 삭제");
+    applyToSelection(cell => { cell.text = ''; });
   };
 
-  const toggleFormat = (formatType) => {
-    console.log(`서식 일괄 토글: ${formatType}`);
-    applyToSelection(cell => { cell[formatType] = !cell[formatType]; });
-  };
-
-  const applyColor = (colorType, colorValue) => {
-    console.log(`색상 일괄 적용: ${colorType} = ${colorValue}`);
-    applyToSelection(cell => { cell[colorType] = colorValue; });
-  };
-
-  const clearFormatting = () => {
-    console.log(`서식 일괄 초기화`);
-    applyToSelection(cell => {
-      cell.bold = false; cell.italic = false; cell.strike = false;
-      cell.color = ''; cell.bgColor = '';
-    });
-  };
-
-  // 구조 변경 로직 (행/열 추가, 삭제)
   const insertRowAt = (targetRIndex) => {
     setGrid(prev => {
       const cols = prev[0].length;
       const newRow = [];
       const newGrid = prev.map(row => row.map(c => ({ ...c })));
-
       for (let c = 0; c < cols; c++) {
         let spanningCellFound = false;
         for (let checkR = targetRIndex - 1; checkR >= 0; checkR--) {
@@ -146,9 +138,7 @@ export const useTableGrid = () => {
             break;
           }
         }
-        if (!spanningCellFound) {
-          newRow.push({ text: '', align: 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
-        }
+        if (!spanningCellFound) newRow.push({ text: '', align: 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
       }
       newGrid.splice(targetRIndex, 0, newRow);
       return newGrid;
@@ -160,7 +150,6 @@ export const useTableGrid = () => {
       if (prev.length <= 1) return prev;
       const newGrid = prev.map(row => row.map(c => ({ ...c })));
       const cols = newGrid[0].length;
-
       for (let c = 0; c < cols; c++) {
         const cell = newGrid[targetRIndex][c];
         if (!cell.isHidden && cell.rowSpan > 1) {
@@ -177,8 +166,7 @@ export const useTableGrid = () => {
         }
       }
       newGrid.splice(targetRIndex, 1);
-      setFocusedCell(null);
-      setSelectionArea(null);
+      setFocusedCell(null); setSelectionArea(null);
       return newGrid;
     });
   };
@@ -197,9 +185,7 @@ export const useTableGrid = () => {
             break;
           }
         }
-        if (!spanningCellFound) {
-          newGrid[r].splice(targetCIndex, 0, { text: '', align: r === 0 ? 'center' : 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
-        }
+        if (!spanningCellFound) newGrid[r].splice(targetCIndex, 0, { text: '', align: r === 0 ? 'center' : 'left', rowSpan: 1, colSpan: 1, isHidden: false, bold: false, italic: false, strike: false, color: '', bgColor: '' });
       }
       return newGrid;
     });
@@ -225,8 +211,7 @@ export const useTableGrid = () => {
         }
       }
       newGrid.forEach(row => row.splice(targetCIndex, 1));
-      setFocusedCell(null);
-      setSelectionArea(null);
+      setFocusedCell(null); setSelectionArea(null);
       return newGrid;
     });
   };
@@ -305,10 +290,11 @@ export const useTableGrid = () => {
   };
 
   return {
-    grid, focusedCell, setFocusedCell, initGrid, handleCellChange, handleAlignChange,
+    grid, caption, updateCaption,
+    focusedCell, setFocusedCell, initGrid, handleCellChange, handleAlignChange,
     insertRowAbove, insertRowBelow, insertColLeft, insertColRight, deleteFocusedRow, deleteFocusedCol,
     mergeRight, mergeDown, unmerge,
-    toggleFormat, applyColor, clearFormatting,
+    toggleFormat, applyColor, clearFormatting, clearSelectedContents,
     selectionArea, setSelectionArea,
     undo, redo, canUndo: history.past.length > 0, canRedo: history.future.length > 0
   };
