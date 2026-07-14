@@ -1,0 +1,236 @@
+/* src/components/table/HtmlTable.css v6.1 */
+/*
+ * 파일 설명: 표 편집 모달 내부의 다중 삽입 컨트롤, 양단 툴바 정렬 박스, 엑셀식 입력 그리드 판넬 및 다중 셀 드래그 하이라이트 등 표(Table) 도메인에 고유한 서식만을 통제하는 스타일 시트 파일입니다.
+ * 연결 위치: src/components/table/HtmlTableModal.jsx 및 하위 html-table/ 폴더 내 그리드, 구조, 서식 파일들의 요소들과 바인딩됩니다.
+ */
+
+/* 고급 편집기용 상단 컨트롤 단추들을 감싸는 독립된 입체형 회색 컨테이너 룸 */
+.table-modal-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+  background-color: #f6f8fa;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
+}
+
+/* 도메인 제어 도구들을 좌측 기능단과 우측 시스템단(Undo/Redo 등)으로 명확히 찢어주는 핵심 줄 배정 사양 */
+.toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* 좌측 혹은 우측 내부에서 개별 아이콘 버튼 단추들이 수평으로 모이도록 세부 정렬을 유도하는 트랙 */
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* 특정 기능의 소제목을 명시하는 텍스트 라벨 포맷 */
+.control-label {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #57606a;
+  margin-right: 4px;
+}
+
+/* 개별 조작 유닛 단위들의 정렬 규칙 */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 툴바 내부에 배치된 구조용 및 병합용 단추의 패딩 설정 */
+.control-group button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  width: auto;
+  height: 28px;
+  padding: 0 8px;
+  white-space: nowrap;
+  background-color: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  gap: 4px;
+  transition: background-color 0.2s;
+}
+
+/* 개별 조작 버튼 마우스 오버 스타일 */
+.control-group button:hover:not(:disabled) {
+  background-color: #e2e6eb;
+}
+
+/* 한 번에 다수의 행이나 열을 연달아 꽂아 넣기 위해 개수를 타이핑하는 전용 숫자 인풋 공간 */
+.insert-count-input {
+  width: 48px;
+  height: 28px;
+  padding: 0 4px;
+  text-align: center;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  outline: none;
+  font-size: 13px;
+  color: #24292f;
+  background-color: #ffffff;
+}
+
+/* 개수 입력칸 포커스 강조 */
+.insert-count-input:focus {
+  border-color: #0969da;
+}
+
+/* 토글형 서식 단추들이 현재 켜져서 인게이지 되었음을 뜻하는 활성 상태 표기 */
+.control-group button.active {
+  background-color: #d0d7de;
+  border-color: #8c959f;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* 기능 영역 단락 사이에 배치되는 세로 형태의 가느다란 가이드 핀 */
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: #d0d7de;
+  flex-shrink: 0;
+}
+
+/* 깃허브 친화적인 색상을 셀에 칠하기 위해 제공되는 전용 셀렉트 메뉴 콤보 상자 */
+.color-select {
+  padding: 4px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-size: 13px;
+  color: #24292f;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 포커스 해제 상태이거나 권한이 주어지지 않은 상태의 툴바 단추 비활성화 명세 */
+.control-group button:disabled,
+.color-select:disabled {
+  background-color: #f3f4f6;
+  color: #a1aab3;
+  cursor: not-allowed;
+  border-color: #e1e4e8;
+  box-shadow: none;
+}
+
+/* 표 전체의 데이터 스크롤바 메커니즘을 정의하며 최대 공간을 상속받는 실질적인 컨테이너 */
+.table-modal-grid-container {
+  flex-grow: 1;
+  overflow: auto;
+  margin-bottom: 24px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  min-height: 150px;
+  outline: none;
+}
+
+/* 2차원 그리드 표 본체 */
+.table-modal-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* 그리드 내부의 실제 데이터 칸 */
+.table-modal-grid td {
+  position: relative;
+  border: 1px solid #d0d7de;
+  padding: 0;
+  min-width: 100px;
+}
+
+/* 격자 내부에서 실시간 인라인 스타일 피드백을 수용하며 값을 입력받는 칸 */
+.table-modal-grid input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border: none;
+  background-color: transparent;
+  font-size: 14px;
+  outline: none;
+}
+
+/* 인풋 요소 포커스 시 배경 보정 */
+.table-modal-grid input:focus {
+  background-color: rgba(246, 248, 250, 0.5);
+}
+
+/* Ctrl을 누른 채 연속 다중 지정하였거나 마우스 드래그를 통해 파랗게 잡힌 셀 영역 하이라이트 가상 요소 */
+.cell-selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(9, 105, 218, 0.15);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 표 내부 상단에 흐리게 점선으로 가이드되는 제목 인풋 박스 영역 */
+.caption-input-wrapper {
+  margin-bottom: 16px;
+}
+
+/* 표 제목 적는 칸 서식 사양 */
+.caption-input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  color: #24292f;
+  background-color: #ffffff;
+  border: 1px dashed #d0d7de;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+/* 제목 입력창 활성화 시 테두리 강화 선언 */
+.caption-input-wrapper input:focus {
+  border-style: solid;
+  border-color: #0969da;
+}
+
+/* 가로 병합용 조작 아이콘의 컴포넌트 회전 처리 유틸리티 */
+.rotate-icon-90 {
+  transform: rotate(-90deg);
+}
+
+/* 행 삭제나 열 삭제 같은 파괴적인 액션 단추들을 보수하기 위한 붉은색 경고 마킹 */
+.control-group button.btn-danger {
+  color: #cf222e;
+}
+
+/* 위험 액션 버튼 마우스 호버 효과 */
+.control-group button.btn-danger:hover:not(:disabled) {
+  background-color: #ffebe9;
+  border-color: #ff8182;
+}
+
+/* 비활성화된 위험 버튼의 흐림 처리 */
+.control-group button.btn-danger:disabled {
+  color: #a1aab3;
+}

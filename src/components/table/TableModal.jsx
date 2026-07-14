@@ -6,7 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Bold, Italic, Strikethrough, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
-import { parseMdToGrid, generateMdFromGrid } from '../utils/tableConverter';
+import { parseMdToGrid, generateMdFromGrid } from '../../utils/tableConverter';
 import './TableModal.css';
 
 function TableModal({ isOpen, onClose, onInsert, initialTableMarkdown }) {

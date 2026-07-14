@@ -6,7 +6,7 @@ import {
   Bold, Italic, Strikethrough, Eraser, Baseline, PaintBucket,
   AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
-import { PRESET_COLORS } from '../../utils/colorPresets';
+import { PRESET_COLORS } from '../../../utils/colorPresets';
 
 function ToolbarStyle({ 
   grid, focusedCell, selectedCellKeys, toggleFormat, applyColor, clearFormatting, handleAlignChange
