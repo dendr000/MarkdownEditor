@@ -63,6 +63,62 @@ function Editor({ markdown, setMarkdown }) {
     }, 0);
   };
 
+  const handleKeyDown = (e) => {
+    console.log("handleKeyDown 실행 - 키보드 입력 이벤트 감지 완료. 입력된 키:", e.key);
+    
+    // 엔터 키가 눌렸고 Shift 키가 조합되지 않은 순수 엔터 입력 상황인지 판별합니다.
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        console.log("[로그] textarea 인스턴스 참조 실패로 키 이벤트를 중단합니다.");
+        return;
+      }
+
+      const start = textarea.selectionStart;
+      const textBeforeCursor = markdown.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+
+      console.log("[로그] 엔터 입력 활성화. 현재 커서 줄 내용 분석:", currentLine);
+
+      // 인용문 기호(>)로 시작하는 패턴인지 정규식 검사를 수행합니다.
+      const match = currentLine.match(/^>\s*(.*)/);
+
+      if (match) {
+        // 브라우저의 기본 엔터 처리 동작(단순 줄바꿈)을 차단하고 커스텀 서식을 주입하기 위한 설정입니다.
+        e.preventDefault();
+        const content = match[1].trim();
+
+        if (content === '') {
+          console.log("[로그] 내용이 비어 있는 인용문 기호만 존재함을 확인 - 기호 제거 및 탈출 전개");
+          // 내용 없이 엔터만 연속으로 두 번 친 경우에 해당하므로 현재 줄의 '> ' 기호를 제거하여 일반 줄로 복구합니다.
+          const lineStartIdx = start - currentLine.length;
+          const newText = markdown.substring(0, lineStartIdx) + '\n' + markdown.substring(start);
+          
+          setMarkdown(newText);
+          setTimeout(() => {
+            console.log("[로그] 기존 기호 삭제 후 커서 포커스 위치 재동기화 수행");
+            textarea.focus();
+            textarea.setSelectionRange(lineStartIdx + 1, lineStartIdx + 1);
+          }, 0);
+        } else {
+          console.log("[로그] 내용이 포함된 인용문 줄 확인 - 현재 줄 끝에 <br> 삽입 및 다음 줄 자동 기호(> ) 주입 전개");
+          // 내용이 차 있는 상태이므로 현재 줄 끝(커서 위치)에 <br> 태그를 넣어 강제 줄바꿈을 유도하고, 다음 줄에 인용문 기호를 공급합니다.
+          const afterText = markdown.substring(start);
+          const newText = textBeforeCursor + '<br>\n> ' + afterText;
+          
+          setMarkdown(newText);
+          setTimeout(() => {
+            console.log("[로그] <br> 및 기호 자동 주입 완료 후 주입된 문자열 바로 뒤로 커서 포커스 동기화 수행");
+            textarea.focus();
+            // <br>(4글자) + \n(1글자) + >(1글자) + 스페이스(1글자) = 총 7칸 뒤로 커서 이동
+            textarea.setSelectionRange(start + 7, start + 7);
+          }, 0);
+        }
+      }
+    }
+  };
+
   return (
     <div className="editor-container">
       <div className="editor-toolbar-wrapper">
@@ -93,7 +149,14 @@ function Editor({ markdown, setMarkdown }) {
         ref={textareaRef}
         className="editor-textarea"
         value={markdown}
-        onChange={(e) => setMarkdown(e.target.value)}
+        onChange={(e) => {
+          console.log("textarea 입력 상태 변경으로 마크다운 실시간 상태값 동기화");
+          setMarkdown(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          console.log("textarea 엘리먼트 내부 키 다운 이벤트 가로채기 수행");
+          handleKeyDown(e);
+        }}
         placeholder="여기에 마크다운을 작성하세요..."
         spellCheck="false"
       />
