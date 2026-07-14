@@ -133,6 +133,18 @@
   box-shadow: none;
 }
 
+/* 깃허브 색상 미적용 경고 문구: 툴바와 분리되어 하단에 자연스럽게 배치됨 */
+.github-color-warning {
+  text-align: right; /* 컨테이너 내에서 우측 정렬 */
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(207, 34, 46, 0.75); /* 약간 투명한 깃허브 레드 */
+  letter-spacing: -0.3px;
+  margin-top: 2px; /* 상단 툴바 라인과의 미세 간격 추가 */
+  padding-right: 2px;
+  pointer-events: none; /* 마우스 클릭 간섭 방지 */
+}
+
 /* 표 전체의 데이터 스크롤바 메커니즘을 정의하며 최대 공간을 상속받는 실질적인 컨테이너 */
 .table-modal-grid-container {
   flex-grow: 1;
