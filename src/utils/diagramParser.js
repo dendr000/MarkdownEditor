@@ -3,9 +3,11 @@
  * 파일 설명: 다이어그램의 GUI 상태 ↔ 마크다운 텍스트 간의 상호 변환을 담당하는 순수 로직 파일입니다.
  */
 
-// 1. 노드 토큰 역분석 (순서도용)
+// 1. 노드 토큰 역분석 (순서도용) v1.1
 export const parseNodeToken = (token) => {
+  console.log("[diagramParser] 노드 토큰 역분석 시도:", token);
   if (!token) return null;
+  
   const idMatch = token.match(/^([a-zA-Z0-9_\-]+)/);
   if (!idMatch) return null;
   
@@ -14,22 +16,47 @@ export const parseNodeToken = (token) => {
   let text = '';
   let desc = '';
 
-  if (token.includes('{')) shape = '{}';
+  if (token.includes('{{')) shape = '{{}}';
+  else if (token.includes('(((')) shape = '((()))';
   else if (token.includes('((')) shape = '(())';
+  else if (token.includes('[(')) shape = '[()]';
   else if (token.includes('()')) shape = '()';
+  else if (token.includes('}')) shape = '{}';
   else if (token.includes('>')) shape = '>]';
-  else if (token.includes('{{')) shape = '{{}}';
+  else if (token.includes('[/') && token.includes('/]')) shape = '[//]';
+  else if (token.includes('[\\') && token.includes('\\]')) shape = '[\\\\]';
+  else if (token.includes('[/') && token.includes('\\]')) shape = '[/\\\\]';
+  else if (token.includes('[\\') && token.includes('/]')) shape = '[\\\\/]';
+  else shape = '[]';
 
-  const mdRegex = /`\*\*([\s\S]*?)\*\*<br\/>([\s\S]*?)`/;
-  const mdMatch = token.match(mdRegex);
+  // 따옴표 내부 문자열을 먼저 안전하게 추출하여 빈 문자열 반환 버그를 차단합니다.
+  let innerContent = '';
+  const quoteMatch = token.match(/"([\s\S]*?)"/);
   
-  if (mdMatch) {
-    text = mdMatch[1].trim();
-    desc = mdMatch[2].trim();
+  if (quoteMatch) {
+    innerContent = quoteMatch[1];
   } else {
-    const normalMatch = token.match(/["\[\({>]([\s\S]*?)[\]\)}"]/);
-    if (normalMatch) text = normalMatch[1].replace(/[`"]/g, '').trim();
+    const bracketMatch = token.match(/[\[\(\{>]+([^\]\)\}]+)[\]\)}]+/);
+    if (bracketMatch) innerContent = bracketMatch[1];
   }
+
+  if (innerContent) {
+    const mdMatch = innerContent.match(/^`\*\*([\s\S]*?)\*\*<br\/>([\s\S]*?)`$/);
+    const htmlMatch = innerContent.match(/^<b>([\s\S]*?)<\/b><br\/>\s*<small>([\s\S]*?)<\/small>$/);
+    
+    if (mdMatch) {
+      text = mdMatch[1].trim();
+      desc = mdMatch[2].replace(/&nbsp;/g, '').trim();
+    } else if (htmlMatch) {
+      text = htmlMatch[1].trim();
+      desc = htmlMatch[2].replace(/&nbsp;/g, '').trim();
+    } else {
+      text = innerContent.replace(/`/g, '').trim();
+    }
+  }
+
+  if (!text) text = id;
+  console.log(`[diagramParser] 파싱 결과 -> ID: ${id}, 텍스트: ${text}, 보조설명: ${desc}`);
   return { id, shape, text, desc };
 };
 

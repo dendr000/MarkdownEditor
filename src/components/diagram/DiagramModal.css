@@ -20,9 +20,9 @@
 /* 모달의 전체 크기 대폭 확장 (1060px -> 1280px) */
 .diagram-modal-content {
   background-color: #ffffff;
-  width: 1280px;
-  max-width: 95%;
-  height: 760px;
+  width: 1400px;
+  max-width: 98%;
+  height: 850px;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid #d0d7de;
@@ -161,13 +161,22 @@
   margin: 16px 0;
 }
 
+.mode-toggle-group button svg {
+  margin-right: 5px;
+}
+
 .gui-fields-scroller {
   flex: 1;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .gui-form-group {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
