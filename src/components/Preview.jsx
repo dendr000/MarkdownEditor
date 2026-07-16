@@ -7,6 +7,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { copyToClipboard } from '../utils/clipboard';
 import { preprocessGitHubFlavored } from '../utils/githubMarkdownParser'; 
+import MermaidBlock from './preview/MermaidBlock';
 import 'github-markdown-css/github-markdown.css'; 
 import './Preview.css';
 
@@ -35,8 +36,25 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
   if (!inline && match) {
     console.log("구문 강조가 적용된 코드 블록 렌더링. 언어:", match[1]);
     
-    // Diff 문법을 React 내부에서 안전하게 렌더링하도록 분기 처리
+    // 언어 식별자에 따른 분기 처리 (Diff 및 Mermaid 지원)
     const isDiff = match[1] === 'diff';
+    const isMermaid = match[1] === 'mermaid';
+
+    // Mermaid 다이어그램 렌더링 블록
+    if (isMermaid) {
+      return (
+        <div className="code-block-wrapper">
+          <button className="code-copy-btn" onClick={handleCodeCopy} title="코드 복사">
+            {isCopied ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2da44e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            )}
+          </button>
+          <MermaidBlock chart={String(children)} />
+        </div>
+      );
+    }
 
     return (
       <div className="code-block-wrapper">

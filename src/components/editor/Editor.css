@@ -217,3 +217,19 @@
 .suggest-item:hover .suggest-item-desc {
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* 툴바 세로 스크롤 차단 및 가로 스크롤 강제 적용 */
+.editor-toolbar-wrapper {
+  overflow-y: hidden !important;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* 툴바 가로 스크롤바 미세 조정 */
+.editor-toolbar-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+.editor-toolbar-wrapper::-webkit-scrollbar-thumb {
+  background-color: #d0d7de;
+  border-radius: 4px;
+}
