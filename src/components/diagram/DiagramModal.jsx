@@ -1,6 +1,6 @@
-// src/components/diagram/DiagramModal.jsx v6.0
+// src/components/diagram/DiagramModal.jsx v8.0
 /*
- * 파일 설명: 순서도 다이어그램 업그레이드 및 시퀀스 다이어그램 GUI 지원 기능이 반영된 통합 메인 모달입니다.
+ * 파일 설명: 순서도 노드의 상태 불일치를 막기 위해 동일한 ID를 가진 노드들의 정보를 일괄 동기화하는 Auto-Sync 알고리즘이 적용된 메인 모달입니다.
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
 import React, { useState, useEffect } from 'react';
@@ -16,8 +16,6 @@ import StlForm from './forms/StlForm';
 import './DiagramModal.css';
 
 function DiagramModal({ isOpen, onClose, onInsert }) {
-  console.log("DiagramModal 컴포넌트(v6.0) 렌더링 활성화 - 시퀀스 다이어그램 및 순서도 구조 고도화");
-
   if (!isOpen) return null;
 
   const [editMode, setEditMode] = useState('gui');
@@ -25,7 +23,6 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
   const [rawCode, setRawCode] = useState('');
   const [activeNodeId, setActiveNodeId] = useState(null);
 
-  // A. 원형 차트 데이터
   const [pieTitle, setPieTitle] = useState('프로젝트 언어 비중');
   const [pieItems, setPieItems] = useState([
     { id: 'pie-1', label: 'JavaScript', value: 65 },
@@ -33,15 +30,12 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
     { id: 'pie-3', label: 'HTML', value: 15 }
   ]);
 
-  // B. 순서도 데이터 (모양 및 화살표 텍스트 추가 지원)
-  const [flowOrientation, setFlowOrientation] = useState('TD');
+  const [flowOrientation, setFlowOrientation] = useState('LR');
   const [flowSteps, setFlowSteps] = useState([
-    { id: 'flow-1', from: 'A', fromShape: '[]', fromText: '시작', arrow: '-->', arrowText: '', to: 'B', toShape: '{}', toText: '조건 판별' },
-    { id: 'flow-2', from: 'B', fromShape: '{}', fromText: '조건 판별', arrow: '-->', arrowText: 'Yes', to: 'C', toShape: '()', toText: '성공' },
-    { id: 'flow-3', from: 'B', fromShape: '{}', fromText: '조건 판별', arrow: '-->', arrowText: 'No', to: 'D', toShape: '()', toText: '실패' }
+    { id: 'flow-1', from: 'A', fromShape: '[]', fromText: '원천 데이터', fromDesc: 'EMS · 인사 · 안전', arrow: '-->', arrowText: '', to: 'B', toShape: '[]', toText: '월별 수집', toDesc: '사업장·월 기준' },
+    { id: 'flow-2', from: 'B', fromShape: '[]', fromText: '월별 수집', fromDesc: '사업장·월 기준', arrow: '-->', arrowText: '', to: 'C', toShape: '{}', toText: '검증/AI', toDesc: '누락·이상치 확인' }
   ]);
 
-  // C. 시퀀스 다이어그램 데이터 (신규)
   const [seqParticipants, setSeqParticipants] = useState([
     { id: 'seq-p1', type: 'actor', name: 'User', alias: '사용자' },
     { id: 'seq-p2', type: 'participant', name: 'Server', alias: 'API 서버' }
@@ -51,68 +45,62 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
     { id: 'seq-m2', from: 'Server', arrow: '-->>', to: 'User', text: 'JSON 응답', isActivate: false }
   ]);
 
-  // D. 지도 데이터
   const [geoFeatures, setGeoFeatures] = useState([
     { id: 'geo-1', name: 'Seoul', lat: 37.5665, lng: 126.9780 }
   ]);
 
-  // E. 3D 박스 데이터
   const [boxWidth, setBoxWidth] = useState(1.0);
   const [boxHeight, setBoxHeight] = useState(1.0);
   const [boxDepth, setBoxDepth] = useState(1.0);
 
-  // STL 텍스트 제너레이터
   const generateBoxSTL = (wVal, hVal, dVal) => {
     const w = parseFloat(wVal) / 2, h = parseFloat(hVal) / 2, d = parseFloat(dVal) / 2;
     return `solid custom_box\n  facet normal 0.0 0.0 1.0\n    outer loop\n      vertex ${-w} ${-h} ${d}\n      vertex ${w} ${-h} ${d}\n      vertex ${w} ${h} ${d}\n    endloop\n  endfacet\n  facet normal 0.0 0.0 1.0\n    outer loop\n      vertex ${-w} ${-h} ${d}\n      vertex ${w} ${h} ${d}\n      vertex ${-w} ${h} ${d}\n    endloop\n  endfacet\n  facet normal 0.0 0.0 -1.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${-w} ${h} ${-d}\n      vertex ${w} ${h} ${-d}\n    endloop\n  endfacet\n  facet normal 0.0 0.0 -1.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${w} ${h} ${-d}\n      vertex ${w} ${-h} ${-d}\n    endloop\n  endfacet\n  facet normal 1.0 0.0 0.0\n    outer loop\n      vertex ${w} ${-h} ${-d}\n      vertex ${w} ${h} ${-d}\n      vertex ${w} ${h} ${d}\n    endloop\n  endfacet\n  facet normal 1.0 0.0 0.0\n    outer loop\n      vertex ${w} ${-h} ${-d}\n      vertex ${w} ${h} ${d}\n      vertex ${w} ${-h} ${d}\n    endloop\n  endfacet\n  facet normal -1.0 0.0 0.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${-w} ${-h} ${d}\n      vertex ${-w} ${h} ${d}\n    endloop\n  endfacet\n  facet normal -1.0 0.0 0.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${-w} ${h} ${d}\n      vertex ${-w} ${h} ${-d}\n    endloop\n  endfacet\n  facet normal 0.0 1.0 0.0\n    outer loop\n      vertex ${-w} ${h} ${-d}\n      vertex ${-w} ${h} ${d}\n      vertex ${w} ${h} ${d}\n    endloop\n  endfacet\n  facet normal 0.0 1.0 0.0\n    outer loop\n      vertex ${-w} ${h} ${-d}\n      vertex ${w} ${h} ${d}\n      vertex ${w} ${h} ${-d}\n    endloop\n  endfacet\n  facet normal 0.0 -1.0 0.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${w} ${-h} ${-d}\n      vertex ${w} ${-h} ${d}\n    endloop\n  endfacet\n  facet normal 0.0 -1.0 0.0\n    outer loop\n      vertex ${-w} ${-h} ${-d}\n      vertex ${w} ${-h} ${d}\n      vertex ${-w} ${-h} ${d}\n    endloop\n  endfacet\nendsolid`;
   };
 
-  // 노드 도형 변환 파서 함수
-  const getShapeSyntax = (id, text, shape) => {
-    if (!text) return id;
+  const getShapeSyntax = (id, text, desc, shape) => {
+    let content = text || id;
+    if (desc) {
+      content = `"<b>${text}</b><br/><small>${desc}&nbsp;&nbsp;</small>"`;
+    } else if (text && (text.includes(' ') || text.includes('<') || text.includes('>'))) {
+      content = `"${text}"`;
+    }
     switch(shape) {
-      case '()': return `${id}(${text})`;
-      case '[()]': return `${id}[(${text})]`;
-      case '(())': return `${id}((${text}))`;
-      case '>]': return `${id}>${text}]`;
-      case '{}': return `${id}{${text}}`;
-      case '{{}}': return `${id}{{${text}}}`;
-      case '[//]': return `${id}[/${text}/]`;
-      case '[\\\\]': return `${id}[\\${text}\\]`;
-      case '[/\\\\]': return `${id}[/${text}\\]`;
-      case '[\\\\/]': return `${id}[\\${text}/]`;
-      case '((()))': return `${id}((({text})))`;
+      case '()': return `${id}(${content})`;
+      case '[()]': return `${id}[(${content})]`;
+      case '(())': return `${id}((${content}))`;
+      case '>]': return `${id}>${content}]`;
+      case '{}': return `${id}{${content}}`;
+      case '{{}}': return `${id}{{${content}}}`;
+      case '[//]': return `${id}[/${content}/]`;
+      case '[\\\\]': return `${id}[\\${content}\\]`;
+      case '[/\\\\]': return `${id}[/${content}\\]`;
+      case '[\\\\/]': return `${id}[\\${content}/]`;
+      case '((()))': return `${id}((({content})))`;
       case '[]':
-      default: return `${id}[${text}]`;
+      default: return `${id}[${content}]`;
     }
   };
 
-  // 실시간 마크다운 코드 빌더
   const buildCurrentCode = () => {
-    console.log("[코드 조립기] 실시간 마크다운 빌드. 타입:", diagramType);
-    
     if (diagramType === 'mermaid_pie') {
       let code = `pie title ${pieTitle}\n`;
       pieItems.forEach(item => { code += `    "${item.label}" : ${item.value}\n`; });
       return code.trim();
     }
-    
     if (diagramType === 'mermaid_flow') {
       let code = `graph ${flowOrientation};\n`;
       flowSteps.forEach(step => { 
-        const fromNode = getShapeSyntax(step.from, step.fromText, step.fromShape);
-        const toNode = getShapeSyntax(step.to, step.toText, step.toShape);
+        const fromNode = getShapeSyntax(step.from, step.fromText, step.fromDesc, step.fromShape);
+        const toNode = getShapeSyntax(step.to, step.toText, step.toDesc, step.toShape);
         const arrowStr = step.arrowText ? `${step.arrow}|${step.arrowText}|` : step.arrow;
         code += `    ${fromNode} ${arrowStr} ${toNode}\n`; 
       });
       return code.trim();
     }
-
     if (diagramType === 'mermaid_seq') {
       let code = `sequenceDiagram\n    autonumber\n`;
-      seqParticipants.forEach(p => {
-        code += `    ${p.type} ${p.name}${p.alias ? ` as ${p.alias}` : ''}\n`;
-      });
+      seqParticipants.forEach(p => { code += `    ${p.type} ${p.name}${p.alias ? ` as ${p.alias}` : ''}\n`; });
       code += `\n`;
       seqMessages.forEach(msg => {
         if (!msg.from || !msg.to) return;
@@ -121,17 +109,10 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
       });
       return code.trim();
     }
-
     if (diagramType === 'geojson') {
-      const geoObj = {
-        type: "FeatureCollection",
-        features: geoFeatures.map(f => ({
-          type: "Feature", properties: { name: f.name }, geometry: { type: "Point", coordinates: [parseFloat(f.lng || 0), parseFloat(f.lat || 0)] }
-        }))
-      };
+      const geoObj = { type: "FeatureCollection", features: geoFeatures.map(f => ({ type: "Feature", properties: { name: f.name }, geometry: { type: "Point", coordinates: [parseFloat(f.lng || 0), parseFloat(f.lat || 0)] } })) };
       return JSON.stringify(geoObj, null, 2);
     }
-
     if (diagramType === 'stl') return generateBoxSTL(boxWidth, boxHeight, boxDepth);
     return '';
   };
@@ -144,12 +125,68 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
   }, [editMode, diagramType]);
 
   const handleInsertSubmit = () => {
-    console.log("[DiagramModal] 최종 컴파일 코드 삽입");
     const isMermaid = diagramType.startsWith('mermaid_');
     const outputLang = isMermaid ? 'mermaid' : diagramType;
     const formattedCodeBlock = `\n\`\`\`${outputLang}\n${activeCode}\n\`\`\`\n`;
     onInsert(formattedCodeBlock);
     onClose();
+  };
+
+  // [핵심 개선] 노드 데이터 완벽 동기화(Auto-Sync) 처리 핸들러
+  const handleUpdateFlowStep = (id, field, value) => {
+    setFlowSteps(prev => {
+      const targetStep = prev.find(s => s.id === id);
+      if (!targetStep) return prev;
+
+      const updated = [...prev];
+      const stepIndex = updated.findIndex(s => s.id === id);
+
+      // 1. ID 값 변경 시: 변경된 ID가 이미 존재하는 노드인지 스캔하여 데이터 자동 동기화(Auto-populate)
+      if (field === 'from' || field === 'to') {
+        const newId = value; // 이미 하위 폼에서 공백 치환이 완료된 상태로 들어옴
+        let newStep = { ...updated[stepIndex], [field]: newId };
+        
+        const existingNode = updated.find(s => s.from === newId || s.to === newId);
+        if (existingNode && newId !== '') {
+          const prefix = field;
+          const sourcePrefix = existingNode.from === newId ? 'from' : 'to';
+          newStep[`${prefix}Shape`] = existingNode[`${sourcePrefix}Shape`];
+          newStep[`${prefix}Text`] = existingNode[`${sourcePrefix}Text`];
+          newStep[`${prefix}Desc`] = existingNode[`${sourcePrefix}Desc`];
+        }
+        updated[stepIndex] = newStep;
+        return updated;
+      }
+
+      // 2. 화살표 관련 속성 변경 시: 해당 행만 업데이트
+      if (['arrow', 'arrowText'].includes(field)) {
+        updated[stepIndex] = { ...updated[stepIndex], [field]: value };
+        return updated;
+      }
+
+      // 3. 노드 속성(도형, 텍스트, 설명) 변경 시: 같은 ID를 가진 모든 노드에 일괄 동기화(Cascade Sync)
+      let targetNodeId = null;
+      let propBase = ''; 
+      
+      if (field.startsWith('from')) {
+        targetNodeId = targetStep.from;
+        propBase = field.replace('from', ''); 
+      } else if (field.startsWith('to')) {
+        targetNodeId = targetStep.to;
+        propBase = field.replace('to', '');
+      }
+
+      if (targetNodeId && propBase) {
+        return updated.map(step => {
+          let newStep = { ...step };
+          if (newStep.from === targetNodeId) newStep[`from${propBase}`] = value;
+          if (newStep.to === targetNodeId) newStep[`to${propBase}`] = value;
+          return newStep;
+        });
+      }
+
+      return updated;
+    });
   };
 
   const renderPreview = () => {
@@ -161,7 +198,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
       if (diagramType === 'geojson') return <GeoJsonBlock dataString={activeCode} isTopoJson={false} />;
       if (diagramType === 'stl') return <StlBlock stlString={activeCode} />;
     } catch (err) {
-      console.error("[DiagramModal Preview] 내부 렌더링 오류:", err);
+      console.error("[DiagramModal Preview] 렌더링 오류:", err);
     }
     return null;
   };
@@ -171,7 +208,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
       <div className="diagram-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>다이어그램 & 시각화 빌더 (v6.0)</h3>
+            <h3>다이어그램 & 시각화 빌더 (v8.0)</h3>
             <div className="mode-toggle-group">
               <button className={`mode-tab-btn ${editMode === 'gui' ? 'active' : ''}`} onClick={() => setEditMode('gui')}><Layout size={14} style={{ marginRight: '4px' }} /> GUI 빌더</button>
               <button className={`mode-tab-btn ${editMode === 'raw' ? 'active' : ''}`} onClick={() => setEditMode('raw')}><Edit2 size={14} style={{ marginRight: '4px' }} /> 직접 편집 (코드)</button>
@@ -209,9 +246,9 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
                 {diagramType === 'mermaid_flow' && (
                   <FlowchartForm 
                     flowOrientation={flowOrientation} setFlowOrientation={setFlowOrientation} flowSteps={flowSteps} activeNodeId={activeNodeId}
-                    handleAddFlowStep={() => setFlowSteps(prev => [...prev, { id: `flow-${Date.now()}`, from: 'X', fromShape: '[]', fromText: 'Node', arrow: '-->', arrowText: '', to: 'Y', toShape: '[]', toText: 'Target' }])}
+                    handleAddFlowStep={() => setFlowSteps(prev => [...prev, { id: `flow-${Date.now()}`, from: 'X', fromShape: '[]', fromText: '노드', fromDesc: '', arrow: '-->', arrowText: '', to: 'Y', toShape: '[]', toText: '대상', toDesc: '' }])}
                     handleRemoveFlowStep={(id) => setFlowSteps(prev => prev.filter(step => step.id !== id))}
-                    handleUpdateFlowStep={(id, field, value) => setFlowSteps(prev => prev.map(step => step.id === id ? { ...step, [field]: value } : step))}
+                    handleUpdateFlowStep={handleUpdateFlowStep}
                   />
                 )}
                 {diagramType === 'mermaid_seq' && (

@@ -436,3 +436,82 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+/* 순서도 노드 내 텍스트/보조 텍스트 분리 레이아웃 */
+.flow-node-box {
+  background-color: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flow-node-box-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flow-node-box-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 48px; /* 상단 뱃지와 시각적 균형을 맞추기 위한 여백 */
+}
+
+.sub-desc-input {
+  font-size: 12px;
+  color: #57606a;
+  background-color: #f6f8fa;
+}
+
+.sub-desc-input:focus {
+  background-color: #ffffff;
+}
+
+/* SVG 아이콘 뷰어와 도형 선택 셀렉트 박스 컨테이너 */
+.shape-select-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.shape-select-wrapper .template-select {
+  border: none;
+  background-color: transparent;
+  padding: 4px 8px;
+}
+
+.shape-select-wrapper .template-select:focus {
+  box-shadow: none;
+}
+
+.shape-select-wrapper:focus-within {
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+}
+
+.shape-icon-viewer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  color: #57606a;
+  border-right: 1px solid #d0d7de;
+}
+
+/* 순서도 폼의 상단 컨트롤 바를 스크롤과 무관하게 상단에 고정하는 Sticky 클래스 */
+.flowchart-sticky-header {
+  position: sticky;
+  top: -4px;
+  background-color: #ffffff;
+  z-index: 10;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #d0d7de;
+  margin-bottom: 16px;
+}
