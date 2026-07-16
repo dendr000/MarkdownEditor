@@ -1,7 +1,6 @@
-// src/components/diagram/DiagramModal.jsx v8.0
+// src/components/diagram/DiagramModal.jsx v9.0
 /*
- * 파일 설명: 순서도 노드의 상태 불일치를 막기 위해 동일한 ID를 가진 노드들의 정보를 일괄 동기화하는 Auto-Sync 알고리즘이 적용된 메인 모달입니다.
- * 연결 위치: src/components/editor/Editor.jsx 내부
+ * 파일 설명: 외부 유입 마크다운(initialDiagramMarkdown) 데이터를 스캔하여 폼의 실시간 구조 배열 데이터로 자동 환원해 주는 역파싱 컴파일러 엔진이 탑재된 다이어그램 메인 모달입니다.
  */
 import React, { useState, useEffect } from 'react';
 import { Edit2, Layout } from 'lucide-react';
@@ -15,14 +14,15 @@ import GeoJsonForm from './forms/GeoJsonForm';
 import StlForm from './forms/StlForm';
 import './DiagramModal.css';
 
-function DiagramModal({ isOpen, onClose, onInsert }) {
-  if (!isOpen) return null;
+function DiagramModal({ isOpen, onClose, onInsert, initialDiagramMarkdown = '' }) {
+  console.log("DiagramModal 컴포넌트(v9.0) 마운트 시작 - 역파싱 가동 검증 단계 진입");
 
   const [editMode, setEditMode] = useState('gui');
   const [diagramType, setDiagramType] = useState('mermaid_flow');
   const [rawCode, setRawCode] = useState('');
   const [activeNodeId, setActiveNodeId] = useState(null);
 
+  // A. 원형 차트 기본 상태 구조
   const [pieTitle, setPieTitle] = useState('프로젝트 언어 비중');
   const [pieItems, setPieItems] = useState([
     { id: 'pie-1', label: 'JavaScript', value: 65 },
@@ -30,12 +30,14 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
     { id: 'pie-3', label: 'HTML', value: 15 }
   ]);
 
+  // B. 순서도 기본 상태 구조
   const [flowOrientation, setFlowOrientation] = useState('LR');
   const [flowSteps, setFlowSteps] = useState([
     { id: 'flow-1', from: 'A', fromShape: '[]', fromText: '원천 데이터', fromDesc: 'EMS · 인사 · 안전', arrow: '-->', arrowText: '', to: 'B', toShape: '[]', toText: '월별 수집', toDesc: '사업장·월 기준' },
     { id: 'flow-2', from: 'B', fromShape: '[]', fromText: '월별 수집', fromDesc: '사업장·월 기준', arrow: '-->', arrowText: '', to: 'C', toShape: '{}', toText: '검증/AI', toDesc: '누락·이상치 확인' }
   ]);
 
+  // C. 시퀀스 다이어그램 기본 상태 구조
   const [seqParticipants, setSeqParticipants] = useState([
     { id: 'seq-p1', type: 'actor', name: 'User', alias: '사용자' },
     { id: 'seq-p2', type: 'participant', name: 'Server', alias: 'API 서버' }
@@ -45,13 +47,179 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
     { id: 'seq-m2', from: 'Server', arrow: '-->>', to: 'User', text: 'JSON 응답', isActivate: false }
   ]);
 
-  const [geoFeatures, setGeoFeatures] = useState([
-    { id: 'geo-1', name: 'Seoul', lat: 37.5665, lng: 126.9780 }
-  ]);
+  // D. 지도 기본 상태 구조
+  const [geoFeatures, setGeoFeatures] = useState([{ id: 'geo-1', name: 'Seoul', lat: 37.5665, lng: 126.9780 }]);
 
+  // E. 3D 박스 기본 상태 구조
   const [boxWidth, setBoxWidth] = useState(1.0);
   const [boxHeight, setBoxHeight] = useState(1.0);
   const [boxDepth, setBoxDepth] = useState(1.0);
+
+  // [역파싱 유틸] 문자열 내부 개별 노드의 ID, 모양 기호, 텍스트 타이틀, 설명을 역분석하는 함수
+  const parseNodeToken = (token) => {
+    if (!token) return null;
+    const idMatch = token.match(/^([a-zA-Z0-9_\-]+)/);
+    if (!idMatch) return null;
+    
+    const id = idMatch[1];
+    let shape = '[]';
+    let text = '';
+    let desc = '';
+
+    if (token.includes('{')) shape = '{}';
+    else if (token.includes('((')) shape = '(())';
+    else if (token.includes('()')) shape = '()';
+    else if (token.includes('>')) shape = '>]';
+    else if (token.includes('{{')) shape = '{{}}';
+
+    // 마크다운 문자열 포맷팅(`**제목**<br/>설명`) 탐색
+    const mdRegex = /`\*\*([\s\S]*?)\*\*<br\/>([\s\S]*?)`/;
+    const mdMatch = token.match(mdRegex);
+    
+    if (mdMatch) {
+      text = mdMatch[1].trim();
+      desc = mdMatch[2].trim();
+    } else {
+      const normalMatch = token.match(/["\[\(\{>]([\s\S]*?)[\]\)\}"]/);
+      if (normalMatch) {
+        text = normalMatch[1].replace(/[`"]/g, '').trim();
+      }
+    }
+    return { id, shape, text, desc };
+  };
+
+  // [역파싱 메인 엔진 이펙트] 외부 텍스트 감지 즉시 상태값 역환원 구동
+  useEffect(() => {
+    if (!isOpen || !initialDiagramMarkdown.trim()) return;
+
+    console.log("[역파싱 엔진] 드래그 주입 문자열 분석 개시. 원문:\n", initialDiagramMarkdown);
+    const cleanText = initialDiagramMarkdown.replace(/```mermaid/g, '').replace(/```/g, '').trim();
+    const lines = cleanText.split('\n');
+
+    // 1차 판별: 순서도(graph/flowchart) 구문 검증
+    const flowHeaderMatch = cleanText.match(/(?:graph|flowchart)\s+(TD|BT|LR|RL);?/i);
+    if (flowHeaderMatch) {
+      console.log("[역파싱 엔진] 순서도(Flowchart) 식별 규격 확인 성공 - 방향 설정:", flowHeaderMatch[1]);
+      setDiagramType('mermaid_flow');
+      setFlowOrientation(flowHeaderMatch[1].toUpperCase());
+
+      const arrowRegex = /(-->|--->|---|-.->|-.-|==>|--o|--x|~~~)/;
+      const parsedSteps = [];
+
+      lines.forEach((line, idx) => {
+        if (!line.trim() || line.match(/(?:graph|flowchart|style)/i)) return;
+        
+        const segments = line.split(arrowRegex);
+        if (segments.length >= 3) {
+          const fromPart = segments[0].trim();
+          const arrowType = segments[1].trim();
+          let restPart = segments.slice(2).join('').trim();
+
+          let arrowText = '';
+          const arrowTextMatch = restPart.match(/^\|([\s\S]*?)\|/);
+          if (arrowTextMatch) {
+            arrowText = arrowTextMatch[1].trim();
+            restPart = restPart.replace(/^\|[\s\S]*?\|/, '').trim();
+          }
+
+          const fromInfo = parseNodeToken(fromPart);
+          const toInfo = parseNodeToken(restPart);
+
+          if (fromInfo && toInfo) {
+            parsedSteps.push({
+              id: `flow-parsed-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+              from: fromInfo.id,
+              fromShape: fromInfo.shape,
+              fromText: fromInfo.text || fromInfo.id,
+              fromDesc: fromInfo.desc,
+              arrow: arrowType,
+              arrowText: arrowText,
+              to: toInfo.id,
+              toShape: toInfo.shape,
+              toText: toInfo.text || toInfo.id,
+              toDesc: toInfo.desc
+            });
+          }
+        }
+      });
+
+      if (parsedSteps.length > 0) {
+        console.log(`[역파싱 엔진] 총 ${parsedSteps.length}개의 순서도 연결 흐름을 GUI 폼으로 성공적으로 복원했습니다.`);
+        setFlowSteps(parsedSteps);
+      }
+      return;
+    }
+
+    // 2차 판별: 원형 차트(pie) 구문 검증
+    if (cleanText.match(/^pie/i)) {
+      console.log("[역파싱 엔진] 원형 차트(Pie Chart) 식별 규격 확인 성공");
+      setDiagramType('mermaid_pie');
+      
+      const titleMatch = cleanText.match(/title\s+([\s\S]*?)\n/i);
+      if (titleMatch) setPieTitle(titleMatch[1].trim());
+
+      const parsedPieItems = [];
+      lines.forEach(line => {
+        const itemMatch = line.match(/"([\s\S]*?)"\s*:\s*([0-9.]+)/);
+        if (itemMatch) {
+          parsedPieItems.push({
+            id: `pie-parsed-${Math.random().toString(36).substr(2, 4)}`,
+            label: itemMatch[1].trim(),
+            value: parseFloat(itemMatch[2]) || 0
+          });
+        }
+      });
+
+      if (parsedPieItems.length > 0) {
+        setPieItems(parsedPieItems);
+      }
+      return;
+    }
+
+    // 3차 판별: 시퀀스 다이어그램(sequenceDiagram) 구문 검증
+    if (cleanText.match(/^sequenceDiagram/i)) {
+      console.log("[역파싱 엔진] 시퀀스 다이어그램 식별 규격 확인 성공");
+      setDiagramType('mermaid_seq');
+
+      const participants = [];
+      const messages = [];
+
+      lines.forEach((line, idx) => {
+        const pMatch = line.trim().match(/^(participant|actor)\s+([a-zA-Z0-9_\-]+)(?:\s+as\s+([\s\S]*+))?/i);
+        if (pMatch) {
+          participants.push({
+            id: `seq-p-${idx}`,
+            type: pMatch[1].toLowerCase(),
+            name: pMatch[2].trim(),
+            alias: pMatch[3] ? pMatch[3].trim() : ''
+          });
+          return;
+        }
+
+        const mMatch = line.trim().match(/^([a-zA-Z0-9_\-]+)\s*(->|-->|->>|-->>|-x|--x|-\)|--\))(\+?)([a-zA-Z0-9_\-]+)\s*:\s*([\s\S]*)$/);
+        if (mMatch) {
+          messages.push({
+            id: `seq-m-${idx}`,
+            from: mMatch[1].trim(),
+            arrow: mMatch[2].trim(),
+            isActivate: mMatch[3] === '+',
+            to: mMatch[4].trim(),
+            text: mMatch[5].trim()
+          });
+        }
+      });
+
+      if (participants.length > 0) setSeqParticipants(participants);
+      if (messages.length > 0) setSeqMessages(messages);
+      return;
+    }
+
+    // 4차 판별: 기타 데이터는 로직부 충돌을 방지하기 위해 텍스트 편집기(Raw) 모드로 자동 가드 전환 처리합니다.
+    console.log("[역파싱 엔진] 특이 포맷 구조 감지 - 직접 텍스트 편집기(Raw) 모드로 우회 설정합니다.");
+    setEditMode('raw');
+    setRawCode(cleanText);
+
+  }, [isOpen, initialDiagramMarkdown]);
 
   const generateBoxSTL = (wVal, hVal, dVal) => {
     const w = parseFloat(wVal) / 2, h = parseFloat(hVal) / 2, d = parseFloat(dVal) / 2;
@@ -61,9 +229,9 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
   const getShapeSyntax = (id, text, desc, shape) => {
     let content = text || id;
     if (desc) {
-      content = `"<b>${text}</b><br/><small>${desc}&nbsp;&nbsp;</small>"`;
+      content = `"\`**${text}**<br/>${desc}\`"`;
     } else if (text && (text.includes(' ') || text.includes('<') || text.includes('>'))) {
-      content = `"${text}"`;
+      content = `"\`${text}\`"`;
     }
     switch(shape) {
       case '()': return `${id}(${content})`;
@@ -119,10 +287,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
 
   const activeCode = editMode === 'gui' ? buildCurrentCode() : rawCode;
 
-  useEffect(() => {
-    if (editMode === 'raw') setRawCode(buildCurrentCode());
-    setActiveNodeId(null);
-  }, [editMode, diagramType]);
+  if (!isOpen) return null;
 
   const handleInsertSubmit = () => {
     const isMermaid = diagramType.startsWith('mermaid_');
@@ -132,7 +297,6 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
     onClose();
   };
 
-  // [핵심 개선] 노드 데이터 완벽 동기화(Auto-Sync) 처리 핸들러
   const handleUpdateFlowStep = (id, field, value) => {
     setFlowSteps(prev => {
       const targetStep = prev.find(s => s.id === id);
@@ -141,9 +305,8 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
       const updated = [...prev];
       const stepIndex = updated.findIndex(s => s.id === id);
 
-      // 1. ID 값 변경 시: 변경된 ID가 이미 존재하는 노드인지 스캔하여 데이터 자동 동기화(Auto-populate)
       if (field === 'from' || field === 'to') {
-        const newId = value; // 이미 하위 폼에서 공백 치환이 완료된 상태로 들어옴
+        const newId = value;
         let newStep = { ...updated[stepIndex], [field]: newId };
         
         const existingNode = updated.find(s => s.from === newId || s.to === newId);
@@ -158,13 +321,11 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
         return updated;
       }
 
-      // 2. 화살표 관련 속성 변경 시: 해당 행만 업데이트
       if (['arrow', 'arrowText'].includes(field)) {
         updated[stepIndex] = { ...updated[stepIndex], [field]: value };
         return updated;
       }
 
-      // 3. 노드 속성(도형, 텍스트, 설명) 변경 시: 같은 ID를 가진 모든 노드에 일괄 동기화(Cascade Sync)
       let targetNodeId = null;
       let propBase = ''; 
       
@@ -208,7 +369,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
       <div className="diagram-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>다이어그램 & 시각화 빌더 (v8.0)</h3>
+            <h3>다이어그램 & 시각화 빌더 (v9.0)</h3>
             <div className="mode-toggle-group">
               <button className={`mode-tab-btn ${editMode === 'gui' ? 'active' : ''}`} onClick={() => setEditMode('gui')}><Layout size={14} style={{ marginRight: '4px' }} /> GUI 빌더</button>
               <button className={`mode-tab-btn ${editMode === 'raw' ? 'active' : ''}`} onClick={() => setEditMode('raw')}><Edit2 size={14} style={{ marginRight: '4px' }} /> 직접 편집 (코드)</button>
@@ -246,7 +407,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
                 {diagramType === 'mermaid_flow' && (
                   <FlowchartForm 
                     flowOrientation={flowOrientation} setFlowOrientation={setFlowOrientation} flowSteps={flowSteps} activeNodeId={activeNodeId}
-                    handleAddFlowStep={() => setFlowSteps(prev => [...prev, { id: `flow-${Date.now()}`, from: 'X', fromShape: '[]', fromText: '노드', fromDesc: '', arrow: '-->', arrowText: '', to: 'Y', toShape: '[]', toText: '대상', toDesc: '' }])}
+                    handleAddFlowStep={() => setFlowSteps(prev => [...prev, { id: `flow-${Date.now()}`, from: '', fromShape: '[]', fromText: '', fromDesc: '', arrow: '-->', arrowText: '', to: '', toShape: '[]', toText: '', toDesc: '' }])}
                     handleRemoveFlowStep={(id) => setFlowSteps(prev => prev.filter(step => step.id !== id))}
                     handleUpdateFlowStep={handleUpdateFlowStep}
                   />
@@ -255,7 +416,7 @@ function DiagramModal({ isOpen, onClose, onInsert }) {
                   <SequenceForm 
                     seqParticipants={seqParticipants} setSeqParticipants={setSeqParticipants}
                     handleAddSeqParticipant={() => setSeqParticipants(prev => [...prev, { id: `seq-p-${Date.now()}`, type: 'participant', name: `P_${prev.length+1}`, alias: '' }])}
-                    handleRemoveSeqParticipant={(id) => setSeqParticipants(prev => prev.filter(p => p.id !== id))}
+                    handleRemoveSeqParticipant={(id) => setSeqParticipants(prev => p.id !== id)}
                     handleUpdateSeqParticipant={(id, field, value) => setSeqParticipants(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))}
                     seqMessages={seqMessages} setSeqMessages={setSeqMessages}
                     handleAddSeqMessage={() => setSeqMessages(prev => [...prev, { id: `seq-m-${Date.now()}`, from: '', arrow: '->>', to: '', text: 'New Message', isActivate: false }])}

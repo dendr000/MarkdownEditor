@@ -1,6 +1,6 @@
-// src/components/editor/Editor.jsx v6.0
+// src/components/editor/Editor.jsx v7.0
 /*
- * 파일 설명: 시각화 다이어그램(Mermaid, GeoJSON, STL) 템플릿 생성기 모달 연동을 추가하여 툴바 기능을 확장한 메인 에디터 컴포넌트입니다.
+ * 파일 설명: 드래그 선택 영역의 텍스트 콘텐츠(selectedTableText)를 다이어그램 모달 열기 시점의 초기 변수(initialDiagramMarkdown)로 바인딩하여 주입하도록 개선된 메인 에디터 컴포넌트입니다.
  */
 import { useRef, useState } from 'react';
 import { Table, FileCode2, FolderTree, Workflow } from 'lucide-react';
@@ -15,7 +15,7 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import './Editor.css'; 
 
 function Editor({ markdown, setMarkdown }) {
-  console.log("Editor 컴포넌트(v6.0) 렌더링 시작 - 시각화 다이어그램 모달 연동");
+  console.log("Editor 컴포넌트(v7.0) 렌더링 시작 - 다이어그램 역파싱 데이터 주입 체결");
   
   const textareaRef = useRef(null);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
@@ -26,13 +26,13 @@ function Editor({ markdown, setMarkdown }) {
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
   const [openDropdown, setOpenDropdown] = useState(null);
 
-  // 분리된 이미지 업로드 및 자동완성 훅 연결
+  // 외부 추출 커서 연동 커스텀 훅 연결
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
 
-  // 지정 포맷 및 단축 문자열을 커서 범위에 맞추어 주입해 주는 함수
+  // 마크다운 지정 접두/접미 서식 바인딩 핸들러
   const handleFormat = (prefix, suffix = '', isBlock = false) => {
-    console.log(`[Editor v6.0] handleFormat 동작 실행 - 접두사: ${prefix}, 접미사: ${suffix}`);
+    console.log(`[Editor v7.0] handleFormat 서식 주입 실행 - prefix: ${prefix}, suffix: ${suffix}`);
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
@@ -60,20 +60,23 @@ function Editor({ markdown, setMarkdown }) {
     }, 0);
   };
 
-  // 모달 활성화 전 현재 선택 영역의 텍스트와 좌표 범위를 임시 캐싱해 두는 핸들러
+  // 모달 활성화 호출 전 선택 블록 텍스트 스캔 및 임시 저장 유틸
   const prepareModalState = (modalType) => {
-    console.log(`[Editor v6.0] prepareModalState 실행 - 유형: ${modalType}`);
+    console.log(`[Editor v7.0] prepareModalState 구동 - 모달 유형 타겟팅: ${modalType}`);
     if (textareaRef.current) {
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
       setSelectionRange({ start, end });
-      setSelectedTableText(start !== end ? markdown.substring(start, end) : '');
+      
+      const textChunk = start !== end ? markdown.substring(start, end) : '';
+      console.log(`[Editor v7.0] 선택 범위 텍스트 추출 완료. 길이: ${textChunk.length}`);
+      setSelectedTableText(textChunk);
     }
   };
 
-  // 테이블, 트리, 다이어그램 모달 등에서 반환된 텍스트 블록을 캐싱된 범위에 안전하게 대치 삽입하는 함수
+  // 모달 아웃풋 데이터를 편집 창 커서 영역에 체결하는 핸들러
   const handleInsertTable = (tableOutput) => {
-    console.log("[Editor v6.0] 마크다운 본문 문자열 병합 및 대치 삽입 동작 진행");
+    console.log("[Editor v7.0] 모달 데이터 최종 수신 - 본문 병합 가동");
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const { start, end } = selectionRange;
@@ -85,15 +88,12 @@ function Editor({ markdown, setMarkdown }) {
     }, 0);
   };
 
-  // 키보드 입력을 사전에 후킹 처리하는 핸들러 (자동완성 감지 및 엔터 줄바꿈 대응)
+  // 키 다운 선행 처리 리스너
   const handleKeyDown = (e) => {
-    console.log("Editor 내부 키 이벤트 감지:", e.key);
-    
-    // 1. 가상 자동완성 팝업 컨트롤러 가로채기
+    console.log("Editor 내부 키 이벤트 스캔:", e.key);
     const isAutocompleteHandled = handleAutocompleteKeyDown(e);
     if (isAutocompleteHandled) return;
 
-    // 2. 스마트 인용문/개행 연속 로직
     if (e.key === 'Enter' && !e.shiftKey) {
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -183,7 +183,7 @@ function Editor({ markdown, setMarkdown }) {
       <TableModal isOpen={isTableModalOpen} onClose={() => setIsTableModalOpen(false)} onInsert={handleInsertTable} initialTableMarkdown={selectedTableText} />
       <HtmlTableModal isOpen={isHtmlTableModalOpen} onClose={() => setIsHtmlTableModalOpen(false)} onInsert={handleInsertTable} initialTableHtml={selectedTableText} />
       <FolderTreeModal isOpen={isFolderTreeModalOpen} onClose={() => setIsFolderTreeModalOpen(false)} onInsert={handleInsertTable} />
-      <DiagramModal isOpen={isDiagramModalOpen} onClose={() => setIsDiagramModalOpen(false)} onInsert={handleInsertTable} />
+      <DiagramModal isOpen={isDiagramModalOpen} onClose={() => setIsDiagramModalOpen(false)} onInsert={handleInsertTable} initialDiagramMarkdown={selectedTableText} />
     </div>
   );
 }
