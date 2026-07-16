@@ -126,3 +126,26 @@
   margin-right: 8px;
   fill: currentColor;
 }
+
+/* =========================================
+   인라인 색상 시각화 (Color Visualization) 명세 
+   ========================================= */
+.color-viz-code {
+  background-color: rgba(175, 184, 193, 0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 85%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.color-viz-circle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(27, 31, 36, 0.15);
+}

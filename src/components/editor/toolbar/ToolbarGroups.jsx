@@ -4,7 +4,7 @@ import {
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough, 
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
   Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
-  Terminal, Minus, Keyboard
+  Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 
@@ -21,6 +21,9 @@ export const FormatGroup = ({ handleFormat }) => (
     <button onClick={() => { console.log("굵게 버튼 클릭"); handleFormat('**', '**'); }} title="굵게"><Bold size={18} /></button>
     <button onClick={() => { console.log("기울임 버튼 클릭"); handleFormat('*', '*'); }} title="기울임"><Italic size={18} /></button>
     <button onClick={() => { console.log("취소선 버튼 클릭"); handleFormat('~~', '~~'); }} title="취소선"><Strikethrough size={18} /></button>
+    <button onClick={() => { console.log("밑줄 버튼 클릭"); handleFormat('<ins>', '</ins>', false); }} title="밑줄"><Underline size={18} /></button>
+    <button onClick={() => { console.log("위첨자 버튼 클릭"); handleFormat('<sup>', '</sup>', false); }} title="위첨자"><Superscript size={18} /></button>
+    <button onClick={() => { console.log("아래첨자 버튼 클릭"); handleFormat('<sub>', '</sub>', false); }} title="아래첨자"><Subscript size={18} /></button>
     <button onClick={() => { console.log("인라인 코드 버튼 클릭"); handleFormat('`', '`'); }} title="인라인 코드"><Terminal size={18} /></button>
   </div>
 );
@@ -108,6 +111,27 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown }) => 
           setOpenDropdown(null);
         }}>
           <Keyboard size={14} style={{ marginRight: '6px', display: 'inline' }}/> 키보드 키 (kbd)
+        </button>
+        <button className="dropdown-item details-template" onClick={() => {
+          console.log("주석 삽입 호출");
+          handleFormat('', false);
+          setOpenDropdown(null);
+        }}>
+          <MessageSquareDashed size={14} style={{ marginRight: '6px', display: 'inline' }}/> HTML 주석 (숨김)
+        </button>
+        <button className="dropdown-item details-template" onClick={() => {
+          console.log("앵커 삽입 호출");
+          handleFormat('<a name="', '"></a>', false);
+          setOpenDropdown(null);
+        }}>
+          <Bookmark size={14} style={{ marginRight: '6px', display: 'inline' }}/> 사용자 지정 앵커
+        </button>
+        <button className="dropdown-item details-template" onClick={() => {
+          console.log("이스케이프 삽입 호출");
+          handleFormat('\\', '', false);
+          setOpenDropdown(null);
+        }}>
+          <Slash size={14} style={{ marginRight: '6px', display: 'inline' }}/> 서식 무시 (Escape)
         </button>
       </PortalDropdown>
     </div>

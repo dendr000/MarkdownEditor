@@ -31,5 +31,12 @@ ${cleanContent}
 </div>\n\n`;
   });
 
+  // 인라인 색상 코드 파싱 (Hex, RGB, HSL) - 백틱 안의 색상값을 HTML 태그와 색상 원으로 변환
+  const colorRegex = /`(#(?:[0-9a-fA-F]{3}){1,2}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\))`(?!\S)/g;
+  parsed = parsed.replace(colorRegex, (match, colorCode) => {
+    console.log("색상 코드 시각화 파싱 매칭됨:", colorCode);
+    return `<code class="color-viz-code"><span class="color-viz-circle" style="background-color: ${colorCode};"></span>${colorCode}</code>`;
+  });
+
   return parsed;
 };
