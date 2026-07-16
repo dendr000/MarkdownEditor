@@ -3,7 +3,8 @@ import { useRef, useState, useEffect } from 'react';
 import { 
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough, 
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
-  Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse
+  Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
+  Terminal, Minus, Keyboard
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 
@@ -17,18 +18,20 @@ export const HeadingGroup = ({ handleFormat }) => (
 
 export const FormatGroup = ({ handleFormat }) => (
   <div className="toolbar-group">
-    <button onClick={() => handleFormat('**', '**')} title="굵게"><Bold size={18} /></button>
-    <button onClick={() => handleFormat('*', '*')} title="기울임"><Italic size={18} /></button>
-    <button onClick={() => handleFormat('~~', '~~')} title="취소선"><Strikethrough size={18} /></button>
+    <button onClick={() => { console.log("굵게 버튼 클릭"); handleFormat('**', '**'); }} title="굵게"><Bold size={18} /></button>
+    <button onClick={() => { console.log("기울임 버튼 클릭"); handleFormat('*', '*'); }} title="기울임"><Italic size={18} /></button>
+    <button onClick={() => { console.log("취소선 버튼 클릭"); handleFormat('~~', '~~'); }} title="취소선"><Strikethrough size={18} /></button>
+    <button onClick={() => { console.log("인라인 코드 버튼 클릭"); handleFormat('`', '`'); }} title="인라인 코드"><Terminal size={18} /></button>
   </div>
 );
 
 export const ListGroup = ({ handleFormat }) => (
   <div className="toolbar-group">
-    <button onClick={() => handleFormat('> ')} title="인용구"><Quote size={18} /></button>
-    <button onClick={() => handleFormat('- ')} title="글머리 목록"><List size={18} /></button>
-    <button onClick={() => handleFormat('1. ')} title="번호 매기기"><ListOrdered size={18} /></button>
-    <button onClick={() => handleFormat('- [ ] ')} title="할 일 목록"><CheckSquare size={18} /></button>
+    <button onClick={() => { console.log("인용구 버튼 클릭"); handleFormat('> '); }} title="인용구"><Quote size={18} /></button>
+    <button onClick={() => { console.log("글머리 목록 버튼 클릭"); handleFormat('- '); }} title="글머리 목록"><List size={18} /></button>
+    <button onClick={() => { console.log("번호 매기기 버튼 클릭"); handleFormat('1. '); }} title="번호 매기기"><ListOrdered size={18} /></button>
+    <button onClick={() => { console.log("할 일 목록 버튼 클릭"); handleFormat('- [ ] '); }} title="할 일 목록"><CheckSquare size={18} /></button>
+    <button onClick={() => { console.log("구분선 버튼 클릭"); handleFormat('\n---\n\n', '', false); }} title="구분선"><Minus size={18} /></button>
   </div>
 );
 
@@ -93,11 +96,18 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown }) => 
       <PortalDropdown triggerRef={diffRef} isOpen={openDropdown === 'diff'} onClose={() => setOpenDropdown(null)}>
         <button className="dropdown-item diff-template" onClick={() => {
           console.log("Diff 스니펫 삽입 호출");
-          handleFormat("\n```diff\n+ 추가된 줄 (초록색)\n- 삭제된 줄 (빨간색)\n! 변경된 줄 (강조)\n```\n", '', false);
+          handleFormat("\n```diff\n+ 추가된 줄 (초록색)\n- 삭제된 줄 (빨간색)\n! 변경된 줄 (강조)\n@@ -1,3 +1,4 @@\n```\n", '', false);
           setOpenDropdown(null);
         }}>Diff 코드 블록 삽입</button>
         <button className="dropdown-item details-template" onClick={insertDetails}>
           <ListCollapse size={14} style={{ marginRight: '6px', display: 'inline' }}/> 접기/펼치기 (Details)
+        </button>
+        <button className="dropdown-item details-template" onClick={() => {
+          console.log("키보드 태그 삽입 호출");
+          handleFormat('<kbd>', '</kbd>', false);
+          setOpenDropdown(null);
+        }}>
+          <Keyboard size={14} style={{ marginRight: '6px', display: 'inline' }}/> 키보드 키 (kbd)
         </button>
       </PortalDropdown>
     </div>
