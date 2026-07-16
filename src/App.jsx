@@ -1,5 +1,6 @@
-// src/App.jsx v1.3
-/* * 파일 설명: 애플리케이션의 최상위 부모 컴포넌트로 레이아웃 구조를 잡고 마크다운 원문 텍스트 상태를 하위 컴포넌트들에 공급합니다. 로컬 스토리지 연동으로 데이터 유실을 방지합니다.
+// src/App.jsx v1.4
+/* * 파일 설명: 애플리케이션의 최상위 부모 컴포넌트로 레이아웃 구조를 잡고 마크다운 원문 텍스트 상태를 하위 컴포넌트들에 공급합니다.
+ * 로컬 스토리지 연동으로 데이터 유실을 방지하며, Ctrl+S 단축키 입력 시 브라우저 기본 저장 창을 차단합니다.
  * 연결 위치: src/main.jsx 파일에서 호출되어 렌더링되며, Header, Preview, Editor 컴포넌트를 자식으로 가집니다.
  */
 import { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ import './App.css';
 const initialMarkdown = ``;
 
 function App() {
-  console.log("App 컴포넌트(v1.3) 렌더링 시작 - 최상위 레이아웃 구성 및 로컬 스토리지 연동 가동");
+  console.log("App 컴포넌트(v1.4) 렌더링 시작 - 최상위 레이아웃 구성 및 로컬 스토리지 연동 가동");
   
   // 마크다운 원문 텍스트 상태 초기화 시 로컬 스토리지 확인 후 데이터 복원
   const [markdown, setMarkdown] = useState(() => {
@@ -30,6 +31,26 @@ function App() {
     console.log("useEffect 실행 - markdown 상태 변경 감지, 로컬 스토리지에 데이터를 덮어씁니다.");
     localStorage.setItem('markdown-save', markdown);
   }, [markdown]);
+
+  // 전역 키보드 이벤트 감지를 통한 브라우저 기본 저장(Ctrl+S / Cmd+S) 무력화 로직
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Ctrl 키(Windows) 또는 Cmd 키(Mac)와 S 키가 동시에 눌렸는지 확인합니다.
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        console.log("전역 키보드 이벤트 감지 - Ctrl+S 입력됨. 브라우저 기본 웹 페이지 저장 다이얼로그 호출을 차단합니다.");
+        e.preventDefault(); // 브라우저 기본 동작 차단
+        // 데이터는 이미 상단의 markdown 상태 변경 감지 useEffect를 통해 실시간으로 저장되고 있으므로 추가 연산은 생략합니다.
+      }
+    };
+
+    console.log("최상위 컴포넌트 마운트 완료 - 전역 단축키 감지 이벤트 리스너를 등록합니다.");
+    window.addEventListener('keydown', handleGlobalKeyDown);
+
+    return () => {
+      console.log("최상위 컴포넌트 언마운트 - 전역 단축키 감지 이벤트 리스너를 해제합니다.");
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
 
   return (
     <div className="app-layout">
