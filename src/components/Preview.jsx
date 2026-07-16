@@ -8,6 +8,8 @@ import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { copyToClipboard } from '../utils/clipboard';
 import { preprocessGitHubFlavored } from '../utils/githubMarkdownParser'; 
 import MermaidBlock from './preview/MermaidBlock';
+import GeoJsonBlock from './preview/GeoJsonBlock';
+import StlBlock from './preview/StlBlock';
 import 'github-markdown-css/github-markdown.css'; 
 import './Preview.css';
 
@@ -36,12 +38,15 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
   if (!inline && match) {
     console.log("구문 강조가 적용된 코드 블록 렌더링. 언어:", match[1]);
     
-    // 언어 식별자에 따른 분기 처리 (Diff 및 Mermaid 지원)
-    const isDiff = match[1] === 'diff';
-    const isMermaid = match[1] === 'mermaid';
+    // 언어 식별자에 따른 분기 처리 (Diff, Mermaid, GeoJSON, TopoJSON, STL 지원)
+    const lang = match[1];
+    const isDiff = lang === 'diff';
+    const isMermaid = lang === 'mermaid';
+    const isGeoJson = lang === 'geojson' || lang === 'topojson';
+    const isStl = lang === 'stl';
 
-    // Mermaid 다이어그램 렌더링 블록
-    if (isMermaid) {
+    // 특수 렌더링 블록 (Mermaid, GeoJSON, TopoJSON, STL)
+    if (isMermaid || isGeoJson || isStl) {
       return (
         <div className="code-block-wrapper">
           <button className="code-copy-btn" onClick={handleCodeCopy} title="코드 복사">
@@ -51,7 +56,9 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             )}
           </button>
-          <MermaidBlock chart={String(children)} />
+          {isMermaid && <MermaidBlock chart={String(children)} />}
+          {isGeoJson && <GeoJsonBlock dataString={String(children)} isTopoJson={lang === 'topojson'} />}
+          {isStl && <StlBlock stlString={String(children)} />}
         </div>
       );
     }
@@ -85,7 +92,7 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
         ) : (
           <SyntaxHighlighter
             style={oneLight}
-            language={match[1]}
+            language={lang}
             PreTag="div"
             customStyle={{ backgroundColor: 'transparent' }}
             {...props}
