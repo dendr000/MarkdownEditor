@@ -1,9 +1,10 @@
-// src/utils/diagramParser.js v1.0
+// src/utils/diagramParser.js v1.2
 /*
- * 파일 설명: 다이어그램의 GUI 상태 ↔ 마크다운 텍스트 간의 상호 변환을 담당하는 순수 로직 파일입니다.
+ * 파일 설명: 다이어그램의 GUI 상태 ↔ 마크다운 텍스트 간의 상호 변환을 담당하는 유틸리티 파일입니다. GeoJSON 및 STL 문자열 합성 로직이 복구되었습니다.
+ * 연결 위치: src/components/diagram/DiagramModal.jsx
  */
 
-// 1. 노드 토큰 역분석 (순서도용) v1.1
+// 1. 노드 토큰 역분석 (순서도용)
 export const parseNodeToken = (token) => {
   console.log("[diagramParser] 노드 토큰 역분석 시도:", token);
   if (!token) return null;
@@ -29,7 +30,6 @@ export const parseNodeToken = (token) => {
   else if (token.includes('[\\') && token.includes('/]')) shape = '[\\\\/]';
   else shape = '[]';
 
-  // 따옴표 내부 문자열을 먼저 안전하게 추출하여 빈 문자열 반환 버그를 차단합니다.
   let innerContent = '';
   const quoteMatch = token.match(/"([\s\S]*?)"/);
   
@@ -65,7 +65,6 @@ export const parseMarkdownToState = (markdown) => {
   const cleanText = markdown.replace(/```mermaid/g, '').replace(/```/g, '').trim();
   const lines = cleanText.split('\n');
 
-  // 순서도 판별
   const flowHeader = cleanText.match(/(?:graph|flowchart)\s+(TD|BT|LR|RL);?/i);
   if (flowHeader) {
     const arrowRegex = /(-->|--->|---|-.->|-.-|==>|--o|--x|~~~)/;
@@ -91,7 +90,6 @@ export const parseMarkdownToState = (markdown) => {
     return { type: 'mermaid_flow', data: { orientation: flowHeader[1].toUpperCase(), steps } };
   }
 
-  // 원형 차트 판별
   if (cleanText.match(/^pie/i)) {
     const titleMatch = cleanText.match(/title\s+([\s\S]*?)\n/i);
     const items = [];
@@ -102,12 +100,10 @@ export const parseMarkdownToState = (markdown) => {
     return { type: 'mermaid_pie', data: { title: titleMatch ? titleMatch[1].trim() : '', items } };
   }
 
-  // 시퀀스 다이어그램 판별 (오류 수정됨)
   if (cleanText.match(/^sequenceDiagram/i)) {
     const participants = [];
     const messages = [];
     lines.forEach((line, idx) => {
-      // 오류 지점 수정: ([\s\S]*+) -> ([\s\S]*)
       const pMatch = line.trim().match(/^(participant|actor)\s+([a-zA-Z0-9_\-]+)(?:\s+as\s+([\s\S]*))?/i);
       if (pMatch) {
         participants.push({ id: `sp-${idx}`, type: pMatch[1].toLowerCase(), name: pMatch[2].trim(), alias: pMatch[3] ? pMatch[3].trim() : '' });
@@ -142,6 +138,7 @@ export const buildStateToMarkdown = (type, state) => {
     state.pieItems.forEach(i => code += `    "${i.label}" : ${i.value}\n`);
     return code.trim();
   }
+  
   if (type === 'mermaid_flow') {
     let code = `graph ${state.flowOrientation};\n`;
     state.flowSteps.forEach(s => {
@@ -151,6 +148,7 @@ export const buildStateToMarkdown = (type, state) => {
     });
     return code.trim();
   }
+  
   if (type === 'mermaid_seq') {
     let code = `sequenceDiagram\n    autonumber\n`;
     state.seqParticipants.forEach(p => code += `    ${p.type} ${p.name}${p.alias ? ` as ${p.alias}` : ''}\n`);
@@ -159,5 +157,112 @@ export const buildStateToMarkdown = (type, state) => {
     });
     return code.trim();
   }
+
+  // [복구] GeoJSON 문자열 생성 로직
+  if (type === 'geojson') {
+    const geoObj = {
+      type: "FeatureCollection",
+      features: state.geoFeatures.map(f => ({
+        type: "Feature",
+        properties: { name: f.name },
+        geometry: { type: "Point", coordinates: [parseFloat(f.lng || 0), parseFloat(f.lat || 0)] }
+      }))
+    };
+    return JSON.stringify(geoObj, null, 2);
+  }
+
+  // [복구] 3D STL 문자열 생성 로직
+  if (type === 'stl') {
+    const w = parseFloat(state.boxWidth) / 2 || 0.5;
+    const h = parseFloat(state.boxHeight) / 2 || 0.5;
+    const d = parseFloat(state.boxDepth) / 2 || 0.5;
+    return `solid custom_box
+  facet normal 0.0 0.0 1.0
+    outer loop
+      vertex ${-w} ${-h} ${d}
+      vertex ${w} ${-h} ${d}
+      vertex ${w} ${h} ${d}
+    endloop
+  endfacet
+  facet normal 0.0 0.0 1.0
+    outer loop
+      vertex ${-w} ${-h} ${d}
+      vertex ${w} ${h} ${d}
+      vertex ${-w} ${h} ${d}
+    endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${-w} ${h} ${-d}
+      vertex ${w} ${h} ${-d}
+    endloop
+  endfacet
+  facet normal 0.0 0.0 -1.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${w} ${h} ${-d}
+      vertex ${w} ${-h} ${-d}
+    endloop
+  endfacet
+  facet normal 1.0 0.0 0.0
+    outer loop
+      vertex ${w} ${-h} ${-d}
+      vertex ${w} ${h} ${-d}
+      vertex ${w} ${h} ${d}
+    endloop
+  endfacet
+  facet normal 1.0 0.0 0.0
+    outer loop
+      vertex ${w} ${-h} ${-d}
+      vertex ${w} ${h} ${d}
+      vertex ${w} ${-h} ${d}
+    endloop
+  endfacet
+  facet normal -1.0 0.0 0.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${-w} ${-h} ${d}
+      vertex ${-w} ${h} ${d}
+    endloop
+  endfacet
+  facet normal -1.0 0.0 0.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${-w} ${h} ${d}
+      vertex ${-w} ${h} ${-d}
+    endloop
+  endfacet
+  facet normal 0.0 1.0 0.0
+    outer loop
+      vertex ${-w} ${h} ${-d}
+      vertex ${-w} ${h} ${d}
+      vertex ${w} ${h} ${d}
+    endloop
+  endfacet
+  facet normal 0.0 1.0 0.0
+    outer loop
+      vertex ${-w} ${h} ${-d}
+      vertex ${w} ${h} ${d}
+      vertex ${w} ${h} ${-d}
+    endloop
+  endfacet
+  facet normal 0.0 -1.0 0.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${w} ${-h} ${-d}
+      vertex ${w} ${-h} ${d}
+    endloop
+  endfacet
+  facet normal 0.0 -1.0 0.0
+    outer loop
+      vertex ${-w} ${-h} ${-d}
+      vertex ${w} ${-h} ${d}
+      vertex ${-w} ${-h} ${d}
+    endloop
+  endfacet
+endsolid`;
+  }
+
   return '';
 };
