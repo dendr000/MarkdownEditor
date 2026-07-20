@@ -1,6 +1,6 @@
-// src/components/editor/Editor.jsx v7.0
+// src/components/editor/Editor.jsx v8.0
 /*
- * 파일 설명: 드래그 선택 영역의 텍스트 콘텐츠(selectedTableText)를 다이어그램 모달 열기 시점의 초기 변수(initialDiagramMarkdown)로 바인딩하여 주입하도록 개선된 메인 에디터 컴포넌트입니다.
+ * 파일 설명: 실행 취소(Ctrl+Z) 기록 보존을 위해 네이티브 execCommand API를 도입하고, 단축키(Ctrl+B, Ctrl+Q 등) 및 각주 자동 넘버링 로직이 추가된 에디터 메인 컴포넌트입니다.
  */
 import { useRef, useState } from 'react';
 import { Table, FileCode2, FolderTree, Workflow } from 'lucide-react';
@@ -15,7 +15,7 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import './Editor.css'; 
 
 function Editor({ markdown, setMarkdown }) {
-  console.log("Editor 컴포넌트(v7.0) 렌더링 시작 - 다이어그램 역파싱 데이터 주입 체결");
+  console.log("Editor 컴포넌트(v8.0) 렌더링 시작 - Undo 보존 및 단축키 바인딩 적용");
   
   const textareaRef = useRef(null);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
@@ -26,74 +26,116 @@ function Editor({ markdown, setMarkdown }) {
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
   const [openDropdown, setOpenDropdown] = useState(null);
 
-  // 외부 추출 커서 연동 커스텀 훅 연결
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
 
-  // 마크다운 지정 접두/접미 서식 바인딩 핸들러
-  const handleFormat = (prefix, suffix = '', isBlock = false) => {
-    console.log(`[Editor v7.0] handleFormat 서식 주입 실행 - prefix: ${prefix}, suffix: ${suffix}`);
+  // 네이티브 텍스트 입력을 발생시켜 실행 취소(Ctrl+Z) 스택을 유지하는 코어 삽입 함수
+  const insertTextNatively = (textarea, start, end, replacement) => {
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    // execCommand는 브라우저 고유의 Undo 내역을 보존하는 유일한 표준 방식입니다.
+    const success = document.execCommand('insertText', false, replacement);
+    if (!success) {
+      // execCommand가 막힌 특수 환경일 경우 강제 주입 후 리액트 이벤트 발송
+      textarea.setRangeText(replacement, start, end, 'end');
+      textarea.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+    }
+  };
+
+  const handleFormat = (originalPrefix, suffix = '', isBlock = false) => {
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = markdown.substring(start, end);
-    const beforeText = markdown.substring(0, start);
-    const afterText = markdown.substring(end);
 
-    let newText = '';
-    let newCursorPos = 0;
+    let prefix = originalPrefix;
+    let actualSuffix = suffix;
+
+    // [핵심 해결] 각주 삽입 감지 시 번호 자동 카운팅 로직 가로채기
+    if (prefix === '[^1]') {
+      const regex = /\[\^(\d+)\]/g;
+      let maxNum = 0;
+      let match;
+      while ((match = regex.exec(markdown)) !== null) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+      const nextNum = maxNum + 1;
+      prefix = `[^${nextNum}]`;
+      if (suffix.includes('[^1]:')) {
+        actualSuffix = suffix.replace('[^1]', `[^${nextNum}]`);
+      }
+    }
+
+    let replacement = '';
+    let newCursorOffset = 0;
 
     if (isBlock) {
       const defaultPlaceholder = '내용을 입력하세요';
-      newText = beforeText + prefix + (selectedText || defaultPlaceholder) + suffix + afterText;
-      newCursorPos = start + prefix.length + (selectedText ? selectedText.length : defaultPlaceholder.length);
+      replacement = prefix + (selectedText || defaultPlaceholder) + actualSuffix;
+      newCursorOffset = prefix.length + (selectedText ? selectedText.length : defaultPlaceholder.length);
     } else {
-      newText = beforeText + prefix + selectedText + suffix + afterText;
-      newCursorPos = start + prefix.length + selectedText.length;
+      replacement = prefix + selectedText + actualSuffix;
+      newCursorOffset = prefix.length + selectedText.length;
     }
-    
-    setMarkdown(newText);
+
+    // 상태 직접 변경(setMarkdown) 대신 네이티브 주입 실행
+    insertTextNatively(textarea, start, end, replacement);
+
+    // 포맷팅 후 커서 위치 재조정 (선택했던 텍스트만 다시 블록 지정)
     setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, newCursorPos);
+      textarea.setSelectionRange(start + prefix.length, start + newCursorOffset);
     }, 0);
   };
 
-  // 모달 활성화 호출 전 선택 블록 텍스트 스캔 및 임시 저장 유틸
   const prepareModalState = (modalType) => {
-    console.log(`[Editor v7.0] prepareModalState 구동 - 모달 유형 타겟팅: ${modalType}`);
     if (textareaRef.current) {
       const start = textareaRef.current.selectionStart;
       const end = textareaRef.current.selectionEnd;
       setSelectionRange({ start, end });
-      
-      const textChunk = start !== end ? markdown.substring(start, end) : '';
-      console.log(`[Editor v7.0] 선택 범위 텍스트 추출 완료. 길이: ${textChunk.length}`);
-      setSelectedTableText(textChunk);
+      setSelectedTableText(start !== end ? markdown.substring(start, end) : '');
     }
   };
 
-  // 모달 아웃풋 데이터를 편집 창 커서 영역에 체결하는 핸들러
   const handleInsertTable = (tableOutput) => {
-    console.log("[Editor v7.0] 모달 데이터 최종 수신 - 본문 병합 가동");
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const { start, end } = selectionRange;
-    setMarkdown(markdown.substring(0, start) + tableOutput + markdown.substring(end));
-    setTimeout(() => {
-      textarea.focus();
-      const newPos = start + tableOutput.length;
-      textarea.setSelectionRange(newPos, newPos);
-    }, 0);
+    insertTextNatively(textarea, start, end, tableOutput);
   };
 
-  // 키 다운 선행 처리 리스너
   const handleKeyDown = (e) => {
-    console.log("Editor 내부 키 이벤트 스캔:", e.key);
+    // [핵심 해결] 단축키 지원 추가 (Ctrl+B, Ctrl+I, Ctrl+Q 등)
+    if (e.ctrlKey || e.metaKey) {
+      const key = e.key.toLowerCase();
+      if (key === 'b') {
+        e.preventDefault();
+        handleFormat('**', '**');
+        return;
+      }
+      if (key === 'i') {
+        e.preventDefault();
+        handleFormat('*', '*');
+        return;
+      }
+      if (key === 'q') {
+        e.preventDefault();
+        // 각주는 번호 자동 카운팅 로직이 있으므로 '[^1]'을 보냅니다.
+        handleFormat('[^1]', ''); 
+        return;
+      }
+      if (key === 'k') {
+        e.preventDefault();
+        handleFormat('[', '](url)');
+        return;
+      }
+    }
+
     const isAutocompleteHandled = handleAutocompleteKeyDown(e);
     if (isAutocompleteHandled) return;
 
+    // 엔터키 리스트 자동 완성 (Undo 보존 방식 적용)
     if (e.key === 'Enter' && !e.shiftKey) {
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -102,7 +144,6 @@ function Editor({ markdown, setMarkdown }) {
       const textBeforeCursor = markdown.substring(0, start);
       const lines = textBeforeCursor.split('\n');
       const currentLine = lines[lines.length - 1];
-
       const match = currentLine.match(/^([>-])\s*(.*)/);
 
       if (match) {
@@ -111,24 +152,13 @@ function Editor({ markdown, setMarkdown }) {
         const content = match[2].trim();
 
         if (content === '') {
+          // 비어있는 기호 위에서 엔터를 치면 기호를 지우고 줄바꿈
           const lineStartIdx = start - currentLine.length;
-          const newText = markdown.substring(0, lineStartIdx) + '\n' + markdown.substring(start);
-          setMarkdown(newText);
-          setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(lineStartIdx + 1, lineStartIdx + 1);
-          }, 0);
+          insertTextNatively(textarea, lineStartIdx, start, '\n');
         } else {
-          const afterText = markdown.substring(start);
-          let injection = prefix === '>' ? '<br>\n> ' : '\n- ';
-          let cursorOffset = prefix === '>' ? 7 : 3;
-
-          const newText = textBeforeCursor + injection + afterText;
-          setMarkdown(newText);
-          setTimeout(() => {
-            textarea.focus();
-            textarea.setSelectionRange(start + cursorOffset, start + cursorOffset);
-          }, 0);
+          // 다음 줄에 동일한 기호 생성
+          const injection = prefix === '>' ? '\n> ' : '\n- ';
+          insertTextNatively(textarea, start, start, injection);
         }
       }
     }
