@@ -18,7 +18,10 @@ MARKDOWNEDITOR
 │   │   │   └── Modal.css             # 모달 공통 스타일
 │   │   ├── editor
 │   │   │   ├── toolbar/              # 툴바 아이콘 및 드롭다운 그룹 컴포넌트
+│   │   │   │   ├── DetailsModal.jsx  # [신규] 접기/펼치기 HTML 생성 모달
+│   │   │   │   └── TemplateSelector.jsx # [신규] 템플릿 보관함 드롭다운 UI
 │   │   │   ├── AutocompletePopup.jsx # 깃허브 가상 자동완성(@, #, :) 팝업 UI
+│   │   │   ├── OutlineMinimap.jsx    # 자동 목차 아웃라인 미니맵 UI
 │   │   │   ├── Editor.css
 │   │   │   └── Editor.jsx            # 메인 에디터 (마크다운 입력부)
 │   │   ├── preview
@@ -34,20 +37,25 @@ MARKDOWNEDITOR
 │   │   ├── Header.css
 │   │   ├── Header.jsx                # 상단 헤더
 │   │   ├── Preview.css
-│   │   └── Preview.jsx               # 실시간 뷰어 (ReactMarkdown)
+│   │   └── Preview.jsx               # 실시간 뷰어 (ReactMarkdown 및 수식 렌더러 연동)
 │   ├── hooks
 │   │   ├── editor
 │   │   │   ├── useAutocomplete.js    # 가상 자동완성 키보드/상태 제어 훅
-│   │   │   └── useImageUpload.js     # 드래그 앤 드롭 및 이미지 업로드 훅
+│   │   │   ├── useImageUpload.js     # 드래그 앤 드롭 및 클라우드 이미지 업로드 통신 훅
+│   │   │   └── useOutline.js         # 본문 헤더(#) 스캔 및 목차 트리 데이터 구조화 훅
 │   │   └── table
 │   │       ├── useTableGrid.js       # 표 그리드 셀 선택 및 병합 제어 훅
 │   │       └── useHtmlTable.js       # HTML 표 상태 제어 훅
 │   ├── utils
 │   │   ├── clipboard.js              # 코드 블록 복사 유틸
 │   │   ├── colorPresets.js           # 툴바 색상 프리셋
+│   │   ├── diagramParser.js          # 다이어그램 파싱/역파싱 유틸
 │   │   ├── githubMarkdownParser.js   # Alerts 및 색상 시각화 정규식 파서
 │   │   ├── htmlTableParser.js        # HTML 표 ↔ DOM 변환 파서
-│   │   └── tableConverter.js         # 마크다운 표 텍스트 변환 파서
+│   │   ├── tableConverter.js         # 마크다운 표 텍스트 변환 파서
+│   │   └── templates.js              # 기본 제공 마크다운 템플릿(Snippet) 문자열 저장소
+│   ├── api
+│   │   └── templateApi.js            # 사용자 정의 템플릿 저장/불러오기 BE 통신 모듈
 │   ├── App.css
 │   ├── App.jsx                       # 최상위 컴포넌트 (상태 및 레이아웃 관리)
 │   ├── index.css
@@ -55,9 +63,9 @@ MARKDOWNEDITOR
 ├── .gitattributes
 ├── .gitignore
 ├── .oxlintrc.json
-├── index.html
+├── index.html                        # KaTeX CSS CDN 추가 대상
 ├── package-lock.json
-├── package.json
+├── package.json                      # remark-math, rehype-katex 등 의존성 추가 대상
 ├── README.md
 ├── run.png
 └── start_dev.bat                     # 로컬 서버 실행 배치 파일
