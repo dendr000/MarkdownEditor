@@ -9,16 +9,16 @@ import { GitCommit, Copy, Check } from 'lucide-react';
 import { copyToClipboard } from '../../../utils/clipboard';
 
 const COMMIT_TYPES = [
-  { type: 'feat', color: '#2da44e', desc: '새로운 기능 추가', ex: 'feat: 환경 데이터 등록 API 구현' },
-  { type: 'fix', color: '#cf222e', desc: '버그 수정', ex: 'fix: 승인 완료 후 버튼 상태 오류 수정' },
-  { type: 'refactor', color: '#8250df', desc: '코드 리팩토링 (기능 변화 없음)', ex: 'refactor: ESG 점수 계산 로직 분리' },
-  { type: 'docs', color: '#0969da', desc: '문서 추가 및 수정', ex: 'docs: ERD 문서 추가' },
-  { type: 'test', color: '#bf8700', desc: '테스트 코드 추가/수정', ex: 'test: 환경 데이터 서비스 단위 테스트 추가' },
-  { type: 'chore', color: '#57606a', desc: '빌드, 패키지, 잡무 수정', ex: 'chore: 불필요한 주석 정리' },
-  { type: 'build', color: '#1f2328', desc: '빌드 시스템 및 외부 라이브러리 추가', ex: 'build: PostgreSQL 드라이버 추가' },
-  { type: 'ci', color: '#0969da', desc: 'CI/CD 배포 스크립트 수정', ex: 'ci: 백엔드 빌드 워크플로 추가' },
-  { type: 'infra', color: '#2da44e', desc: '인프라/서버 설정 관련', ex: 'infra: Nginx 리버스 프록시 설정' },
-  { type: 'style', color: '#bf3989', desc: '코드 포맷팅 (로직 변경 없음)', ex: 'style: 세미콜론 누락 및 들여쓰기 수정' },
+  { type: 'feat', color: '#2da44e', desc: '새로운 기능 추가', ex: 'feat: 사용자 로그인 API 구현' },
+  { type: 'fix', color: '#cf222e', desc: '버그 수정', ex: 'fix: 회원가입 폼 유효성 검사 오류 수정' },
+  { type: 'refactor', color: '#8250df', desc: '코드 리팩토링 (기능 변화 없음)', ex: 'refactor: 중복된 인증 로직을 공통 함수로 분리' },
+  { type: 'docs', color: '#0969da', desc: '문서 추가 및 수정', ex: 'docs: README.md 설치 가이드 추가' },
+  { type: 'test', color: '#bf8700', desc: '테스트 코드 추가/수정', ex: 'test: 결제 서비스 단위 테스트 코드 작성' },
+  { type: 'chore', color: '#57606a', desc: '빌드, 패키지, 잡무 수정', ex: 'chore: 불필요한 console.log 및 주석 제거' },
+  { type: 'build', color: '#1f2328', desc: '빌드 시스템 및 외부 라이브러리 추가', ex: 'build: Axios HTTP 클라이언트 패키지 추가' },
+  { type: 'ci', color: '#0969da', desc: 'CI/CD 배포 스크립트 수정', ex: 'ci: 깃허브 액션 자동 배포 파이프라인 구축' },
+  { type: 'infra', color: '#2da44e', desc: '인프라/서버 설정 관련', ex: 'infra: Nginx 프록시 및 로드 밸런서 설정' },
+  { type: 'style', color: '#bf3989', desc: '코드 포맷팅 (로직 변경 없음)', ex: 'style: 코드 포맷팅 및 사용하지 않는 변수 삭제' },
 ];
 
 function CommitGuideModal({ isOpen, onClose, onInsert }) {
@@ -65,49 +65,49 @@ function CommitGuideModal({ isOpen, onClose, onInsert }) {
           
           {/* 불필요한 p 태그 텍스트 제거 및 2열 Grid 바둑판 배열 적용 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            {COMMIT_TYPES.map((item) => (
-              <div 
-                key={item.type}
-                onClick={() => handleInsert(item.type)}
-                style={{ 
-                  backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', 
-                  padding: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-                  cursor: 'pointer', transition: 'border-color 0.1s, box-shadow 0.1s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#0969da';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(9, 105, 218, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#d0d7de';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ 
-                      backgroundColor: item.color, color: '#ffffff', fontSize: '12px', fontWeight: 'bold', 
-                      padding: '3px 10px', borderRadius: '12px' 
-                    }}>
-                      {item.type}
-                    </span>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f' }}>{item.desc}</span>
-                  </div>
-                  <span style={{ fontSize: '12px', color: '#57606a', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
-                    예시) {item.ex}
-                  </span>
-                </div>
-
-                <button 
-                  onClick={(e) => handleCopy(e, item.type)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: copiedType === item.type ? '#2da44e' : '#57606a' }}
-                  title="클립보드에 복사"
+              {COMMIT_TYPES.map((item) => (
+                <div 
+                  key={item.type}
+                  onClick={() => handleInsert(item.type)}
+                  style={{ 
+                    backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', 
+                    padding: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+                    cursor: 'pointer', transition: 'border-color 0.1s, box-shadow 0.1s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#0969da';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(9, 105, 218, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#d0d7de';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 >
-                  {copiedType === item.type ? <Check size={18} /> : <Copy size={18} />}
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ 
+                        backgroundColor: item.color, color: '#ffffff', fontSize: '12px', fontWeight: 'bold', 
+                        padding: '3px 10px', borderRadius: '12px' 
+                      }}>
+                        {item.type}
+                      </span>
+                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f' }}>{item.desc}</span>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#57606a', fontFamily: 'ui-monospace, SFMono-Regular, monospace', wordBreak: 'keep-all' }}>
+                      {item.ex}
+                    </span>
+                  </div>
+
+                  <button 
+                    onClick={(e) => handleCopy(e, item.type)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: copiedType === item.type ? '#2da44e' : '#57606a' }}
+                    title="클립보드에 복사"
+                  >
+                    {copiedType === item.type ? <Check size={18} /> : <Copy size={18} />}
+                  </button>
+                </div>
+              ))}
+            </div>
 
         </div>
       </div>
