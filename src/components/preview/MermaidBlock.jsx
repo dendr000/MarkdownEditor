@@ -1,16 +1,21 @@
-// src/components/preview/MermaidBlock.jsx v2.0
+// src/components/preview/MermaidBlock.jsx v3.0
 /*
- * 파일 설명: Mermaid 문법을 파싱하여 SVG 다이어그램으로 렌더링하며, 렌더링된 SVG 내의 노드 요소(.node)를 감지하여 클릭 시 해당 노드 ID를 상위 컴포넌트로 전달하는 기능이 추가되었습니다.
+ * 파일 설명: Mermaid 문법을 파싱하여 SVG 다이어그램으로 렌더링하는 컴포넌트입니다.
+ * 깃허브와 동일한 폰트 스택을 초기화 설정에 주입하여, 가로폭 오계산으로 인한 텍스트 잘림(Truncation) 버그와 폰트 불일치 현상을 해결했습니다.
  * 연결 위치: src/components/Preview.jsx 및 src/components/diagram/DiagramModal.jsx
  */
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 
+// [핵심 수정] 머메이드 엔진 초기화 설정에 깃허브 공식 폰트 스택을 주입하여 Bounding Box 계산 정확도 향상
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
   securityLevel: 'loose',
-  fontFamily: 'inherit'
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+  flowchart: {
+    htmlLabels: true, // 마크다운 문자열 및 HTML 태그 렌더링 강제 활성화
+  }
 });
 
 const MermaidBlock = ({ chart, onNodeClick }) => {
@@ -20,14 +25,14 @@ const MermaidBlock = ({ chart, onNodeClick }) => {
   // 1. Mermaid 구문 파싱 및 SVG 문자열 생성
   useEffect(() => {
     const renderChart = async () => {
-      console.log("[MermaidBlock v2.0] 다이어그램 파싱 연산 시작");
+      console.log("[MermaidBlock v3.0] 다이어그램 파싱 연산 시작");
       try {
         const id = `mermaid-svg-${Math.random().toString(36).substr(2, 9)}`;
         const { svg } = await mermaid.render(id, chart);
         setSvgContent(svg);
-        console.log("[MermaidBlock v2.0] SVG 렌더링 완료");
+        console.log("[MermaidBlock v3.0] SVG 렌더링 완료");
       } catch (error) {
-        console.error('[MermaidBlock v2.0] 구문 분석 오류:', error);
+        console.error('[MermaidBlock v3.0] 구문 분석 오류:', error);
         setSvgContent(`<div style="color: #cf222e; padding: 12px; background-color: #ffebe9; border: 1px solid rgba(207,34,46,0.2); border-radius: 6px; font-size: 13px;">다이어그램 구문 분석 오류가 발생했습니다.<br>문법을 확인해 주세요.</div>`);
       }
     };
@@ -41,7 +46,7 @@ const MermaidBlock = ({ chart, onNodeClick }) => {
   useEffect(() => {
     if (!svgContent || !containerRef.current || !onNodeClick) return;
 
-    console.log("[MermaidBlock v2.0] 생성된 SVG DOM에서 상호작용 노드 탐색 시작");
+    console.log("[MermaidBlock v3.0] 생성된 SVG DOM에서 상호작용 노드 탐색 시작");
     const nodes = containerRef.current.querySelectorAll('.node');
     
     const handleNodeClick = (e) => {
@@ -51,7 +56,7 @@ const MermaidBlock = ({ chart, onNodeClick }) => {
         const parts = idAttr.split('-');
         if (parts.length >= 3) {
           const nodeId = parts.slice(1, -1).join('-');
-          console.log("[MermaidBlock v2.0] 노드 클릭 감지. 추출된 대상 ID:", nodeId);
+          console.log("[MermaidBlock v3.0] 노드 클릭 감지. 추출된 대상 ID:", nodeId);
           onNodeClick(nodeId);
         }
       }
@@ -63,7 +68,7 @@ const MermaidBlock = ({ chart, onNodeClick }) => {
     });
 
     return () => {
-      console.log("[MermaidBlock v2.0] 노드 클릭 이벤트 리스너 메모리 해제");
+      console.log("[MermaidBlock v3.0] 노드 클릭 이벤트 리스너 메모리 해제");
       nodes.forEach(node => node.removeEventListener('click', handleNodeClick));
     };
   }, [svgContent, onNodeClick]);
