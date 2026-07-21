@@ -3,7 +3,7 @@
  * 파일 설명: 실행 취소(Ctrl+Z) 기록 보존을 위해 네이티브 execCommand API를 도입하고, 단축키(Ctrl+B, Ctrl+Q 등) 및 각주 자동 넘버링 로직이 추가된 에디터 메인 컴포넌트입니다.
  * (v9.0 수정사항): 실시간 문서 개요(Outline) 스캔 훅 및 우측 플로팅 미니맵 UI가 통합되었습니다.
  */
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Table, FileCode2, FolderTree, Workflow, Library, ListTree } from 'lucide-react';
 import TableModal from '../table/TableModal';
 import HtmlTableModal from '../table/HtmlTableModal';
@@ -24,6 +24,7 @@ import './Editor.css';
 
 function Editor({ markdown, setMarkdown }) {
   const textareaRef = useRef(null);
+  const toolbarRef = useRef(null); // 툴바 DOM 접근 및 스크롤 제어용 참조
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
   const [isHtmlTableModalOpen, setIsHtmlTableModalOpen] = useState(false);
   const [isFolderTreeModalOpen, setIsFolderTreeModalOpen] = useState(false);
@@ -31,12 +32,36 @@ function Editor({ markdown, setMarkdown }) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
-  const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false); // 가이드 상태 추가
+  const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   
   const [selectedTableText, setSelectedTableText] = useState('');
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  /* * 추가 기능: 툴바 영역 내 마우스 휠 상하 조작을 좌우 스크롤로 변환 */
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+
+    const handleWheel = (e) => {
+      // 이미 가로 방향 스크롤(트랙패드 좌우 스와이프 또는 Shift+스크롤)이 발생 중인 경우 
+      // 기본 브라우저 동작을 막지 않고 통과시킵니다.
+      if (e.deltaY === 0 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        return;
+      }
+
+      // 일반적인 상하 마우스 휠인 경우에만 화면 상하 스크롤을 막고 가로 스크롤로 치환합니다.
+      e.preventDefault();
+      toolbar.scrollLeft += e.deltaY;
+    };
+
+    toolbar.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      toolbar.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
@@ -155,8 +180,8 @@ function Editor({ markdown, setMarkdown }) {
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
       
-      {/* 툴바 영역 */}
-      <div className="editor-toolbar-wrapper">
+      {/* 툴바 영역 (마우스 휠 스크롤 이벤트를 받기 위해 ref 연결) */}
+      <div className="editor-toolbar-wrapper" ref={toolbarRef}>
         <div className="editor-toolbar">
           <HeadingGroup handleFormat={handleFormat} />
           <div className="toolbar-divider" />
