@@ -6,9 +6,9 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math'; // [신규] 수식 마크다운 스캔 플러그인
+import remarkMath from 'remark-math'; // 수식 마크다운 스캔 플러그인
 import rehypeRaw from 'rehype-raw'; 
-import rehypeKatex from 'rehype-katex'; // [신규] 수식 HTML/CSS 변환 렌더러
+import rehypeKatex from 'rehype-katex'; // 수식 HTML/CSS 변환 렌더러
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { copyToClipboard } from '../utils/clipboard';

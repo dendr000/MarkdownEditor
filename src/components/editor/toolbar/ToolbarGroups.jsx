@@ -9,7 +9,7 @@ import {
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
   Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
   Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash,
-  Sigma // [신규] 수식 버튼용 아이콘 추가
+  Sigma // 수식 버튼용 아이콘 추가
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 

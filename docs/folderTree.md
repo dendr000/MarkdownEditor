@@ -17,9 +17,11 @@ MARKDOWNEDITOR
 │   │   ├── common
 │   │   │   └── Modal.css             # 모달 공통 스타일
 │   │   ├── editor
-│   │   │   ├── toolbar/              # 툴바 아이콘 및 드롭다운 그룹 컴포넌트
-│   │   │   │   ├── DetailsModal.jsx  # [신규] 접기/펼치기 HTML 생성 모달
-│   │   │   │   └── TemplateSelector.jsx # [신규] 템플릿 보관함 드롭다운 UI
+│   │   │   ├── toolbar/              # 툴바 아이콘 및 그룹 컴포넌트
+│   │   │   │   ├── CommitGuideModal.jsx # Git 커밋 메시지 컨벤션 가이드 모달
+│   │   │   │   ├── DetailsModal.jsx  # 접기/펼치기 HTML 생성 모달
+│   │   │   │   ├── MathModal.jsx     # 수식 (LaTeX) 작성기 모달
+│   │   │   │   └── TemplateModal.jsx # 템플릿 보관함 관리 모달
 │   │   │   ├── AutocompletePopup.jsx # 깃허브 가상 자동완성(@, #, :) 팝업 UI
 │   │   │   ├── OutlineMinimap.jsx    # 자동 목차 아웃라인 미니맵 UI
 │   │   │   ├── Editor.css
@@ -52,10 +54,9 @@ MARKDOWNEDITOR
 │   │   ├── diagramParser.js          # 다이어그램 파싱/역파싱 유틸
 │   │   ├── githubMarkdownParser.js   # Alerts 및 색상 시각화 정규식 파서
 │   │   ├── htmlTableParser.js        # HTML 표 ↔ DOM 변환 파서
+│   │   ├── localDb.js                # 로컬 스토리지 DB CRUD 래퍼
 │   │   ├── tableConverter.js         # 마크다운 표 텍스트 변환 파서
 │   │   └── templates.js              # 기본 제공 마크다운 템플릿(Snippet) 문자열 저장소
-│   ├── api
-│   │   └── templateApi.js            # 사용자 정의 템플릿 저장/불러오기 BE 통신 모듈
 │   ├── App.css
 │   ├── App.jsx                       # 최상위 컴포넌트 (상태 및 레이아웃 관리)
 │   ├── index.css
