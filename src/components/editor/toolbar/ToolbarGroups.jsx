@@ -21,7 +21,7 @@ export const HeadingGroup = ({ handleFormat }) => (
   </div>
 );
 
-export const FormatGroup = ({ handleFormat }) => (
+export const FormatGroup = ({ handleFormat, onOpenMathModal }) => (
   <div className="toolbar-group">
     <button onClick={() => handleFormat('**', '**')} title="굵게"><Bold size={18} /></button>
     <button onClick={() => handleFormat('*', '*')} title="기울임"><Italic size={18} /></button>
@@ -30,7 +30,7 @@ export const FormatGroup = ({ handleFormat }) => (
     <button onClick={() => handleFormat('<sup>', '</sup>', false)} title="위첨자"><Superscript size={18} /></button>
     <button onClick={() => handleFormat('<sub>', '</sub>', false)} title="아래첨자"><Subscript size={18} /></button>
     <button onClick={() => handleFormat('`', '`')} title="인라인 코드"><Terminal size={18} /></button>
-    <button onClick={() => handleFormat('\n$$\n', '\n$$\n', false)} title="수식 (LaTeX)"><Sigma size={18} /></button>
+    <button onClick={() => { console.log("수식 모달 호출"); onOpenMathModal(); }} title="수식 (LaTeX) 작성기"><Sigma size={18} /></button>
   </div>
 );
 

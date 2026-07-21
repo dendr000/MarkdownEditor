@@ -11,7 +11,8 @@ import FolderTreeModal from '../tree/FolderTreeModal';
 import DiagramModal from '../diagram/DiagramModal';
 import DetailsModal from './toolbar/DetailsModal';
 import TemplateModal from './toolbar/TemplateModal';
-import OutlineMinimap from './OutlineMinimap'; // 신규 미니맵 임포트
+import MathModal from './toolbar/MathModal';
+import OutlineMinimap from './OutlineMinimap';
 import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup } from './toolbar/ToolbarGroups';
 import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
@@ -27,6 +28,7 @@ function Editor({ markdown, setMarkdown }) {
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isMathModalOpen, setIsMathModalOpen] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false); // 미니맵 토글 상태 추가
   
   const [selectedTableText, setSelectedTableText] = useState('');
@@ -155,7 +157,7 @@ function Editor({ markdown, setMarkdown }) {
         <div className="editor-toolbar">
           <HeadingGroup handleFormat={handleFormat} />
           <div className="toolbar-divider" />
-          <FormatGroup handleFormat={handleFormat} />
+          <FormatGroup handleFormat={handleFormat} onOpenMathModal={() => setIsMathModalOpen(true)} />
           <div className="toolbar-divider" />
           <ListGroup handleFormat={handleFormat} />
           <div className="toolbar-divider" />
@@ -222,6 +224,7 @@ function Editor({ markdown, setMarkdown }) {
       <DiagramModal isOpen={isDiagramModalOpen} onClose={() => setIsDiagramModalOpen(false)} onInsert={handleInsertTable} initialDiagramMarkdown={selectedTableText} />
       <DetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} onInsert={handleInsertTable} initialContent={selectedTableText} />
       <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} onInsert={handleInsertTable} />
+      <MathModal isOpen={isMathModalOpen} onClose={() => setIsMathModalOpen(false)} onInsert={handleInsertTable} />
       
     </div>
   );
