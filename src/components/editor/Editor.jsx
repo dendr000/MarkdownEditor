@@ -90,18 +90,37 @@ function Editor({ markdown, setMarkdown }) {
     let actualSuffix = suffix;
 
     if (prefix === '[^1]') {
+      console.log("[Editor] 각주 삽입 매크로 실행: 인라인 마커 삽입 및 최하단 정의부 자동 생성");
       const regex = /\[\^(\d+)\]/g;
       let maxNum = 0;
       let match;
+      
+      // 1. 기존 markdown 텍스트를 스캔하여 가장 높은 각주 번호를 찾습니다.
       while ((match = regex.exec(markdown)) !== null) {
         const num = parseInt(match[1], 10);
         if (num > maxNum) maxNum = num;
       }
       const nextNum = maxNum + 1;
-      prefix = `[^${nextNum}]`;
-      if (suffix.includes('[^1]:')) {
-        actualSuffix = suffix.replace('[^1]', `[^${nextNum}]`);
-      }
+      const inlineMarker = `[^${nextNum}]`;
+      const bottomDefinition = `[^${nextNum}]: `;
+
+      // 2. 현재 커서 위치에 인라인 마커(예: [^1])를 삽입합니다.
+      insertTextNatively(textarea, start, end, inlineMarker);
+
+      // 3. 문서 최하단으로 커서 이동 후 각주 정의부(예: [^1]: )를 추가합니다.
+      // 첫 번째 삽입으로 인해 전체 텍스트 길이가 변경되었으므로 DOM의 최신 value를 참조합니다.
+      const currentVal = textarea.value;
+      const textLength = currentVal.length;
+      
+      // 문서 끝이 개행으로 끝나지 않았다면 개행을 더 추가하여 이전 문단과 겹치지 않게 보호합니다.
+      const prependedNewline = currentVal.endsWith('\n') ? '\n' : '\n\n';
+      const appendText = prependedNewline + bottomDefinition;
+      
+      // 최하단에 텍스트를 주입합니다. 커서는 자연스럽게 추가된 텍스트의 끝으로 이동합니다.
+      insertTextNatively(textarea, textLength, textLength, appendText);
+      
+      // 로직 종료: 포커스가 최하단 각주 정의부에 맞춰지므로 사용자는 바로 내용을 작성할 수 있습니다.
+      return;
     }
 
     let replacement = '';
