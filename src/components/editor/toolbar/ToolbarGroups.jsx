@@ -1,10 +1,15 @@
-// src/components/editor/toolbar/ToolbarGroups.jsx v1.0
-import { useRef, useState, useEffect } from 'react';
+// src/components/editor/toolbar/ToolbarGroups.jsx v1.1
+/*
+ * 파일 설명: 툴바의 버튼 그룹들을 정의한 컴포넌트 묶음입니다.
+ * (v1.1) FormatGroup에 수식(LaTeX)을 삽입할 수 있는 버튼(Sigma)이 추가되었습니다.
+ */
+import { useRef, useEffect } from 'react';
 import { 
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough, 
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
   Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
-  Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash
+  Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash,
+  Sigma // [신규] 수식 버튼용 아이콘 추가
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 
@@ -18,23 +23,24 @@ export const HeadingGroup = ({ handleFormat }) => (
 
 export const FormatGroup = ({ handleFormat }) => (
   <div className="toolbar-group">
-    <button onClick={() => { console.log("굵게 버튼 클릭"); handleFormat('**', '**'); }} title="굵게"><Bold size={18} /></button>
-    <button onClick={() => { console.log("기울임 버튼 클릭"); handleFormat('*', '*'); }} title="기울임"><Italic size={18} /></button>
-    <button onClick={() => { console.log("취소선 버튼 클릭"); handleFormat('~~', '~~'); }} title="취소선"><Strikethrough size={18} /></button>
-    <button onClick={() => { console.log("밑줄 버튼 클릭"); handleFormat('<ins>', '</ins>', false); }} title="밑줄"><Underline size={18} /></button>
-    <button onClick={() => { console.log("위첨자 버튼 클릭"); handleFormat('<sup>', '</sup>', false); }} title="위첨자"><Superscript size={18} /></button>
-    <button onClick={() => { console.log("아래첨자 버튼 클릭"); handleFormat('<sub>', '</sub>', false); }} title="아래첨자"><Subscript size={18} /></button>
-    <button onClick={() => { console.log("인라인 코드 버튼 클릭"); handleFormat('`', '`'); }} title="인라인 코드"><Terminal size={18} /></button>
+    <button onClick={() => handleFormat('**', '**')} title="굵게"><Bold size={18} /></button>
+    <button onClick={() => handleFormat('*', '*')} title="기울임"><Italic size={18} /></button>
+    <button onClick={() => handleFormat('~~', '~~')} title="취소선"><Strikethrough size={18} /></button>
+    <button onClick={() => handleFormat('<ins>', '</ins>', false)} title="밑줄"><Underline size={18} /></button>
+    <button onClick={() => handleFormat('<sup>', '</sup>', false)} title="위첨자"><Superscript size={18} /></button>
+    <button onClick={() => handleFormat('<sub>', '</sub>', false)} title="아래첨자"><Subscript size={18} /></button>
+    <button onClick={() => handleFormat('`', '`')} title="인라인 코드"><Terminal size={18} /></button>
+    <button onClick={() => handleFormat('\n$$\n', '\n$$\n', false)} title="수식 (LaTeX)"><Sigma size={18} /></button>
   </div>
 );
 
 export const ListGroup = ({ handleFormat }) => (
   <div className="toolbar-group">
-    <button onClick={() => { console.log("인용구 버튼 클릭"); handleFormat('> '); }} title="인용구"><Quote size={18} /></button>
-    <button onClick={() => { console.log("글머리 목록 버튼 클릭"); handleFormat('- '); }} title="글머리 목록"><List size={18} /></button>
-    <button onClick={() => { console.log("번호 매기기 버튼 클릭"); handleFormat('1. '); }} title="번호 매기기"><ListOrdered size={18} /></button>
-    <button onClick={() => { console.log("할 일 목록 버튼 클릭"); handleFormat('- [ ] '); }} title="할 일 목록"><CheckSquare size={18} /></button>
-    <button onClick={() => { console.log("구분선 버튼 클릭"); handleFormat('\n---\n\n', '', false); }} title="구분선"><Minus size={18} /></button>
+    <button onClick={() => handleFormat('> ')} title="인용구"><Quote size={18} /></button>
+    <button onClick={() => handleFormat('- ')} title="글머리 목록"><List size={18} /></button>
+    <button onClick={() => handleFormat('1. ')} title="번호 매기기"><ListOrdered size={18} /></button>
+    <button onClick={() => handleFormat('- [ ] ')} title="할 일 목록"><CheckSquare size={18} /></button>
+    <button onClick={() => handleFormat('\n---\n\n', '', false)} title="구분선"><Minus size={18} /></button>
   </div>
 );
 
@@ -47,15 +53,13 @@ export const MediaGroup = ({ handleFormat }) => (
   </div>
 );
 
-export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown }) => {
+export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown, onOpenDetailsModal }) => {
   const alertRef = useRef(null);
   const diffRef = useRef(null);
 
-  // 외부 클릭 시 드롭다운 닫기 로직 수정 (포털 내부 클릭 예외 처리)
   useEffect(() => {
     const handleClick = (e) => {
       console.log("드롭다운 외부 클릭 감지 이벤트 발생");
-      // 포털 드롭다운 메뉴 내부를 클릭한 경우 드롭다운이 닫히지 않도록 예외 처리
       if (e.target.closest('.dropdown-menu-portal')) {
         console.log("클릭 요소가 드롭다운 내부이므로 닫기 동작을 무시합니다.");
         return;
@@ -75,8 +79,8 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown }) => 
   };
 
   const insertDetails = () => {
-    console.log("Details(접기) 삽입 호출");
-    handleFormat("\n<details>\n<summary>클릭하여 펼치기</summary>\n\n여기에 숨겨진 내용을 작성합니다.\n\n</details>\n", '', false);
+    console.log("Details(접기) 모달 호출");
+    onOpenDetailsModal();
     setOpenDropdown(null);
   };
 
@@ -114,7 +118,7 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown }) => 
         </button>
         <button className="dropdown-item details-template" onClick={() => {
           console.log("주석 삽입 호출");
-          handleFormat('', false);
+          handleFormat('<!-- ', ' -->', false);
           setOpenDropdown(null);
         }}>
           <MessageSquareDashed size={14} style={{ marginRight: '6px', display: 'inline' }}/> HTML 주석 (숨김)

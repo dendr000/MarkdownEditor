@@ -1,42 +1,49 @@
-// src/components/editor/Editor.jsx v8.0
+// src/components/editor/Editor.jsx v9.0
 /*
  * 파일 설명: 실행 취소(Ctrl+Z) 기록 보존을 위해 네이티브 execCommand API를 도입하고, 단축키(Ctrl+B, Ctrl+Q 등) 및 각주 자동 넘버링 로직이 추가된 에디터 메인 컴포넌트입니다.
+ * (v9.0 수정사항): 실시간 문서 개요(Outline) 스캔 훅 및 우측 플로팅 미니맵 UI가 통합되었습니다.
  */
 import { useRef, useState } from 'react';
-import { Table, FileCode2, FolderTree, Workflow } from 'lucide-react';
+import { Table, FileCode2, FolderTree, Workflow, Library, ListTree } from 'lucide-react';
 import TableModal from '../table/TableModal';
 import HtmlTableModal from '../table/HtmlTableModal';
 import FolderTreeModal from '../tree/FolderTreeModal';
 import DiagramModal from '../diagram/DiagramModal';
+import DetailsModal from './toolbar/DetailsModal';
+import TemplateModal from './toolbar/TemplateModal';
+import OutlineMinimap from './OutlineMinimap'; // 신규 미니맵 임포트
 import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup } from './toolbar/ToolbarGroups';
 import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
 import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
-import './Editor.css'; 
+import { useOutline } from '../../hooks/editor/useOutline'; // 신규 아웃라인 훅 임포트
+import './Editor.css';
 
 function Editor({ markdown, setMarkdown }) {
-  console.log("Editor 컴포넌트(v8.0) 렌더링 시작 - Undo 보존 및 단축키 바인딩 적용");
-  
   const textareaRef = useRef(null);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
   const [isHtmlTableModalOpen, setIsHtmlTableModalOpen] = useState(false);
   const [isFolderTreeModalOpen, setIsFolderTreeModalOpen] = useState(false);
   const [isDiagramModalOpen, setIsDiagramModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false); // 미니맵 토글 상태 추가
+  
   const [selectedTableText, setSelectedTableText] = useState('');
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
+  
+  // 마크다운 변경 시 실시간으로 헤더를 스캔하여 목차 데이터로 변환
+  const outlineData = useOutline(markdown);
 
-  // 네이티브 텍스트 입력을 발생시켜 실행 취소(Ctrl+Z) 스택을 유지하는 코어 삽입 함수
   const insertTextNatively = (textarea, start, end, replacement) => {
     textarea.focus();
     textarea.setSelectionRange(start, end);
-    // execCommand는 브라우저 고유의 Undo 내역을 보존하는 유일한 표준 방식입니다.
     const success = document.execCommand('insertText', false, replacement);
     if (!success) {
-      // execCommand가 막힌 특수 환경일 경우 강제 주입 후 리액트 이벤트 발송
       textarea.setRangeText(replacement, start, end, 'end');
       textarea.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
     }
@@ -52,7 +59,6 @@ function Editor({ markdown, setMarkdown }) {
     let prefix = originalPrefix;
     let actualSuffix = suffix;
 
-    // [핵심 해결] 각주 삽입 감지 시 번호 자동 카운팅 로직 가로채기
     if (prefix === '[^1]') {
       const regex = /\[\^(\d+)\]/g;
       let maxNum = 0;
@@ -80,10 +86,8 @@ function Editor({ markdown, setMarkdown }) {
       newCursorOffset = prefix.length + selectedText.length;
     }
 
-    // 상태 직접 변경(setMarkdown) 대신 네이티브 주입 실행
     insertTextNatively(textarea, start, end, replacement);
 
-    // 포맷팅 후 커서 위치 재조정 (선택했던 텍스트만 다시 블록 지정)
     setTimeout(() => {
       textarea.setSelectionRange(start + prefix.length, start + newCursorOffset);
     }, 0);
@@ -106,36 +110,17 @@ function Editor({ markdown, setMarkdown }) {
   };
 
   const handleKeyDown = (e) => {
-    // [핵심 해결] 단축키 지원 추가 (Ctrl+B, Ctrl+I, Ctrl+Q 등)
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
-      if (key === 'b') {
-        e.preventDefault();
-        handleFormat('**', '**');
-        return;
-      }
-      if (key === 'i') {
-        e.preventDefault();
-        handleFormat('*', '*');
-        return;
-      }
-      if (key === 'q') {
-        e.preventDefault();
-        // 각주는 번호 자동 카운팅 로직이 있으므로 '[^1]'을 보냅니다.
-        handleFormat('[^1]', ''); 
-        return;
-      }
-      if (key === 'k') {
-        e.preventDefault();
-        handleFormat('[', '](url)');
-        return;
-      }
+      if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
+      if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
+      if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
+      if (key === 'k') { e.preventDefault(); handleFormat('[', '](url)'); return; }
     }
 
     const isAutocompleteHandled = handleAutocompleteKeyDown(e);
     if (isAutocompleteHandled) return;
 
-    // 엔터키 리스트 자동 완성 (Undo 보존 방식 적용)
     if (e.key === 'Enter' && !e.shiftKey) {
       const textarea = textareaRef.current;
       if (!textarea) return;
@@ -152,11 +137,9 @@ function Editor({ markdown, setMarkdown }) {
         const content = match[2].trim();
 
         if (content === '') {
-          // 비어있는 기호 위에서 엔터를 치면 기호를 지우고 줄바꿈
           const lineStartIdx = start - currentLine.length;
           insertTextNatively(textarea, lineStartIdx, start, '\n');
         } else {
-          // 다음 줄에 동일한 기호 생성
           const injection = prefix === '>' ? '\n> ' : '\n- ';
           insertTextNatively(textarea, start, start, injection);
         }
@@ -166,6 +149,8 @@ function Editor({ markdown, setMarkdown }) {
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
+      
+      {/* 툴바 영역 */}
       <div className="editor-toolbar-wrapper">
         <div className="editor-toolbar">
           <HeadingGroup handleFormat={handleFormat} />
@@ -176,9 +161,20 @@ function Editor({ markdown, setMarkdown }) {
           <div className="toolbar-divider" />
           <MediaGroup handleFormat={handleFormat} />
           <div className="toolbar-divider" />
-          <GithubGroup handleFormat={handleFormat} openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} />
+          <GithubGroup 
+            handleFormat={handleFormat} 
+            openDropdown={openDropdown} 
+            setOpenDropdown={setOpenDropdown} 
+            onOpenDetailsModal={() => {
+              prepareModalState('Details');
+              setIsDetailsModalOpen(true);
+            }} 
+          />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
+            {/* 아웃라인 미니맵 토글 버튼 */}
+            <button onClick={() => setIsOutlineOpen(!isOutlineOpen)} className={isOutlineOpen ? 'active-btn' : ''} title="문서 개요 (미니맵) 켜기/끄기"><ListTree size={18} /></button>
+            <button onClick={() => { setIsTemplateModalOpen(true); }} title="템플릿 보관함"><Library size={18} /></button>
             <button onClick={() => { prepareModalState('MD Table'); setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
             <button onClick={() => { prepareModalState('HTML Table'); setIsHtmlTableModalOpen(true); }} title="고급 HTML 표 삽입"><FileCode2 size={18} /></button>
             <button onClick={() => { prepareModalState('Folder Tree'); setIsFolderTreeModalOpen(true); }} title="폴더 트리 생성"><FolderTree size={18} /></button>
@@ -187,6 +183,7 @@ function Editor({ markdown, setMarkdown }) {
         </div>
       </div>
       
+      {/* 마크다운 입력 영역 */}
       <textarea
         ref={textareaRef}
         className={`editor-textarea ${isDragActive ? 'drag-active' : ''}`}
@@ -210,10 +207,22 @@ function Editor({ markdown, setMarkdown }) {
         onSelect={handleSelectSuggest} 
       />
 
+      {/* 우측 상단 플로팅 미니맵 마운트 */}
+      <OutlineMinimap 
+        outline={outlineData} 
+        textareaRef={textareaRef} 
+        isOpen={isOutlineOpen} 
+        onClose={() => setIsOutlineOpen(false)} 
+      />
+
+      {/* 모달 렌더링 영역 */}
       <TableModal isOpen={isTableModalOpen} onClose={() => setIsTableModalOpen(false)} onInsert={handleInsertTable} initialTableMarkdown={selectedTableText} />
       <HtmlTableModal isOpen={isHtmlTableModalOpen} onClose={() => setIsHtmlTableModalOpen(false)} onInsert={handleInsertTable} initialTableHtml={selectedTableText} />
       <FolderTreeModal isOpen={isFolderTreeModalOpen} onClose={() => setIsFolderTreeModalOpen(false)} onInsert={handleInsertTable} />
       <DiagramModal isOpen={isDiagramModalOpen} onClose={() => setIsDiagramModalOpen(false)} onInsert={handleInsertTable} initialDiagramMarkdown={selectedTableText} />
+      <DetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} onInsert={handleInsertTable} initialContent={selectedTableText} />
+      <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} onInsert={handleInsertTable} />
+      
     </div>
   );
 }
