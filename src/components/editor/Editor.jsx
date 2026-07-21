@@ -12,8 +12,10 @@ import DiagramModal from '../diagram/DiagramModal';
 import DetailsModal from './toolbar/DetailsModal';
 import TemplateModal from './toolbar/TemplateModal';
 import MathModal from './toolbar/MathModal';
+import CommitGuideModal from './toolbar/CommitGuideModal'; // 커밋 가이드 임포트
 import OutlineMinimap from './OutlineMinimap';
 import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup } from './toolbar/ToolbarGroups';
+import { GitCommit } from 'lucide-react'; // 아이콘 임포트 추가
 import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
 import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
@@ -29,7 +31,8 @@ function Editor({ markdown, setMarkdown }) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
-  const [isOutlineOpen, setIsOutlineOpen] = useState(false); // 미니맵 토글 상태 추가
+  const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false); // 가이드 상태 추가
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   
   const [selectedTableText, setSelectedTableText] = useState('');
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
@@ -174,9 +177,9 @@ function Editor({ markdown, setMarkdown }) {
           />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
-            {/* 아웃라인 미니맵 토글 버튼 */}
             <button onClick={() => setIsOutlineOpen(!isOutlineOpen)} className={isOutlineOpen ? 'active-btn' : ''} title="문서 개요 (미니맵) 켜기/끄기"><ListTree size={18} /></button>
             <button onClick={() => { setIsTemplateModalOpen(true); }} title="템플릿 보관함"><Library size={18} /></button>
+            <button onClick={() => { setIsCommitGuideOpen(true); }} title="Git 커밋 가이드"><GitCommit size={18} /></button> {/* 버튼 추가 */}
             <button onClick={() => { prepareModalState('MD Table'); setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
             <button onClick={() => { prepareModalState('HTML Table'); setIsHtmlTableModalOpen(true); }} title="고급 HTML 표 삽입"><FileCode2 size={18} /></button>
             <button onClick={() => { prepareModalState('Folder Tree'); setIsFolderTreeModalOpen(true); }} title="폴더 트리 생성"><FolderTree size={18} /></button>
@@ -225,6 +228,7 @@ function Editor({ markdown, setMarkdown }) {
       <DetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} onInsert={handleInsertTable} initialContent={selectedTableText} />
       <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} onInsert={handleInsertTable} />
       <MathModal isOpen={isMathModalOpen} onClose={() => setIsMathModalOpen(false)} onInsert={handleInsertTable} />
+      <CommitGuideModal isOpen={isCommitGuideOpen} onClose={() => setIsCommitGuideOpen(false)} onInsert={handleInsertTable} /> {/* 가이드 마운트 */}
       
     </div>
   );
