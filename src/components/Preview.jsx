@@ -1,7 +1,8 @@
-// src/components/Preview.jsx v2.3
+// src/components/Preview.jsx v2.5
 /*
  * 파일 설명: 마크다운 텍스트를 전달받아 깃허브 스타일로 렌더링하는 실시간 뷰어입니다.
- * (v2.3) remark-math 및 rehype-katex 플러그인을 파이프라인에 주입하여 수학/통계 수식($$) 렌더링 기능을 추가했습니다.
+ * (v2.5 수정사항): 에디터에서 스페이스 2개 줄바꿈을 직접 제어하므로 불필요해진 remark-breaks 플러그인을 제거했습니다.
+ * 연결 위치: src/App.jsx 내부
  */
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -100,7 +101,10 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
 };
 
 function Preview({ markdown }) {
+  // 깃허브 스타일 마크다운 전처리 로직 실행
   const processedMarkdown = preprocessGitHubFlavored(markdown);
+  
+  console.log("[Preview v2.5] 실시간 마크다운 뷰어 렌더링 실행 - remarkBreaks 플러그인 제거됨");
 
   return (
     <div className="preview-container">

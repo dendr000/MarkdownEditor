@@ -4,7 +4,7 @@
  * (v9.0 수정사항): 실시간 문서 개요(Outline) 스캔 훅 및 우측 플로팅 미니맵 UI가 통합되었습니다.
  */
 import { useRef, useState, useEffect } from 'react';
-import { Table, FileCode2, FolderTree, Workflow, Library, ListTree } from 'lucide-react';
+import { Table, FileCode2, FolderTree, Workflow, Library } from 'lucide-react';
 import TableModal from '../table/TableModal';
 import HtmlTableModal from '../table/HtmlTableModal';
 import FolderTreeModal from '../tree/FolderTreeModal';
@@ -13,6 +13,7 @@ import DetailsModal from './toolbar/DetailsModal';
 import TemplateModal from './toolbar/TemplateModal';
 import MathModal from './toolbar/MathModal';
 import CommitGuideModal from './toolbar/CommitGuideModal'; // 커밋 가이드 임포트
+import FindReplaceModal from './toolbar/FindReplaceModal'; // [신규] 찾아 바꾸기 모달 임포트
 import OutlineMinimap from './OutlineMinimap';
 import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup } from './toolbar/ToolbarGroups';
 import { GitCommit } from 'lucide-react'; // 아이콘 임포트 추가
@@ -33,7 +34,7 @@ function Editor({ markdown, setMarkdown }) {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
   const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false);
-  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false); // [신규] 찾아 바꾸기 모달 상태
   
   const [selectedTableText, setSelectedTableText] = useState('');
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
@@ -158,9 +159,42 @@ function Editor({ markdown, setMarkdown }) {
     insertTextNatively(textarea, start, end, tableOutput);
   };
 
+  // [신규] 찾아 바꾸기 실행 로직 (문서 전체 대상, 실행 취소 보존)
+  const handleReplaceAll = (findStr, replaceStr) => {
+    console.log(`[Editor v9.1] 모두 바꾸기 실행 - 찾을 내용: '${findStr}', 바꿀 내용: '${replaceStr}'`);
+    if (!textareaRef.current || !findStr) return;
+    
+    const textarea = textareaRef.current;
+    const currentVal = textarea.value;
+    
+    // 사용자가 입력한 리터럴 '\n' 문자를 실제 줄바꿈 문자로 치환
+    const parsedFind = findStr.replace(/\\n/g, '\n');
+    const parsedReplace = replaceStr.replace(/\\n/g, '\n');
+    
+    // 정규식 특수문자 충돌을 방지하기 위해 split과 join을 사용하여 전체 문자열 치환
+    const newVal = currentVal.split(parsedFind).join(parsedReplace);
+    
+    if (currentVal !== newVal) {
+      // 문서 전체(0부터 끝까지)를 블록 지정 후 한 번에 덮어씌워 Ctrl+Z 스택을 1회로 보존
+      insertTextNatively(textarea, 0, currentVal.length, newVal);
+      console.log("[Editor v9.1] 모두 바꾸기 완료");
+    } else {
+      console.log("[Editor v9.1] 일치하는 텍스트가 없어 치환을 생략합니다.");
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
+      
+      // [신규] Ctrl + Shift + F: 찾아 바꾸기 모달 호출
+      if (e.shiftKey && key === 'f') {
+        e.preventDefault();
+        console.log("[Editor v9.2] 단축키 입력 감지: Ctrl + Shift + F (찾아 바꾸기)");
+        setIsFindReplaceOpen(true);
+        return;
+      }
+
       if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
       if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
       if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
@@ -169,6 +203,16 @@ function Editor({ markdown, setMarkdown }) {
 
     const isAutocompleteHandled = handleAutocompleteKeyDown(e);
     if (isAutocompleteHandled) return;
+
+    // [신규] Shift + Enter 입력 시 명시적 줄바꿈 태그(<br>)와 엔터를 동시 삽입
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      insertTextNatively(textarea, start, start, '<br>\n');
+      return;
+    }
 
     if (e.key === 'Enter' && !e.shiftKey) {
       const textarea = textareaRef.current;
@@ -192,6 +236,10 @@ function Editor({ markdown, setMarkdown }) {
           const injection = prefix === '>' ? '\n> ' : '\n- ';
           insertTextNatively(textarea, start, start, injection);
         }
+      } else {
+        // [신규] 일반 텍스트에서 Enter 입력 시 마크다운 표준 줄바꿈(스페이스 2개) 적용
+        e.preventDefault();
+        insertTextNatively(textarea, start, start, '  \n');
       }
     }
   };
@@ -221,9 +269,8 @@ function Editor({ markdown, setMarkdown }) {
           />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
-            <button onClick={() => setIsOutlineOpen(!isOutlineOpen)} className={isOutlineOpen ? 'active-btn' : ''} title="문서 개요 (미니맵) 켜기/끄기"><ListTree size={18} /></button>
             <button onClick={() => { setIsTemplateModalOpen(true); }} title="템플릿 보관함"><Library size={18} /></button>
-            <button onClick={() => { setIsCommitGuideOpen(true); }} title="Git 커밋 가이드"><GitCommit size={18} /></button> {/* 버튼 추가 */}
+            <button onClick={() => { setIsCommitGuideOpen(true); }} title="Git 커밋 가이드"><GitCommit size={18} /></button>
             <button onClick={() => { prepareModalState('MD Table'); setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
             <button onClick={() => { prepareModalState('HTML Table'); setIsHtmlTableModalOpen(true); }} title="고급 HTML 표 삽입"><FileCode2 size={18} /></button>
             <button onClick={() => { prepareModalState('Folder Tree'); setIsFolderTreeModalOpen(true); }} title="폴더 트리 생성"><FolderTree size={18} /></button>
@@ -256,12 +303,10 @@ function Editor({ markdown, setMarkdown }) {
         onSelect={handleSelectSuggest} 
       />
 
-      {/* 우측 상단 플로팅 미니맵 마운트 */}
+      {/* 좌측 고정 슬라이드 서랍형 TOC 마운트 (상태 제어 불필요) */}
       <OutlineMinimap 
         outline={outlineData} 
         textareaRef={textareaRef} 
-        isOpen={isOutlineOpen} 
-        onClose={() => setIsOutlineOpen(false)} 
       />
 
       {/* 모달 렌더링 영역 */}
@@ -272,7 +317,9 @@ function Editor({ markdown, setMarkdown }) {
       <DetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} onInsert={handleInsertTable} initialContent={selectedTableText} />
       <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} onInsert={handleInsertTable} />
       <MathModal isOpen={isMathModalOpen} onClose={() => setIsMathModalOpen(false)} onInsert={handleInsertTable} />
-      <CommitGuideModal isOpen={isCommitGuideOpen} onClose={() => setIsCommitGuideOpen(false)} onInsert={handleInsertTable} /> {/* 가이드 마운트 */}
+      <CommitGuideModal isOpen={isCommitGuideOpen} onClose={() => setIsCommitGuideOpen(false)} onInsert={handleInsertTable} />
+      {/* 마크다운 텍스트 props(markdown={markdown})가 반드시 전달되어야 개수 파악이 가능합니다. */}
+      <FindReplaceModal isOpen={isFindReplaceOpen} onClose={() => setIsFindReplaceOpen(false)} onReplaceAll={handleReplaceAll} markdown={markdown} />
       
     </div>
   );
