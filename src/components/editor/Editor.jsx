@@ -1,8 +1,8 @@
-// src/components/editor/Editor.jsx v9.4
+// src/components/editor/Editor.jsx v9.5
 /*
  * 파일 설명: 마크다운 텍스트 편집 및 매크로 기능을 제공하는 에디터 메인 컴포넌트입니다.
- * (v9.4 수정사항): 5초 디바운스 자동 저장 및 Ctrl+S 수동 저장 로직이 백엔드 API와 연동되었습니다.
- * OutlineMinimap이 최상위(App.jsx)로 분리되어 내부 렌더링에서 제거되었습니다.
+ * (v9.5 수정사항): 파일 크기(250줄 제약) 최적화를 위해 코어 DOM 연산을 editorCore.js로 분리하였으며,
+ * 확장자 감지 테마 변경 및 다중 줄 Tab 들여쓰기 로직이 적용되었습니다.
  */
 import { useState, useEffect } from 'react';
 import { Table, FileCode2, FolderTree, Workflow, Library, GitCommit } from 'lucide-react';
@@ -19,7 +19,8 @@ import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup } from '.
 import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
 import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
-import { saveFileContent } from '../../api/fileApi'; // [신규] API 저장 유틸 임포트
+import { saveFileContent } from '../../api/fileApi';
+import { insertTextNatively, processTabIndentation } from '../../utils/editorCore'; // [신규] 코어 연산 유틸
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
@@ -40,31 +41,27 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
 
-  // [신규] 5초 지연(Debounce) 자동 저장 로직
+  // 5초 지연(Debounce) 자동 저장 로직
   useEffect(() => {
     if (!selectedFile) return;
     const timer = setTimeout(async () => {
       try {
         await saveFileContent(selectedFile, markdown);
-        console.log(`[Editor] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
+        console.log(`[Editor v9.5] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
       } catch (e) {
         console.error('자동 저장 실패', e);
       }
     }, 5000);
-    
-    // 타이머 진행 중 사용자가 타건(입력)을 하면 기존 타이머를 취소하고 5초를 다시 카운트함
     return () => clearTimeout(timer);
   }, [markdown, selectedFile]);
 
-  const insertTextNatively = (textarea, start, end, replacement) => {
-    textarea.focus();
-    textarea.setSelectionRange(start, end);
-    const success = document.execCommand('insertText', false, replacement);
-    if (!success) {
-      textarea.setRangeText(replacement, start, end, 'end');
-      textarea.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-    }
+  // [신규] 파일 확장자 추출 로직
+  const getFileExtension = () => {
+    if (!selectedFile) return 'md';
+    const parts = selectedFile.split('.');
+    return parts.length > 1 ? parts.pop().toLowerCase() : 'md';
   };
+  const fileExt = getFileExtension();
 
   const handleFormat = (originalPrefix, suffix = '', isBlock = false) => {
     if (!textareaRef.current) return;
@@ -72,10 +69,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = markdown.substring(start, end);
-    let prefix = originalPrefix;
-    let actualSuffix = suffix;
 
-    if (prefix === '[^1]') {
+    if (originalPrefix === '[^1]') {
       const regex = /\[\^(\d+)\]/g;
       let maxNum = 0, match;
       while ((match = regex.exec(markdown)) !== null) {
@@ -85,9 +80,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       const nextNum = maxNum + 1;
       insertTextNatively(textarea, start, end, `[^${nextNum}]`);
       const currentVal = textarea.value;
-      const textLength = currentVal.length;
       const appendText = (currentVal.endsWith('\n') ? '\n' : '\n\n') + `[^${nextNum}]: `;
-      insertTextNatively(textarea, textLength, textLength, appendText);
+      insertTextNatively(textarea, currentVal.length, currentVal.length, appendText);
       return;
     }
 
@@ -95,14 +89,14 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
     let newCursorOffset = 0;
     if (isBlock) {
       const defaultPlaceholder = '내용을 입력하세요';
-      replacement = prefix + (selectedText || defaultPlaceholder) + actualSuffix;
-      newCursorOffset = prefix.length + (selectedText ? selectedText.length : defaultPlaceholder.length);
+      replacement = originalPrefix + (selectedText || defaultPlaceholder) + suffix;
+      newCursorOffset = originalPrefix.length + (selectedText ? selectedText.length : defaultPlaceholder.length);
     } else {
-      replacement = prefix + selectedText + actualSuffix;
-      newCursorOffset = prefix.length + selectedText.length;
+      replacement = originalPrefix + selectedText + suffix;
+      newCursorOffset = originalPrefix.length + selectedText.length;
     }
     insertTextNatively(textarea, start, end, replacement);
-    setTimeout(() => textarea.setSelectionRange(start + prefix.length, start + newCursorOffset), 0);
+    setTimeout(() => textarea.setSelectionRange(start + originalPrefix.length, start + newCursorOffset), 0);
   };
 
   const prepareModalState = (modalType) => {
@@ -145,27 +139,17 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
       
-      // [신규] Ctrl+S 입력 시 강제 수동 저장 API 호출
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile) {
-          saveFileContent(selectedFile, markdown).then(() => {
-            console.log(`[Editor] 수동(Ctrl+S) 저장 완료: ${selectedFile}`);
-          });
-        } else {
-          console.log("[Editor] 선택된 파일이 없어 저장을 생략합니다.");
-        }
+        if (selectedFile) saveFileContent(selectedFile, markdown).then(() => console.log(`[Editor] 수동 저장 완료: ${selectedFile}`));
         return;
       }
-
       if (e.shiftKey && key === 'f') {
         e.preventDefault();
-        const textarea = textareaRef.current;
-        if (textarea) setReplaceSelectionRange({ start: textarea.selectionStart, end: textarea.selectionEnd });
+        if (textareaRef.current) setReplaceSelectionRange({ start: textareaRef.current.selectionStart, end: textareaRef.current.selectionEnd });
         setIsFindReplaceOpen(true);
         return;
       }
-
       if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
       if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
       if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
@@ -173,6 +157,13 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
     }
 
     if (handleAutocompleteKeyDown(e)) return;
+
+    // [신규] VSC 스타일 Tab 제어 로직 바인딩
+    if (e.key === 'Tab') {
+      if (!textareaRef.current) return;
+      processTabIndentation(textareaRef.current, e);
+      return;
+    }
 
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
@@ -184,14 +175,12 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       const textarea = textareaRef.current;
       if (!textarea) return;
       const start = textarea.selectionStart;
-      const textBeforeCursor = markdown.substring(0, start);
-      const currentLine = textBeforeCursor.split('\n').pop();
+      const currentLine = markdown.substring(0, start).split('\n').pop();
       const match = currentLine.match(/^([>-])\s*(.*)/);
 
       if (match) {
         e.preventDefault();
-        const content = match[2].trim();
-        if (content === '') {
+        if (match[2].trim() === '') {
           insertTextNatively(textarea, start - currentLine.length, start, '\n');
         } else {
           insertTextNatively(textarea, start, start, match[1] === '>' ? '\n> ' : '\n- ');
@@ -230,7 +219,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       
       <textarea
         ref={textareaRef}
-        className={`editor-textarea ${isDragActive ? 'drag-active' : ''}`}
+        // [신규] 추출된 확장자(ext-html 등)를 클래스로 주입
+        className={`editor-textarea ext-${fileExt} ${isDragActive ? 'drag-active' : ''}`}
         value={markdown}
         onChange={(e) => {
           setMarkdown(e.target.value);
@@ -247,7 +237,6 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       />
 
       <AutocompletePopup suggestState={suggestState} currentSuggestList={currentSuggestList} onSelect={handleSelectSuggest} />
-
       <TableModal isOpen={isTableModalOpen} onClose={() => setIsTableModalOpen(false)} onInsert={handleInsertTable} initialTableMarkdown={selectedTableText} />
       <HtmlTableModal isOpen={isHtmlTableModalOpen} onClose={() => setIsHtmlTableModalOpen(false)} onInsert={handleInsertTable} initialTableHtml={selectedTableText} />
       <FolderTreeModal isOpen={isFolderTreeModalOpen} onClose={() => setIsFolderTreeModalOpen(false)} onInsert={handleInsertTable} />

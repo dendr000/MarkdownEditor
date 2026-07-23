@@ -1,10 +1,10 @@
-/* src/components/Header.css v2.0 */
+/* src/components/Header.css v2.1 */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
-  height: 50px; /* 헤더 높이 압축 */
+  height: 50px;
   background-color: #24292f;
   color: #ffffff;
   border-bottom: 1px solid #1b1f24;
@@ -15,7 +15,7 @@
   align-items: center;
 }
 
-.header-left { flex: 1; gap: 8px; }
+.header-left { flex: 1; gap: 8px; overflow: hidden; }
 .header-center { flex: 1; justify-content: center; }
 .header-right { flex: 1; justify-content: flex-end; }
 
@@ -32,10 +32,23 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .header-icon-btn:hover { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
 .header-icon-btn.active { color: #ffffff; background-color: rgba(255, 255, 255, 0.15); }
+
+/* 현재 열려있는 파일 경로 텍스트 */
+.header-file-path {
+  margin-left: 8px;
+  font-size: 13px;
+  color: #8c959f; /* 옅은 회색 */
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
 
 /* 중앙 뷰 모드 그룹 */
 .view-mode-group {

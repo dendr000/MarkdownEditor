@@ -233,3 +233,31 @@
   background-color: #d0d7de;
   border-radius: 4px;
 }
+
+/* 파일 확장자별 에디터 텍스트 테마 색상 지정 (안전성을 위한 단일 테마 구조 적용) */
+/* 기본 마크다운 / 텍스트 (GitHub 기본 회색/검정) */
+.editor-textarea.ext-md,
+.editor-textarea.ext-txt { 
+  color: #24292f; 
+}
+
+/* HTML 파일 (파란색 테마) */
+.editor-textarea.ext-html { 
+  color: #0550ae; 
+}
+
+/* CSS 파일 (보라색 테마) */
+.editor-textarea.ext-css { 
+  color: #8250df; 
+}
+
+/* JSON 파일 (녹색 테마) */
+.editor-textarea.ext-json { 
+  color: #116329; 
+}
+
+/* JS 등 스크립트 파일 (주황/빨강 톤) */
+.editor-textarea.ext-js,
+.editor-textarea.ext-jsx { 
+  color: #cf222e; 
+}

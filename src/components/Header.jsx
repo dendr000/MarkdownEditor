@@ -1,27 +1,27 @@
-// src/components/Header.jsx v2.0
+// src/components/Header.jsx v2.1
 /*
  * 파일 설명: 앱 상단의 헤더 컴포넌트입니다.
- * (v2.0 수정사항): 불필요한 타이틀 텍스트를 제거하고 뷰 모드 전환 및 탐색기(Drawer) 토글 버튼을 헤더 내부로 편입했습니다.
+ * (v2.1 수정사항): 선택된 파일의 경로 및 이름을 옅은 색상으로 표시하는 UI가 추가되었습니다.
  */
 import { useState } from 'react';
 import { PanelLeft, Columns, PanelRight, FolderTree } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
-function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen }) {
+function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen, selectedFile }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(markdown);
     if (success) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // 2초 후 원래 아이콘으로 복구
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
     <header className="header">
-      {/* 좌측: 탐색기 토글 및 깃허브 로고 */}
+      {/* 좌측: 탐색기 토글, 깃허브 로고 및 파일 경로 */}
       <div className="header-left">
         <button 
           className={`header-icon-btn ${isExplorerOpen ? 'active' : ''}`}
@@ -33,6 +33,13 @@ function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorer
         <svg height="24" viewBox="0 0 16 16" width="24" fill="currentColor" style={{ marginLeft: '8px' }}>
           <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
         </svg>
+        
+        {/* 현재 열려있는 파일의 경로 표시 영역 */}
+        {selectedFile && (
+          <span className="header-file-path" title={selectedFile}>
+            {selectedFile}
+          </span>
+        )}
       </div>
       
       {/* 중앙: 뷰 모드 컨트롤 */}
@@ -50,7 +57,7 @@ function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorer
         </div>
       </div>
       
-      {/* 우측: 복사 버튼 등 */}
+      {/* 우측: 복사 버튼 */}
       <div className="header-right">
         <button className="copy-btn" onClick={handleCopy} title="전체 복사">
           {copied ? (
