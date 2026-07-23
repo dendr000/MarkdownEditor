@@ -6,7 +6,7 @@
 import { useState } from 'react';
 
 // FIXME: 여기에 발급받은 본인의 ImgBB API Key를 입력하세요.
-const IMGBB_API_KEY = 'YOUR_IMGBB_API_KEY_HERE';
+const IMGBB_API_KEY = import.meta.env.VITE_IMAGE_API_KEY;
 
 export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
   const [isDragActive, setIsDragActive] = useState(false);

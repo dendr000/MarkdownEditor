@@ -1,5 +1,6 @@
-/* src/App.css v1.2 */
+/* src/App.css v1.3 */
 /* 파일 설명: 앱의 최상단 레이아웃 및 뷰포트 크기를 관리하는 CSS */
+/* (v1.3 수정사항): 뷰 모드 컨트롤 바 및 패널 분할 스타일이 추가되었습니다. */
 /* 연결 위치: src/App.jsx 컴포넌트에 적용되며 앱 전체의 뼈대를 구성함 */
 
 * {
@@ -29,8 +30,63 @@ body {
   min-width: 1000px; /* 창을 줄였을 때 앱이 깨지지 않도록 현재 보이는 크기 수준을 최소 너비로 고정 */
 }
 
+/* 뷰 모드 컨트롤 바 컨테이너 */
+.view-mode-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
+}
+
+/* 뷰 모드 전환 버튼 기본 스타일 (아이콘 전용) */
+.view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #57606a;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* 뷰 모드 전환 버튼 호버 액션 */
+.view-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* 뷰 모드 전환 버튼 활성화(현재 모드) 상태 */
+.view-btn.active {
+  background-color: #0969da;
+  color: #ffffff;
+  border-color: #0969da;
+}
+
 .main-content {
   display: flex;
   flex: 1;
-  height: calc(100vh - 60px); /* 헤더 영역(60px) 제외 */
+  /* 상단 헤더(약 60px 추정)와 뷰 컨트롤 바(약 50px)의 결합된 높이를 제외하여 레이아웃 깨짐 방지 */
+  height: calc(100vh - 110px); 
+  overflow: hidden;
+}
+
+/* 에디터 및 프리뷰 각각의 창(Pane) 스타일 */
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%; /* 단독 뷰일 때 화면 100%를 차지하도록 확장 */
+}
+
+/* 양면 뷰(split) 상태일 때 좌측 창(preview-pane) 우측에 구분선을 그려 시각적 분리 */
+.mode-split .preview-pane {
+  border-right: 1px solid #d0d7de;
 }

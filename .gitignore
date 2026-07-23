@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/src
+/src/hooks/editor
+
+# 환경변수 파일 무시
+.env
+.env.local

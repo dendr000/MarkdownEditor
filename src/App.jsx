@@ -1,9 +1,11 @@
-// src/App.jsx v1.4
+// src/App.jsx v1.5
 /* * 파일 설명: 애플리케이션의 최상위 부모 컴포넌트로 레이아웃 구조를 잡고 마크다운 원문 텍스트 상태를 하위 컴포넌트들에 공급합니다.
  * 로컬 스토리지 연동으로 데이터 유실을 방지하며, Ctrl+S 단축키 입력 시 브라우저 기본 저장 창을 차단합니다.
+ * (v1.5 수정사항): 실시간 뷰어와 에디터의 화면 분할 및 단독 보기 전환 기능을 텍스트 없이 SVG 아이콘 버튼으로 추가했습니다.
  * 연결 위치: src/main.jsx 파일에서 호출되어 렌더링되며, Header, Preview, Editor 컴포넌트를 자식으로 가집니다.
  */
 import { useState, useEffect } from 'react';
+import { PanelLeft, Columns, PanelRight } from 'lucide-react';
 import Header from './components/Header';
 import Preview from './components/Preview';
 import Editor from './components/editor/Editor';
@@ -12,7 +14,7 @@ import './App.css';
 const initialMarkdown = ``;
 
 function App() {
-  console.log("App 컴포넌트(v1.4) 렌더링 시작 - 최상위 레이아웃 구성 및 로컬 스토리지 연동 가동");
+  console.log("App 컴포넌트(v1.5) 렌더링 시작 - 최상위 레이아웃 구성 및 로컬 스토리지 연동 가동");
   
   // 마크다운 원문 텍스트 상태 초기화 시 로컬 스토리지 확인 후 데이터 복원
   const [markdown, setMarkdown] = useState(() => {
@@ -26,11 +28,19 @@ function App() {
     return initialMarkdown;
   });
 
+  // 뷰 모드 상태 관리 ('split': 양면 보기, 'editor': 작업 뷰만, 'preview': 실시간 뷰만)
+  const [viewMode, setViewMode] = useState('split');
+
   // markdown 상태가 변경될 때마다 로컬 스토리지에 동기화
   useEffect(() => {
     console.log("useEffect 실행 - markdown 상태 변경 감지, 로컬 스토리지에 데이터를 덮어씁니다.");
     localStorage.setItem('markdown-save', markdown);
   }, [markdown]);
+
+  // 뷰 모드 변경 시 로그 출력
+  useEffect(() => {
+    console.log(`useEffect 실행 - 뷰 모드 상태 변경 감지: 현재 모드 = ${viewMode}`);
+  }, [viewMode]);
 
   // 전역 키보드 이벤트 감지를 통한 브라우저 기본 저장(Ctrl+S / Cmd+S) 무력화 로직
   useEffect(() => {
@@ -57,12 +67,56 @@ function App() {
       {/* 상단 헤더 영역 (보통 파일 내보내기/가져오기 등의 공통 기능 위치) */}
       <Header markdown={markdown} />
       
-      <main className="main-content">
-        {/* 좌측 실시간 뷰어 (작성된 마크다운을 깃허브 스타일로 렌더링하여 보여줌) */}
-        <Preview markdown={markdown} />
+      {/* 뷰 모드 전환 컨트롤 바 영역 - 텍스트 없이 SVG 아이콘만 배치 */}
+      <div className="view-mode-controls">
+        <button 
+          className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} 
+          onClick={() => {
+            console.log("실시간 뷰 단독 모드 버튼 클릭 - 뷰 모드를 'preview'로 변경합니다.");
+            setViewMode('preview');
+          }} 
+          title="좌측 뷰(실시간 뷰어) 단독 보기"
+        >
+          <PanelLeft size={18} />
+        </button>
         
-        {/* 우측 에디터 영역 (마크다운 텍스트 작성 및 툴바 기능 제공) */}
-        <Editor markdown={markdown} setMarkdown={setMarkdown} />
+        <button 
+          className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} 
+          onClick={() => {
+            console.log("양면 분할 모드 버튼 클릭 - 뷰 모드를 'split'으로 변경합니다.");
+            setViewMode('split');
+          }} 
+          title="양면 분할 보기"
+        >
+          <Columns size={18} />
+        </button>
+        
+        <button 
+          className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} 
+          onClick={() => {
+            console.log("작업 뷰 단독 모드 버튼 클릭 - 뷰 모드를 'editor'로 변경합니다.");
+            setViewMode('editor');
+          }} 
+          title="우측 뷰(에디터) 단독 보기"
+        >
+          <PanelRight size={18} />
+        </button>
+      </div>
+
+      <main className={`main-content mode-${viewMode}`}>
+        {/* 좌측 실시간 뷰어 - 작업 뷰 단독 모드('editor')가 아닐 때만 렌더링 */}
+        {viewMode !== 'editor' && (
+          <div className="pane preview-pane">
+            <Preview markdown={markdown} />
+          </div>
+        )}
+        
+        {/* 우측 에디터 영역 - 실시간 뷰 단독 모드('preview')가 아닐 때만 렌더링 */}
+        {viewMode !== 'preview' && (
+          <div className="pane editor-pane">
+            <Editor markdown={markdown} setMarkdown={setMarkdown} />
+          </div>
+        )}
       </main>
     </div>
   );
