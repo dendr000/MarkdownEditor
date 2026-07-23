@@ -34,7 +34,8 @@ function Editor({ markdown, setMarkdown }) {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
   const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false);
-  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false); // [신규] 찾아 바꾸기 모달 상태
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false); // 찾아 바꾸기 모달 상태
+  const [replaceSelectionRange, setReplaceSelectionRange] = useState({ start: 0, end: 0 }); // [신규] 찾아 바꾸기 선택 영역 상태
   
   const [selectedTableText, setSelectedTableText] = useState('');
   const [selectionRange, setSelectionRange] = useState({ start: 0, end: 0 });
@@ -159,9 +160,9 @@ function Editor({ markdown, setMarkdown }) {
     insertTextNatively(textarea, start, end, tableOutput);
   };
 
-  // [신규] 찾아 바꾸기 실행 로직 (문서 전체 대상, 실행 취소 보존)
-  const handleReplaceAll = (findStr, replaceStr) => {
-    console.log(`[Editor v9.1] 모두 바꾸기 실행 - 찾을 내용: '${findStr}', 바꿀 내용: '${replaceStr}'`);
+  // [신규] 찾아 바꾸기 실행 로직 (선택 영역 치환 기능 추가, 실행 취소 보존)
+  const handleReplaceAll = (findStr, replaceStr, inSelectionOnly, selectionRange) => {
+    console.log(`[Editor v9.3] 모두 바꾸기 실행 - 찾을 내용: '${findStr}', 바꿀 내용: '${replaceStr}', 선택 영역만: ${inSelectionOnly}`);
     if (!textareaRef.current || !findStr) return;
     
     const textarea = textareaRef.current;
@@ -171,15 +172,31 @@ function Editor({ markdown, setMarkdown }) {
     const parsedFind = findStr.replace(/\\n/g, '\n');
     const parsedReplace = replaceStr.replace(/\\n/g, '\n');
     
-    // 정규식 특수문자 충돌을 방지하기 위해 split과 join을 사용하여 전체 문자열 치환
-    const newVal = currentVal.split(parsedFind).join(parsedReplace);
+    let newVal;
+
+    // 선택 영역에서만 변경이 활성화되어 있고 유효한 드래그 범위가 존재할 경우
+    if (inSelectionOnly && selectionRange && selectionRange.end > selectionRange.start) {
+      const targetStart = selectionRange.start;
+      const targetEnd = selectionRange.end;
+      
+      const beforeSelection = currentVal.substring(0, targetStart);
+      const selectedText = currentVal.substring(targetStart, targetEnd);
+      const afterSelection = currentVal.substring(targetEnd);
+      
+      // 정규식 특수문자 충돌을 방지하기 위해 split과 join을 사용하여 타겟 구간만 치환
+      const replacedSelection = selectedText.split(parsedFind).join(parsedReplace);
+      newVal = beforeSelection + replacedSelection + afterSelection;
+    } else {
+      // 문서 전체 치환
+      newVal = currentVal.split(parsedFind).join(parsedReplace);
+    }
     
     if (currentVal !== newVal) {
       // 문서 전체(0부터 끝까지)를 블록 지정 후 한 번에 덮어씌워 Ctrl+Z 스택을 1회로 보존
       insertTextNatively(textarea, 0, currentVal.length, newVal);
-      console.log("[Editor v9.1] 모두 바꾸기 완료");
+      console.log("[Editor v9.3] 모두 바꾸기 완료");
     } else {
-      console.log("[Editor v9.1] 일치하는 텍스트가 없어 치환을 생략합니다.");
+      console.log("[Editor v9.3] 일치하는 텍스트가 없어 치환을 생략합니다.");
     }
   };
 
@@ -187,10 +204,14 @@ function Editor({ markdown, setMarkdown }) {
     if (e.ctrlKey || e.metaKey) {
       const key = e.key.toLowerCase();
       
-      // [신규] Ctrl + Shift + F: 찾아 바꾸기 모달 호출
+      // [신규] Ctrl + Shift + F: 찾아 바꾸기 모달 호출 및 현재 드래그 영역 저장
       if (e.shiftKey && key === 'f') {
         e.preventDefault();
-        console.log("[Editor v9.2] 단축키 입력 감지: Ctrl + Shift + F (찾아 바꾸기)");
+        const textarea = textareaRef.current;
+        if (textarea) {
+          console.log(`[Editor v9.3] 단축키 입력 감지: Ctrl + Shift + F (찾아 바꾸기). 드래그 범위: ${textarea.selectionStart} ~ ${textarea.selectionEnd}`);
+          setReplaceSelectionRange({ start: textarea.selectionStart, end: textarea.selectionEnd });
+        }
         setIsFindReplaceOpen(true);
         return;
       }
@@ -318,8 +339,8 @@ function Editor({ markdown, setMarkdown }) {
       <TemplateModal isOpen={isTemplateModalOpen} onClose={() => setIsTemplateModalOpen(false)} onInsert={handleInsertTable} />
       <MathModal isOpen={isMathModalOpen} onClose={() => setIsMathModalOpen(false)} onInsert={handleInsertTable} />
       <CommitGuideModal isOpen={isCommitGuideOpen} onClose={() => setIsCommitGuideOpen(false)} onInsert={handleInsertTable} />
-      {/* 마크다운 텍스트 props(markdown={markdown})가 반드시 전달되어야 개수 파악이 가능합니다. */}
-      <FindReplaceModal isOpen={isFindReplaceOpen} onClose={() => setIsFindReplaceOpen(false)} onReplaceAll={handleReplaceAll} markdown={markdown} />
+      {/* 마크다운 본문 및 드래그된 텍스트 범위 인덱스를 모달로 전달합니다. */}
+      <FindReplaceModal isOpen={isFindReplaceOpen} onClose={() => setIsFindReplaceOpen(false)} onReplaceAll={handleReplaceAll} markdown={markdown} selectionRange={replaceSelectionRange} />
       
     </div>
   );
