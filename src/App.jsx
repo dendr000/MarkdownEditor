@@ -1,122 +1,84 @@
-// src/App.jsx v1.5
-/* * 파일 설명: 애플리케이션의 최상위 부모 컴포넌트로 레이아웃 구조를 잡고 마크다운 원문 텍스트 상태를 하위 컴포넌트들에 공급합니다.
- * 로컬 스토리지 연동으로 데이터 유실을 방지하며, Ctrl+S 단축키 입력 시 브라우저 기본 저장 창을 차단합니다.
- * (v1.5 수정사항): 실시간 뷰어와 에디터의 화면 분할 및 단독 보기 전환 기능을 텍스트 없이 SVG 아이콘 버튼으로 추가했습니다.
- * 연결 위치: src/main.jsx 파일에서 호출되어 렌더링되며, Header, Preview, Editor 컴포넌트를 자식으로 가집니다.
+// src/App.jsx v2.1
+/*
+ * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
+ * (v2.1 수정사항): 별도로 분리되었던 뷰 모드 컨트롤 바를 삭제하고, 탐색기 슬라이드 토글 상태를 추가하여 헤더에 위임했습니다.
  */
-import { useState, useEffect } from 'react';
-import { PanelLeft, Columns, PanelRight } from 'lucide-react';
+import { useState, useRef } from 'react';
 import Header from './components/Header';
 import Preview from './components/Preview';
 import Editor from './components/editor/Editor';
+import FileExplorer from './components/explorer/FileExplorer';
+import OutlineMinimap from './components/editor/OutlineMinimap';
+import { useOutline } from './hooks/editor/useOutline';
+import { fetchFileContent } from './api/fileApi';
 import './App.css';
 
-const initialMarkdown = ``;
-
 function App() {
-  console.log("App 컴포넌트(v1.5) 렌더링 시작 - 최상위 레이아웃 구성 및 로컬 스토리지 연동 가동");
+  console.log("App 컴포넌트(v2.1) 렌더링 시작 - UI 간소화 적용");
   
-  // 마크다운 원문 텍스트 상태 초기화 시 로컬 스토리지 확인 후 데이터 복원
-  const [markdown, setMarkdown] = useState(() => {
-    console.log("useState 초기화 함수 실행 - 로컬 스토리지 데이터 검색 시도");
-    const saved = localStorage.getItem('markdown-save');
-    if (saved !== null) {
-      console.log("로컬 스토리지에서 저장된 마크다운 데이터 발견 성공. 해당 데이터로 상태를 초기화합니다.");
-      return saved;
-    }
-    console.log("저장된 데이터 없음 - 기본 빈 문자열로 초기화합니다.");
-    return initialMarkdown;
-  });
-
-  // 뷰 모드 상태 관리 ('split': 양면 보기, 'editor': 작업 뷰만, 'preview': 실시간 뷰만)
+  const [markdown, setMarkdown] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [viewMode, setViewMode] = useState('split');
+  const [isExplorerOpen, setIsExplorerOpen] = useState(true); // 탐색기 토글 상태
+  
+  const textareaRef = useRef(null);
+  const outlineData = useOutline(markdown);
 
-  // markdown 상태가 변경될 때마다 로컬 스토리지에 동기화
-  useEffect(() => {
-    console.log("useEffect 실행 - markdown 상태 변경 감지, 로컬 스토리지에 데이터를 덮어씁니다.");
-    localStorage.setItem('markdown-save', markdown);
-  }, [markdown]);
-
-  // 뷰 모드 변경 시 로그 출력
-  useEffect(() => {
-    console.log(`useEffect 실행 - 뷰 모드 상태 변경 감지: 현재 모드 = ${viewMode}`);
-  }, [viewMode]);
-
-  // 전역 키보드 이벤트 감지를 통한 브라우저 기본 저장(Ctrl+S / Cmd+S) 무력화 로직
-  useEffect(() => {
-    const handleGlobalKeyDown = (e) => {
-      // Ctrl 키(Windows) 또는 Cmd 키(Mac)와 S 키가 동시에 눌렸는지 확인합니다.
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        console.log("전역 키보드 이벤트 감지 - Ctrl+S 입력됨. 브라우저 기본 웹 페이지 저장 다이얼로그 호출을 차단합니다.");
-        e.preventDefault(); // 브라우저 기본 동작 차단
-        // 데이터는 이미 상단의 markdown 상태 변경 감지 useEffect를 통해 실시간으로 저장되고 있으므로 추가 연산은 생략합니다.
-      }
-    };
-
-    console.log("최상위 컴포넌트 마운트 완료 - 전역 단축키 감지 이벤트 리스너를 등록합니다.");
-    window.addEventListener('keydown', handleGlobalKeyDown);
-
-    return () => {
-      console.log("최상위 컴포넌트 언마운트 - 전역 단축키 감지 이벤트 리스너를 해제합니다.");
-      window.removeEventListener('keydown', handleGlobalKeyDown);
-    };
-  }, []);
+  const handleSelectFile = async (filePath) => {
+    console.log(`[App v2.1] 파일 선택됨: ${filePath}`);
+    try {
+      const content = await fetchFileContent(filePath);
+      setSelectedFile(filePath);
+      setMarkdown(content);
+    } catch (error) {
+      console.error("파일 로드 실패:", error);
+    }
+  };
 
   return (
     <div className="app-layout">
-      {/* 상단 헤더 영역 (보통 파일 내보내기/가져오기 등의 공통 기능 위치) */}
-      <Header markdown={markdown} />
+      {/* 헤더에 뷰 모드와 탐색기 상태 제어권 이관 */}
+      <Header 
+        markdown={markdown} 
+        viewMode={viewMode} 
+        setViewMode={setViewMode}
+        isExplorerOpen={isExplorerOpen}
+        setIsExplorerOpen={setIsExplorerOpen}
+      />
       
-      {/* 뷰 모드 전환 컨트롤 바 영역 - 텍스트 없이 SVG 아이콘만 배치 */}
-      <div className="view-mode-controls">
-        <button 
-          className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} 
-          onClick={() => {
-            console.log("실시간 뷰 단독 모드 버튼 클릭 - 뷰 모드를 'preview'로 변경합니다.");
-            setViewMode('preview');
-          }} 
-          title="좌측 뷰(실시간 뷰어) 단독 보기"
-        >
-          <PanelLeft size={18} />
-        </button>
+      <main className="workspace">
         
-        <button 
-          className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} 
-          onClick={() => {
-            console.log("양면 분할 모드 버튼 클릭 - 뷰 모드를 'split'으로 변경합니다.");
-            setViewMode('split');
-          }} 
-          title="양면 분할 보기"
-        >
-          <Columns size={18} />
-        </button>
-        
-        <button 
-          className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} 
-          onClick={() => {
-            console.log("작업 뷰 단독 모드 버튼 클릭 - 뷰 모드를 'editor'로 변경합니다.");
-            setViewMode('editor');
-          }} 
-          title="우측 뷰(에디터) 단독 보기"
-        >
-          <PanelRight size={18} />
-        </button>
-      </div>
+        {/* 1단: 파일 탐색기 (좌측 슬라이드 서랍) */}
+        <FileExplorer 
+          isExplorerOpen={isExplorerOpen} 
+          onSelectFile={handleSelectFile} 
+        />
 
-      <main className={`main-content mode-${viewMode}`}>
-        {/* 좌측 실시간 뷰어 - 작업 뷰 단독 모드('editor')가 아닐 때만 렌더링 */}
-        {viewMode !== 'editor' && (
-          <div className="pane preview-pane">
-            <Preview markdown={markdown} />
-          </div>
-        )}
-        
-        {/* 우측 에디터 영역 - 실시간 뷰 단독 모드('preview')가 아닐 때만 렌더링 */}
-        {viewMode !== 'preview' && (
-          <div className="pane editor-pane">
-            <Editor markdown={markdown} setMarkdown={setMarkdown} />
-          </div>
-        )}
+        {/* 2단: 중앙 에디터/뷰어 패널 */}
+        <div className={`main-content mode-${viewMode}`}>
+          {viewMode !== 'editor' && (
+            <div className="pane preview-pane">
+              <Preview markdown={markdown} />
+            </div>
+          )}
+          
+          {viewMode !== 'preview' && (
+            <div className="pane editor-pane">
+              <Editor 
+                markdown={markdown} 
+                setMarkdown={setMarkdown} 
+                selectedFile={selectedFile}
+                textareaRef={textareaRef}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 3단: 우측 목차 서랍 */}
+        <OutlineMinimap 
+          outline={outlineData} 
+          textareaRef={textareaRef} 
+        />
       </main>
     </div>
   );

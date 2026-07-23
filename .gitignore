@@ -22,9 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-/src
-/src/hooks/editor
 
 # 환경변수 파일 무시
 .env
 .env.local
+
+# 로컬 데이터베이스(파일 DB) 폴더 무시
+src/data/

@@ -1,15 +1,11 @@
-/* src/App.css v1.3 */
-/* 파일 설명: 앱의 최상단 레이아웃 및 뷰포트 크기를 관리하는 CSS */
-/* (v1.3 수정사항): 뷰 모드 컨트롤 바 및 패널 분할 스타일이 추가되었습니다. */
-/* 연결 위치: src/App.jsx 컴포넌트에 적용되며 앱 전체의 뼈대를 구성함 */
-
+/* src/App.css v2.1 */
+/* 파일 설명: 앱의 최상단 레이아웃을 구성하는 CSS */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Vite의 기본 index.css에 있는 #root 제한을 강제로 무력화하여 화면 양옆 여백을 제거함 */
 #root {
   max-width: none !important;
   width: 100%;
@@ -19,74 +15,42 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden; /* 브라우저 전체 스크롤 방지, 각 뷰어(왼/오) 내부에서만 스크롤 되도록 설정 */
+  overflow: hidden;
 }
 
 .app-layout {
   display: flex;
   flex-direction: column;
-  width: 100vw; /* 브라우저 가로 전체를 100% 사용하도록 강제 견인 */
-  height: 100vh; /* 브라우저 세로 전체를 100% 사용 */
-  min-width: 1000px; /* 창을 줄였을 때 앱이 깨지지 않도록 현재 보이는 크기 수준을 최소 너비로 고정 */
+  width: 100vw;
+  height: 100vh;
+  min-width: 1000px;
 }
 
-/* 뷰 모드 컨트롤 바 컨테이너 */
-.view-mode-controls {
+/* 3단 워크스페이스 구조 */
+.workspace {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background-color: #f6f8fa;
-  border-bottom: 1px solid #d0d7de;
-}
-
-/* 뷰 모드 전환 버튼 기본 스타일 (아이콘 전용) */
-.view-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
+  flex: 1;
+  height: calc(100vh - 50px); /* 50px 높이의 헤더 영역만 제외 */
+  overflow: hidden;
+  position: relative;
   background-color: #ffffff;
-  color: #57606a;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-/* 뷰 모드 전환 버튼 호버 액션 */
-.view-btn:hover {
-  background-color: #f3f4f6;
-}
-
-/* 뷰 모드 전환 버튼 활성화(현재 모드) 상태 */
-.view-btn.active {
-  background-color: #0969da;
-  color: #ffffff;
-  border-color: #0969da;
 }
 
 .main-content {
   display: flex;
   flex: 1;
-  /* 상단 헤더(약 60px 추정)와 뷰 컨트롤 바(약 50px)의 결합된 높이를 제외하여 레이아웃 깨짐 방지 */
-  height: calc(100vh - 110px); 
   overflow: hidden;
+  /* 좌측 서랍이 열려도 중앙 화면이 밀리지 않고 위로 덮이게 하거나, 여백을 줄 수 있도록 flex 유지 */
 }
 
-/* 에디터 및 프리뷰 각각의 창(Pane) 스타일 */
 .pane {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 100%; /* 단독 뷰일 때 화면 100%를 차지하도록 확장 */
+  width: 100%;
 }
 
-/* 양면 뷰(split) 상태일 때 좌측 창(preview-pane) 우측에 구분선을 그려 시각적 분리 */
 .mode-split .preview-pane {
   border-right: 1px solid #d0d7de;
 }
