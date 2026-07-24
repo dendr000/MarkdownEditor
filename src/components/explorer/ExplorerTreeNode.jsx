@@ -121,8 +121,19 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
         >
           {node.isFolder ? (
             <div style={{ display: 'flex', alignItems: 'center', color: '#57606a' }}>
-              {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              {isOpen ? <FolderOpen size={14} color="#0969da" style={{ marginLeft: '4px' }} /> : <Folder size={14} color="#0969da" style={{ marginLeft: '4px' }} />}
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(!isOpen);
+                }}
+                style={{ display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '-2px', borderRadius: '4px' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d0d7de'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="폴더 열기/닫기"
+              >
+                {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              </div>
+              {isOpen ? <FolderOpen size={14} color="#0969da" style={{ marginLeft: '2px' }} /> : <Folder size={14} color="#0969da" style={{ marginLeft: '2px' }} />}
             </div>
           ) : (
             <FileText size={14} color="#57606a" style={{ marginLeft: '18px' }} />
