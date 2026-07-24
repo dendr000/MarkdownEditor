@@ -74,12 +74,9 @@ router.get('/file', async (req, res) => {
         const icon = item.isDir ? '📁' : '📄';
         const typeText = item.isDir ? 'Folder' : 'File';
         
-        // 대상 폴더/파일의 고유 경로 생성
-        const itemPath = target ? `${target}/${item.name}` : item.name;
-        const encodedPath = encodeURIComponent(itemPath);
-        
-        // 프론트엔드의 커스텀 <a> 태그 렌더러가 URL 파라미터(?file=...)를 낚아채어 이동할 수 있도록 링크 생성
-        const link = `[**${item.name}**](?file=${encodedPath})`;
+        // 프론트엔드의 상대 경로 로직(resolvePath)과 완벽히 호환되도록 마크다운 표준 상대 경로(./경로)를 사용합니다.
+        // target(현재 폴더)을 기준으로 하위 항목을 가리키므로 항상 ./ 접두사를 붙입니다.
+        const link = `[**${item.name}**](./${item.name})`;
         
         md += `| ${icon} | ${link} | ${typeText} |\n`;
       }
