@@ -189,36 +189,39 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
             onMouseLeave={onTooltipClose}
             onClick={(e) => e.stopPropagation()} 
           >
-            <div style={{
-              backgroundColor: '#24292f',
-              color: '#ffffff',
-              padding: '6px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              whiteSpace: 'normal',
-              wordBreak: 'break-all',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              border: '1px solid #57606a',
-              lineHeight: '1.4'
-            }}>
+            <div 
+              onClick={handleCopy}
+              title="클릭하여 상대 경로 복사"
+              style={{
+                backgroundColor: '#24292f',
+                color: '#ffffff',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                whiteSpace: 'normal',
+                wordBreak: 'break-all',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                border: '1px solid #57606a',
+                lineHeight: '1.4',
+                cursor: 'pointer'
+              }}
+            >
               <span style={{ flex: 1 }}>{relativePath}</span>
               <button 
-                onClick={handleCopy}
-                title="상대 경로 복사"
                 style={{
                   background: 'none',
                   border: 'none',
                   color: isCopied ? '#2da44e' : '#8c959f',
-                  cursor: 'pointer',
                   padding: '2px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'color 0.2s',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  pointerEvents: 'none'
                 }}
               >
                 {isCopied ? <Check size={14} /> : <Copy size={14} />}
