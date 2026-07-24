@@ -1,8 +1,8 @@
-// src/hooks/editor/useEditor.js v1.2
+// src/hooks/editor/useEditor.js v2.0
 /*
+ * 파일 위치: src/hooks/editor/useEditor.js
  * 파일 설명: Editor.jsx의 비즈니스 로직(저장, 포맷팅, 키보드 이벤트) 및 모달 상태를 관리하는 커스텀 훅입니다.
- * (v1.2 수정사항): 파일 확장자에 따른 분기 처리 및 키보드 이벤트 차단 로직(isCodeFile)을 완전히 제거하여 
- * 마크다운 에디터로서의 기본 동작(엔터 시 <br> 삽입 등)으로 롤백했습니다.
+ * (v2.0 수정사항): 코드 파일 전용 우회 로직을 모두 제거하고 원래의 마크다운 기반 로직으로 완전 롤백했습니다.
  */
 import { useState, useEffect } from 'react';
 import { saveFileContent } from '../../api/fileApi';
@@ -31,21 +31,19 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   };
   
   const fileExt = getFileExtension();
-  const codeExtensions = ['java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx', 'sql'];
-  const isCodeFile = codeExtensions.includes(fileExt);
   const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf', 'pptx', 'ppt', 'docx', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'].includes(fileExt);
   const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
   const isReadOnly = isMediaFile || isGeneratedView;
 
   useEffect(() => {
     if (!selectedFile || isReadOnly) {
-      if (isReadOnly) console.log(`[useEditor v1.2] 읽기 전용 뷰어 상태 감지: '${selectedFile}' 자동 저장 차단`);
+      if (isReadOnly) console.log(`[useEditor v2.0] 읽기 전용 뷰어 상태 감지: '${selectedFile}' 자동 저장 차단`);
       return;
     }
     const timer = setTimeout(async () => {
       try {
         await saveFileContent(selectedFile, markdown);
-        console.log(`[useEditor v1.2] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
+        console.log(`[useEditor v2.0] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
       } catch (e) {
         console.error('자동 저장 실패', e);
       }
@@ -131,7 +129,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v1.3] 수동 저장 완료: ${selectedFile}`));
+        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v2.0] 수동 저장 완료: ${selectedFile}`));
         return;
       }
       if (e.shiftKey && key === 'f') {
@@ -141,8 +139,6 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
         return;
       }
       
-      if (isCodeFile) return;
-
       if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
       if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
       if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
@@ -156,8 +152,6 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       processTabIndentation(textareaRef.current, e);
       return;
     }
-
-    if (isCodeFile && e.key === 'Enter') return;
 
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();

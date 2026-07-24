@@ -29,6 +29,7 @@ MARKDOWNEDITOR
 │   │   │   │   ├── TemplateModal.jsx
 │   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
 │   │   │   ├── AutocompletePopup.jsx
+│   │   │   ├── CodeEditor.jsx  # [신규] 개발 코드 전용 순수 텍스트 에디터
 │   │   │   ├── Editor.css
 │   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부)
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
@@ -37,10 +38,12 @@ MARKDOWNEDITOR
 │   │   │   ├── FileExplorer.jsx # 좌측 탐색기 메인 컴포넌트
 │   │   │   └── WorkspaceConfig.jsx # 상단 워크스페이스 경로 및 히스토리 제어바
 │   │   ├── preview
-│   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 및 뷰어 렌더러 분리
+│   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 렌더러 분리
+│   │   │   ├── CodeViewer.jsx  # [신규] 개발 코드 파일 전용 실시간 뷰어
 │   │   │   ├── GeoJsonBlock.jsx
 │   │   │   ├── LinkRenderer.jsx # 뷰어 내 상대 경로 링크 가로채기 모듈
 │   │   │   ├── MermaidBlock.jsx
+│   │   │   ├── SqlViewer.jsx   # [신규] SQL 전용 시각화 뷰어
 │   │   │   └── StlBlock.jsx
 │   │   ├── table
 │   │   │   ├── html-table/
@@ -53,7 +56,7 @@ MARKDOWNEDITOR
 │   │   ├── Header.css
 │   │   ├── Header.jsx          # 상단 헤더
 │   │   ├── Preview.css
-│   │   └── Preview.jsx         # 실시간 뷰어 메인 컴포넌트
+│   │   └── Preview.jsx         # 실시간 뷰어 메인 컴포넌트 (마크다운 전용)
 │   ├── controllers
 │   │   └── fileController.js   # 백엔드 로컬 시스템 접근 핵심 로직 제어
 │   ├── hooks
