@@ -29,9 +29,9 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   };
   
   const fileExt = getFileExtension();
-  const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf'].includes(fileExt); // pdf 확장자 추가
+  // [신규] pptx 등 미지원 파일들도 에디터 입력 방지를 위해 읽기 전용(isMediaFile) 목록에 추가합니다.
+  const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf', 'pptx', 'ppt', 'docx', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'].includes(fileExt);
   const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
-  const isReadOnly = isMediaFile || isGeneratedView;
 
   // 자동 저장 훅
   useEffect(() => {
