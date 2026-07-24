@@ -1,7 +1,7 @@
-// src/components/editor/Editor.jsx v9.9
+// src/components/editor/Editor.jsx v10.0
 /*
  * 파일 설명: 마크다운 텍스트 편집 및 매크로 기능을 제공하는 에디터 메인 컴포넌트입니다.
- * (v9.9 수정사항): JSX 문법 오류(누락된 </div> 태그)를 수정하여 정상적으로 렌더링되도록 복구했습니다.
+ * (v10.0 수정사항): 코드 뷰어 분리로 인해 발생한 렌더링 붕괴를 해결하기 위해 isCodeFile 분기 로직을 모두 제거하고 안정적인 이전 버전으로 롤백했습니다.
  */
 import { useRef, useEffect } from 'react';
 import { Table, FileCode2, FolderTree, Workflow, Library, GitCommit } from 'lucide-react';
@@ -21,7 +21,7 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
 import './Editor.css';
 
-function Editor({ markdown, setMarkdown, selectedFile, textareaRef, isCodeFile }) {
+function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
@@ -46,34 +46,32 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef, isCodeFile }
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
-      {!isCodeFile && (
-        <div className="editor-toolbar-wrapper" ref={toolbarRef}>
-          <div className="editor-toolbar">
-            <HeadingGroup handleFormat={actions.handleFormat} />
-            <div className="toolbar-divider" />
-            <FormatGroup handleFormat={actions.handleFormat} onOpenMathModal={() => actions.setIsMathModalOpen(true)} />
-            <div className="toolbar-divider" />
-            <ListGroup handleFormat={actions.handleFormat} />
-            <div className="toolbar-divider" />
-            <MediaGroup handleFormat={actions.handleFormat} />
-            <div className="toolbar-divider" />
-            <GithubGroup handleFormat={actions.handleFormat} openDropdown={state.openDropdown} setOpenDropdown={actions.setOpenDropdown} onOpenDetailsModal={() => { actions.prepareModalState('Details'); actions.setIsDetailsModalOpen(true); }} />
-            <div className="toolbar-divider" />
-            <div className="toolbar-group">
-              <button onClick={() => actions.setIsTemplateModalOpen(true)} title="템플릿 보관함"><Library size={18} /></button>
-              <button onClick={() => actions.setIsCommitGuideOpen(true)} title="Git 커밋 가이드"><GitCommit size={18} /></button>
-              <button onClick={() => { actions.prepareModalState('MD Table'); actions.setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
-              <button onClick={() => { actions.prepareModalState('HTML Table'); actions.setIsHtmlTableModalOpen(true); }} title="고급 HTML 표 삽입"><FileCode2 size={18} /></button>
-              <button onClick={() => { actions.prepareModalState('Folder Tree'); actions.setIsFolderTreeModalOpen(true); }} title="폴더 트리 생성"><FolderTree size={18} /></button>
-              <button onClick={() => { actions.prepareModalState('Diagram'); actions.setIsDiagramModalOpen(true); }} title="다이어그램 작성기"><Workflow size={18} /></button>
-            </div>
+      <div className="editor-toolbar-wrapper" ref={toolbarRef}>
+        <div className="editor-toolbar">
+          <HeadingGroup handleFormat={actions.handleFormat} />
+          <div className="toolbar-divider" />
+          <FormatGroup handleFormat={actions.handleFormat} onOpenMathModal={() => actions.setIsMathModalOpen(true)} />
+          <div className="toolbar-divider" />
+          <ListGroup handleFormat={actions.handleFormat} />
+          <div className="toolbar-divider" />
+          <MediaGroup handleFormat={actions.handleFormat} />
+          <div className="toolbar-divider" />
+          <GithubGroup handleFormat={actions.handleFormat} openDropdown={state.openDropdown} setOpenDropdown={actions.setOpenDropdown} onOpenDetailsModal={() => { actions.prepareModalState('Details'); actions.setIsDetailsModalOpen(true); }} />
+          <div className="toolbar-divider" />
+          <div className="toolbar-group">
+            <button onClick={() => actions.setIsTemplateModalOpen(true)} title="템플릿 보관함"><Library size={18} /></button>
+            <button onClick={() => actions.setIsCommitGuideOpen(true)} title="Git 커밋 가이드"><GitCommit size={18} /></button>
+            <button onClick={() => { actions.prepareModalState('MD Table'); actions.setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
+            <button onClick={() => { actions.prepareModalState('HTML Table'); actions.setIsHtmlTableModalOpen(true); }} title="고급 HTML 표 삽입"><FileCode2 size={18} /></button>
+            <button onClick={() => { actions.prepareModalState('Folder Tree'); actions.setIsFolderTreeModalOpen(true); }} title="폴더 트리 생성"><FolderTree size={18} /></button>
+            <button onClick={() => { actions.prepareModalState('Diagram'); actions.setIsDiagramModalOpen(true); }} title="다이어그램 작성기"><Workflow size={18} /></button>
           </div>
-        </div> 
-      )}
+        </div>
+      </div> 
       
       <textarea
         ref={textareaRef}
-        className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''} ${isCodeFile ? 'code-mode' : ''}`}
+        className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''}`}
         value={markdown}
         onChange={(e) => {
           setMarkdown(e.target.value);
