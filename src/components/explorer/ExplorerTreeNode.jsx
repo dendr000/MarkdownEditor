@@ -4,7 +4,7 @@
  * (v1.3 수정사항): 폴더 항목 위에서도 상대 경로 툴팁이 나타나도록 제한을 해제하였으며, 기준점이 폴더일 경우의 경로 계산 오류를 수정했습니다.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Folder, FolderOpen, FileText, FilePlus, FolderPlus, Trash2, Edit2, ChevronRight, ChevronDown, Copy, Check } from 'lucide-react';
 import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/fileApi';
 
@@ -36,20 +36,36 @@ const getRelativePath = (currentPath, targetPath) => {
 function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const nodeRef = useRef(null);
 
-  // [수정] !node.isFolder 제한을 삭제하여 폴더 위에서도 툴팁이 뜨도록 허용합니다.
+  // [신규] 선택된 파일 경로에 현재 폴더가 포함되면 자동 펼침 (Link with Editor)
+  useEffect(() => {
+    if (node.isFolder && selectedFile && selectedFile.startsWith(node.path + '/')) {
+      setIsOpen(true);
+    }
+  }, [selectedFile, node.path, node.isFolder]);
+
+  // [신규] 현재 노드가 선택된 상태인지 확인
+  const isSelected = selectedFile === node.path;
+
+  // [신규] 선택된 항목이 뷰포트 바깥에 있을 경우 스크롤 이동
+  useEffect(() => {
+    if (isSelected && nodeRef.current) {
+      nodeRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isSelected]);
+
   const relativePath = (selectedFile && node.path !== selectedFile) 
     ? getRelativePath(selectedFile, node.path) 
     : '';
   
-  // 부모 상태 구독: 현재 노드와 활성화된 노드 ID가 일치할 때만 툴팁 표시
   const isTooltipVisible = activeTooltipNode === node.path && relativePath !== '';
 
   const handleCopy = (e) => {
     e.stopPropagation();
     if (relativePath) {
       navigator.clipboard.writeText(relativePath).then(() => {
-        console.log(`[ExplorerTreeNode v1.3] 상대 경로 복사 완료: ${relativePath}`);
+        console.log(`[ExplorerTreeNode v1.4] 상대 경로 복사 완료: ${relativePath}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       });
@@ -61,7 +77,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     if (!name) return;
     const ext = !isFolder && !name.includes('.') ? '.md' : '';
     const newPath = node.path ? `${node.path}/${name}${ext}` : `${name}${ext}`;
-    console.log(`[ExplorerTreeNode v1.3] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
+    console.log(`[ExplorerTreeNode v1.4] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
     await createFileOrFolder(newPath, isFolder);
     setIsOpen(true);
     onRefresh();
@@ -69,7 +85,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
 
   const handleDelete = async () => {
     if (window.confirm(`'${node.name}'을(를) 정말 삭제하시겠습니까?`)) {
-      console.log(`[ExplorerTreeNode v1.3] 삭제 요청 - 경로: ${node.path}`);
+      console.log(`[ExplorerTreeNode v1.4] 삭제 요청 - 경로: ${node.path}`);
       await deleteFileOrFolder(node.path);
       onRefresh();
     }
@@ -80,7 +96,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     if (!newName || newName === node.name) return;
     const basePath = node.path.substring(0, node.path.lastIndexOf('/'));
     const newPath = basePath ? `${basePath}/${newName}` : newName;
-    console.log(`[ExplorerTreeNode v1.3] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
+    console.log(`[ExplorerTreeNode v1.4] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
     await renameTarget(node.path, newPath);
     onRefresh();
   };
@@ -88,6 +104,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
   return (
     <div style={{ marginLeft: node.path ? '12px' : '0' }}>
       <div 
+        ref={nodeRef}
         style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -97,14 +114,16 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
           cursor: 'pointer', 
           transition: 'background 0.1s',
           position: 'relative',
-          zIndex: isTooltipVisible ? 50 : 1 
+          zIndex: isTooltipVisible ? 50 : 1,
+          backgroundColor: isSelected ? '#d0d7de' : 'transparent',
+          fontWeight: isSelected ? '600' : 'normal'
         }}
         onMouseEnter={(e) => { 
-          e.currentTarget.style.backgroundColor = '#e1e4e8'; 
+          e.currentTarget.style.backgroundColor = isSelected ? '#d0d7de' : '#e1e4e8'; 
           if (relativePath) onTooltipOpen(node.path); 
         }}
         onMouseLeave={(e) => { 
-          e.currentTarget.style.backgroundColor = 'transparent'; 
+          e.currentTarget.style.backgroundColor = isSelected ? '#d0d7de' : 'transparent'; 
           if (relativePath) onTooltipClose();
         }}
       >

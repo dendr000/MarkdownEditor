@@ -1,7 +1,7 @@
-// src/App.jsx v3.0
+// src/App.jsx v3.1
 /*
  * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
- * (v3.0 수정사항): 에디터와 실시간 뷰어 간의 양방향 스크롤 동기화 기능이 추가되었습니다.
+ * (v3.1 수정사항): 탐색기 너비 조절, 고정(Pin)/오버레이 스위칭, 브레드크럼 라우팅을 위한 상태 및 레이아웃 제어 로직이 추가되었습니다.
  */
 import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
@@ -15,7 +15,7 @@ import * as XLSX from 'xlsx';
 import './App.css';
 
 function App() {
-  console.log("App 컴포넌트(v3.0) 렌더링 시작 - 스크롤 동기화 패치 적용");
+  console.log("App 컴포넌트(v3.1) 렌더링 시작 - 탐색기 UX 개선 패치 적용");
   
   const [markdown, setMarkdown] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -23,20 +23,26 @@ function App() {
   const [isExplorerOpen, setIsExplorerOpen] = useState(true);
   
   const textareaRef = useRef(null);
-  const previewRef = useRef(null); // [신규] 뷰어 스크롤 DOM 추적을 위한 Ref
-  const [isSyncScroll, setIsSyncScroll] = useState(true); // [신규] 스크롤 동기화 토글 상태
+  const previewRef = useRef(null);
+  const [isSyncScroll, setIsSyncScroll] = useState(true);
+  const [isExplorerAutoClose, setIsExplorerAutoClose] = useState(false);
   const outlineData = useOutline(markdown);
+
+  // [신규] 탐색기 크기 및 고정(Pin) 상태 관리
+  const [explorerWidth, setExplorerWidth] = useState(260); 
+  const [isExplorerPinned, setIsExplorerPinned] = useState(false); // false: 오버레이(덮기), true: 핀(밀어내기)
+  const [isResizing, setIsResizing] = useState(false); // 드래그 리사이징 중 애니메이션 끄기용
 
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
     const normalizedPath = filePath ? filePath.replace(/\\/g, '/') : '';
-    console.log(`[App v3.0] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
+    console.log(`[App v3.1] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
     
     try {
       const content = await fetchFileContent(normalizedPath);
       setSelectedFile(normalizedPath);
       
       if (content instanceof ArrayBuffer) {
-        console.log("[App v3.0] 엑셀 바이너리 데이터 HTML 표 변환 시작 (병합 셀 지원)");
+        console.log("[App v3.1] 엑셀 바이너리 데이터 HTML 표 변환 시작 (병합 셀 지원)");
         try {
           const workbook = XLSX.read(content, { type: 'array' });
           const firstSheetName = workbook.SheetNames[0];
@@ -55,7 +61,7 @@ function App() {
             setMarkdown(`> **엑셀 뷰어**: \`${normalizedPath}\`\n\n데이터가 존재하지 않거나 빈 시트입니다.`);
           }
         } catch (parseError) {
-          console.error("[App v3.0] 엑셀 파싱 에러:", parseError);
+          console.error("[App v3.1] 엑셀 파싱 에러:", parseError);
           setMarkdown(`> **엑셀 로드 실패**: 파일이 손상되었거나 지원하지 않는 형식입니다.`);
         }
       } else {
@@ -67,9 +73,9 @@ function App() {
         window.history.pushState({ path: newUrl }, '', newUrl);
       }
     } catch (error) {
-      console.error("[App v3.0] 파일 로드 실패:", error);
+      console.error("[App v3.1] 파일 로드 실패:", error);
       if (isHistoryEvent) {
-        console.log("[App v3.0] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
+        console.log("[App v3.1] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
         window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
         setSelectedFile(null);
         setMarkdown('');
@@ -82,10 +88,10 @@ function App() {
     const targetFile = params.get('file');
 
     if (targetFile) {
-      console.log(`[App v3.0] URL 파라미터 감지: ${targetFile} 로드 시도`);
+      console.log(`[App v3.1] URL 파라미터 감지: ${targetFile} 로드 시도`);
       handleSelectFile(targetFile, true);
     } else {
-      console.log("[App v3.0] 파라미터 없음: 에디터 대기 상태 진입");
+      console.log("[App v3.1] 파라미터 없음: 에디터 대기 상태 진입");
       setSelectedFile(null);
       setMarkdown('');
     }
@@ -94,7 +100,7 @@ function App() {
       const currentParams = new URLSearchParams(window.location.search);
       const currentFile = currentParams.get('file');
       
-      console.log(`[App v3.0] 브라우저 이동 감지 - 타겟 파일: ${currentFile || '없음'}`);
+      console.log(`[App v3.1] 브라우저 이동 감지 - 타겟 파일: ${currentFile || '없음'}`);
       
       if (currentFile) {
         handleSelectFile(currentFile, true);
@@ -108,7 +114,6 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // [신규] 에디터와 프리뷰 간의 양방향 스크롤 동기화 로직 [버전 3.0]
   useEffect(() => {
     if (!isSyncScroll || viewMode !== 'split') return;
 
@@ -117,7 +122,6 @@ function App() {
 
     if (!editor || !preview) return;
 
-    // 무한 루프(에디터 스크롤 -> 뷰어 스크롤 -> 에디터 스크롤...) 방지를 위한 플래그
     let isSyncingLeft = false;
     let isSyncingRight = false;
 
@@ -128,7 +132,6 @@ function App() {
         return;
       }
       isSyncingRight = true;
-      // 스크롤된 비율(%) 계산 = 현재 스크롤 위치 / (전체 내용 높이 - 화면에 보이는 높이)
       const percentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
       preview.scrollTop = percentage * (preview.scrollHeight - preview.clientHeight);
     };
@@ -164,16 +167,46 @@ function App() {
         selectedFile={selectedFile}
         isSyncScroll={isSyncScroll}
         setIsSyncScroll={setIsSyncScroll}
+        isExplorerAutoClose={isExplorerAutoClose}
+        setIsExplorerAutoClose={setIsExplorerAutoClose}
+        onBreadcrumbClick={(path) => handleSelectFile(path, false)} // [신규] 브레드크럼 클릭 시 파일 이동 연동
       />
       
-      <main className="workspace">
+      <main 
+        className="workspace" 
+        onClick={(e) => {
+          // [신규] 고정(Pin) 모드가 아닐 때만 자동 닫힘 기능 활성화
+          if (isExplorerAutoClose && isExplorerOpen && !isExplorerPinned) {
+            if (!e.target.closest('.file-explorer-container')) {
+              setIsExplorerOpen(false);
+            }
+          }
+        }}
+        style={{ position: 'relative', overflow: 'hidden' }}
+      >
         <FileExplorer 
           isExplorerOpen={isExplorerOpen} 
           onSelectFile={(path) => handleSelectFile(path, false)} 
           selectedFile={selectedFile}
+          explorerWidth={explorerWidth}
+          setExplorerWidth={setExplorerWidth}
+          isExplorerPinned={isExplorerPinned}
+          setIsExplorerPinned={setIsExplorerPinned}
+          setIsResizing={setIsResizing}
         />
 
-        <div className={`main-content mode-${viewMode}`}>
+        {/* 
+          [신규] 핀 고정 상태(isExplorerPinned)에 따라 메인 영역을 밀어낼지(margin-left), 
+          덮어쓸지(0px) 결정합니다. 리사이징 중에는 CSS 트랜지션을 꺼서 마우스가 버벅이지 않도록 합니다.
+        */}
+        <div 
+          className={`main-content mode-${viewMode}`}
+          style={{ 
+            width: isExplorerPinned && isExplorerOpen ? `calc(100% - ${explorerWidth}px)` : '100%', 
+            marginLeft: isExplorerPinned && isExplorerOpen ? `${explorerWidth}px` : '0', 
+            transition: isResizing ? 'none' : 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
+          }}
+        >
           {viewMode !== 'editor' && (
             <div className="pane preview-pane">
               <Preview 
