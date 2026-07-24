@@ -100,11 +100,55 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
   );
 };
 
-function Preview({ markdown }) {
+// src/components/Preview.jsx 내부
+// 현재 열려있는 파일의 경로를 기준으로 타겟 링크의 절대 경로를 연산하는 함수 (버전 1.1)
+const resolvePath = (currentFilePath, targetPath) => {
+  // 윈도우 환경의 역슬래시(\)를 슬래시(/)로 강제 정규화하여 경로 파싱 오류 방지
+  const normalizedCurrent = currentFilePath.replace(/\\/g, '/');
+  const normalizedTarget = targetPath.replace(/\\/g, '/');
+
+  console.log(`[resolvePath v1.1] 경로 연산 시작 - 현재 파일: ${normalizedCurrent}, 타겟 경로: ${normalizedTarget}`);
+  if (!normalizedTarget) {
+    console.log(`[resolvePath v1.1] 타겟 경로가 존재하지 않아 빈 문자열을 반환합니다.`);
+    return '';
+  }
+  
+  // 최상단 루트(/)에서 시작하는 절대 경로일 경우
+  if (normalizedTarget.startsWith('/')) {
+    const absolutePath = normalizedTarget.substring(1);
+    console.log(`[resolvePath v1.1] 최상단 루트 절대 경로 감지 - 반환 경로: ${absolutePath}`);
+    return absolutePath;
+  }
+  
+  // 현재 파일이 위치한 디렉토리 경로 추출
+  const lastSlashIndex = normalizedCurrent.lastIndexOf('/');
+  const currentDir = lastSlashIndex === -1 ? '' : normalizedCurrent.substring(0, lastSlashIndex);
+  
+  const currentParts = currentDir ? currentDir.split('/') : [];
+  const targetParts = normalizedTarget.split('/');
+  
+  for (const part of targetParts) {
+    if (part === '.' || part === '') {
+      continue;
+    } else if (part === '..') {
+      // 상위 폴더로 이동
+      if (currentParts.length > 0) currentParts.pop();
+    } else {
+      // 하위 폴더로 진입
+      currentParts.push(part);
+    }
+  }
+  const finalPath = currentParts.join('/');
+  console.log(`[resolvePath v1.1] 경로 연산 완료 - 최종 경로: ${finalPath}`);
+  return finalPath;
+};
+
+// 실시간 마크다운 뷰어 메인 컴포넌트 (버전 2.6)
+function Preview({ markdown, selectedFile, onSelectFile }) {
   // 깃허브 스타일 마크다운 전처리 로직 실행
   const processedMarkdown = preprocessGitHubFlavored(markdown);
   
-  console.log("[Preview v2.5] 실시간 마크다운 뷰어 렌더링 실행 - remarkBreaks 플러그인 제거됨");
+  console.log("[Preview v2.6] 실시간 마크다운 뷰어 렌더링 실행 - 내부 링크 인터셉트 기능 추가됨");
 
   return (
     <div className="preview-container">
@@ -112,7 +156,46 @@ function Preview({ markdown }) {
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeRaw, rehypeKatex]}
-          components={{ code: CodeBlock }}
+          components={{
+            code: CodeBlock,
+            // a 태그 렌더링 시 클릭 이벤트를 가로채는 커스텀 로직 (v2.7 업데이트)
+            a: ({ node, href, children, ...props }) => {
+              const isInternal = href && !href.startsWith('http') && !href.startsWith('mailto:');
+              let displayHref = href;
+
+              // 새 탭 열기 등을 지원하기 위해, 마우스 오버 시 올바른 파라미터가 보이도록 href 속성을 강제로 덮어씌웁니다.
+              if (isInternal) {
+                const targetPath = resolvePath(selectedFile || '', href);
+                displayHref = `?file=${encodeURIComponent(targetPath)}`;
+              }
+              
+              const handleClick = (e) => {
+                if (isInternal && onSelectFile) {
+                  // 사용자가 Ctrl+클릭, Shift+클릭, 휠 클릭(새 탭 열기)을 시도한 경우 가로채지 않고 브라우저에 맡김
+                  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) {
+                    return;
+                  }
+                  
+                  e.preventDefault();
+                  const targetPath = resolvePath(selectedFile || '', href);
+                  console.log(`[Preview v2.7] 내부 링크 단순 클릭 감지 - 탭 내부 이동: ${targetPath}`);
+                  onSelectFile(targetPath); 
+                }
+              };
+
+              return (
+                <a 
+                  href={displayHref} 
+                  onClick={handleClick} 
+                  target={isInternal ? "_self" : "_blank"} 
+                  rel={isInternal ? "" : "noopener noreferrer"} 
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            }
+          }}
         >
           {processedMarkdown}
         </ReactMarkdown>
