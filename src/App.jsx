@@ -132,6 +132,7 @@ function App() {
         <FileExplorer 
           isExplorerOpen={isExplorerOpen} 
           onSelectFile={(path) => handleSelectFile(path, false)} 
+          selectedFile={selectedFile}
         />
 
         <div className={`main-content mode-${viewMode}`}>

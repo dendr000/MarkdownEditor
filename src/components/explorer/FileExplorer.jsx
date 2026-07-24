@@ -1,14 +1,33 @@
-// src/components/explorer/FileExplorer.jsx v1.3
+// src/components/explorer/FileExplorer.jsx v1.6
 /*
  * 파일 설명: 로컬 백엔드 서버와 통신하여 파일/폴더 트리를 렌더링하고 워크스페이스 경로를 제어하는 좌측 탐색기 컴포넌트입니다.
- * (v1.3 수정사항): import 구문 중복 선언(Identifier has already been declared) 오류를 해결하기 위해 파일 전체 구조를 단일화했습니다.
+ * (v1.6 수정사항): 현재 열려있는 파일(selectedFile)을 기준으로 대상 파일 간의 마크다운 상대 경로를 계산하여 마우스 호버(title) 시 표시하는 기능을 추가했습니다.
  * 연결 위치: src/App.jsx 내부
  */
 import React, { useState, useEffect } from 'react';
 import { Folder, FolderOpen, FileText, FilePlus, FolderPlus, Trash2, Edit2, ChevronRight, ChevronDown } from 'lucide-react';
 import { fetchTreeData, createFileOrFolder, deleteFileOrFolder, renameTarget, fetchWorkspacePath, updateWorkspacePath } from '../../api/fileApi';
 
-const TreeNode = ({ node, onSelect, onRefresh }) => {
+// 현재 열려있는 파일과 대상 파일 간의 마크다운 상대 경로를 계산하는 유틸리티 함수
+const getRelativePath = (currentPath, targetPath) => {
+  if (!currentPath || !targetPath) return '';
+  const currentParts = currentPath.split('/');
+  currentParts.pop(); // 현재 파일의 파일명 제거 (디렉토리 기준)
+  const targetParts = targetPath.split('/');
+
+  let commonLength = 0;
+  while (commonLength < currentParts.length && commonLength < targetParts.length && currentParts[commonLength] === targetParts[commonLength]) {
+    commonLength++;
+  }
+
+  const upCount = currentParts.length - commonLength;
+  const upString = upCount > 0 ? '../'.repeat(upCount) : './';
+  const downString = targetParts.slice(commonLength).join('/');
+
+  return upString + downString;
+};
+
+const TreeNode = ({ node, onSelect, onRefresh, selectedFile }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleAdd = async (isFolder) => {
@@ -16,7 +35,7 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
     if (!name) return;
     const ext = !isFolder && !name.includes('.') ? '.md' : '';
     const newPath = node.path ? `${node.path}/${name}${ext}` : `${name}${ext}`;
-    console.log(`[FileExplorer v1.3] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
+    console.log(`[FileExplorer v1.6] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
     await createFileOrFolder(newPath, isFolder);
     setIsOpen(true);
     onRefresh();
@@ -24,7 +43,7 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
 
   const handleDelete = async () => {
     if (window.confirm(`'${node.name}'을(를) 정말 삭제하시겠습니까?`)) {
-      console.log(`[FileExplorer v1.3] 삭제 요청 - 경로: ${node.path}`);
+      console.log(`[FileExplorer v1.6] 삭제 요청 - 경로: ${node.path}`);
       await deleteFileOrFolder(node.path);
       onRefresh();
     }
@@ -35,10 +54,15 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
     if (!newName || newName === node.name) return;
     const basePath = node.path.substring(0, node.path.lastIndexOf('/'));
     const newPath = basePath ? `${basePath}/${newName}` : newName;
-    console.log(`[FileExplorer v1.3] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
+    console.log(`[FileExplorer v1.6] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
     await renameTarget(node.path, newPath);
     onRefresh();
   };
+
+  // 마우스 호버 시 상대 경로를 안내하는 툴팁 문자열 생성
+  const relativePathTooltip = (!node.isFolder && selectedFile && node.path !== selectedFile)
+    ? `\n\n[현재 문서 기준 상대 경로]\n${getRelativePath(selectedFile, node.path)}`
+    : '';
 
   return (
     <div style={{ marginLeft: node.path ? '12px' : '0' }}>
@@ -50,6 +74,7 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
         <div 
           style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, overflow: 'hidden' }}
           onClick={() => node.isFolder ? setIsOpen(!isOpen) : onSelect(node.path)}
+          title={node.name + relativePathTooltip}
         >
           {node.isFolder ? (
             <div style={{ display: 'flex', alignItems: 'center', color: '#57606a' }}>
@@ -80,7 +105,7 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
       {isOpen && node.children && (
         <div>
           {node.children.map(child => (
-            <TreeNode key={child.path} node={child} onSelect={onSelect} onRefresh={onRefresh} />
+            <TreeNode key={child.path} node={child} onSelect={onSelect} onRefresh={onRefresh} selectedFile={selectedFile} />
           ))}
         </div>
       )}
@@ -88,41 +113,41 @@ const TreeNode = ({ node, onSelect, onRefresh }) => {
   );
 };
 
-function FileExplorer({ isExplorerOpen, onSelectFile }) {
+function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile }) {
   const [treeData, setTreeData] = useState({ name: 'root', isFolder: true, children: [], path: '' });
   const [workspacePath, setWorkspacePath] = useState(''); 
   const [isEditingWorkspace, setIsEditingWorkspace] = useState(false); 
   const [tempWorkspacePath, setTempWorkspacePath] = useState(''); 
-  const [workspaceHistory, setWorkspaceHistory] = useState([]); // [신규] 경로 히스토리 배열 상태
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false); // [신규] 히스토리 드롭다운 개폐 상태
-  const [focusedHistoryIndex, setFocusedHistoryIndex] = useState(-1); // [신규] 방향키 포커스 인덱스 상태
+  const [workspaceHistory, setWorkspaceHistory] = useState([]); 
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false); 
+  const [focusedHistoryIndex, setFocusedHistoryIndex] = useState(-1); 
 
   const loadTree = async () => {
     try {
-      console.log('[FileExplorer v1.4] 최신 트리 데이터를 서버에 요청합니다.');
+      console.log('[FileExplorer v1.6] 최신 트리 데이터를 서버에 요청합니다.');
       const data = await fetchTreeData();
       setTreeData(data);
     } catch (error) {
-      console.error('[FileExplorer v1.4] 트리 데이터 로드 실패:', error);
+      console.error('[FileExplorer v1.6] 트리 데이터 로드 실패:', error);
     }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log('[FileExplorer v1.4] 서버에 현재 워크스페이스 경로 및 히스토리 조회를 요청합니다.');
+      console.log('[FileExplorer v1.6] 서버에 현재 워크스페이스 경로 및 히스토리 조회를 요청합니다.');
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path);
       setTempWorkspacePath(data.path);
-      setWorkspaceHistory(data.history || []); // 전달받은 히스토리 데이터 적재
+      setWorkspaceHistory(data.history || []); 
     } catch (error) {
-      console.error('[FileExplorer v1.4] 워크스페이스 데이터 로드 실패:', error);
+      console.error('[FileExplorer v1.6] 워크스페이스 데이터 로드 실패:', error);
     }
   };
 
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v1.4] 워크스페이스 경로 변경 승인 요청: ${targetPath}`);
+      console.log(`[FileExplorer v1.6] 워크스페이스 경로 변경 승인 요청: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path);
       setTempWorkspacePath(data.path);
@@ -131,7 +156,7 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
       setIsHistoryOpen(false);
       loadTree();
     } catch (error) {
-      console.error('[FileExplorer v1.4] 경로 변경 거부됨:', error);
+      console.error('[FileExplorer v1.6] 경로 변경 거부됨:', error);
       alert(`경로 변경 실패: ${error.message}`);
     }
   };
@@ -141,34 +166,26 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
     submitWorkspacePath(tempWorkspacePath);
   };
 
-  // [신규] 방향키 입력 감지 및 포커스 이동 이벤트 핸들러 [버전 1.5]
   const handleKeyDown = (e) => {
     if (!isHistoryOpen || workspaceHistory.length === 0) return;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setFocusedHistoryIndex((prev) => (prev < workspaceHistory.length - 1 ? prev + 1 : prev));
-      console.log(`[FileExplorer v1.5] 드롭다운 방향키(아래) 이동 - 포커스 인덱스: ${focusedHistoryIndex + 1}`);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setFocusedHistoryIndex((prev) => (prev > 0 ? prev - 1 : -1));
-      console.log(`[FileExplorer v1.5] 드롭다운 방향키(위) 이동 - 포커스 인덱스: ${focusedHistoryIndex - 1}`);
     } else if (e.key === 'Enter') {
-      // 방향키로 특정 히스토리를 명시적으로 선택한 상태일 때만 자동완성 적용
       if (focusedHistoryIndex >= 0 && focusedHistoryIndex < workspaceHistory.length) {
         e.preventDefault();
         const selected = workspaceHistory[focusedHistoryIndex];
-        console.log(`[FileExplorer v1.5] 드롭다운 엔터키 선택 적용 - 대상: ${selected}`);
         setTempWorkspacePath(selected);
         submitWorkspacePath(selected);
         setIsHistoryOpen(false);
       } else {
-        // 방향키 선택 없이 엔터를 누르면 현재 입력된 텍스트(tempWorkspacePath)를 폼 제출 이벤트로 위임
-        console.log(`[FileExplorer v1.5] 직접 타이핑 후 엔터 입력 감지 - 드롭다운을 닫고 폼 제출을 진행합니다.`);
         setIsHistoryOpen(false);
       }
     } else if (e.key === 'Escape') {
-      console.log(`[FileExplorer v1.5] 드롭다운 ESC 취소`);
       setIsHistoryOpen(false);
       setFocusedHistoryIndex(-1);
     }
@@ -202,14 +219,14 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
           <FilePlus size={16} color="#2da44e" onClick={() => {
             const name = window.prompt("루트에 생성할 새 파일명 (.md 권장)");
             if (name) { 
-              console.log(`[FileExplorer v1.4] 루트 파일 생성 요청: ${name}`);
+              console.log(`[FileExplorer v1.6] 루트 파일 생성 요청: ${name}`);
               createFileOrFolder(name, false).then(loadTree); 
             }
           }} title="루트 파일 추가" />
           <FolderPlus size={16} color="#0969da" onClick={() => {
             const name = window.prompt("루트에 생성할 새 폴더명");
             if (name) { 
-              console.log(`[FileExplorer v1.4] 루트 폴더 생성 요청: ${name}`);
+              console.log(`[FileExplorer v1.6] 루트 폴더 생성 요청: ${name}`);
               createFileOrFolder(name, true).then(loadTree); 
             }
           }} title="루트 폴더 추가" />
@@ -225,16 +242,12 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
                 type="text" 
                 value={tempWorkspacePath} 
                 onChange={(e) => setTempWorkspacePath(e.target.value)}
-                onFocus={() => {
-                  console.log(`[FileExplorer v1.4] 입력창 포커스 - 히스토리 드롭다운 개방`);
-                  setIsHistoryOpen(true);
-                }}
-                onBlur={() => setTimeout(() => setIsHistoryOpen(false), 150)} // 클릭 이벤트를 놓치지 않도록 블러 지연 처리
+                onFocus={() => setIsHistoryOpen(true)}
+                onBlur={() => setTimeout(() => setIsHistoryOpen(false), 150)} 
                 onKeyDown={handleKeyDown}
                 style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #0969da', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                 autoFocus
               />
-              {/* [신규] 히스토리 드롭다운 자동완성 리스트 렌더링 */}
               {isHistoryOpen && workspaceHistory.length > 0 && (
                 <ul style={{
                   position: 'absolute',
@@ -257,8 +270,7 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
                     <li 
                       key={idx}
                       onMouseDown={(e) => {
-                        e.preventDefault(); // 인풋 블러 방지
-                        console.log(`[FileExplorer v1.4] 마우스 클릭으로 히스토리 선택 - 대상: ${histPath}`);
+                        e.preventDefault(); 
                         setTempWorkspacePath(histPath);
                         submitWorkspacePath(histPath);
                       }}
@@ -302,8 +314,7 @@ function FileExplorer({ isExplorerOpen, onSelectFile }) {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
         {treeData && treeData.children && treeData.children.map(child => (
-          // 방어 코드: child 객체가 온전할 때만 TreeNode를 렌더링합니다.
-          child ? <TreeNode key={child.path} node={child} onSelect={onSelectFile} onRefresh={loadTree} /> : null
+          child ? <TreeNode key={child.path} node={child} onSelect={onSelectFile} onRefresh={loadTree} selectedFile={selectedFile} /> : null
         ))}
         {(!treeData || !treeData.children || treeData.children.length === 0) && (
           <div style={{ fontSize: '12px', color: '#8c959f', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>
