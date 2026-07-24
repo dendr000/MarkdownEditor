@@ -29,7 +29,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   };
   
   const fileExt = getFileExtension();
-  const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv'].includes(fileExt);
+  const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf'].includes(fileExt); // pdf 확장자 추가
   const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
   const isReadOnly = isMediaFile || isGeneratedView;
 
