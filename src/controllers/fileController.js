@@ -16,10 +16,10 @@ export let DATA_DIR = path.join(__dirname, '..', 'data');
 const CONFIG_PATH = path.join(__dirname, '..', 'workspace-config.json');
 export let workspaceConfig = { workspace: DATA_DIR, history: [] }; 
 
-// 허용할 파일 확장자 목록 (pdf, pptx 등 미지원 파일 확장자 추가)
+// 허용할 파일 확장자 목록 (xls 포함)
 const ALLOWED_EXTENSIONS = [
   '.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', 
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xlsx', '.csv',
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xls', '.xlsx', '.csv',
   '.pdf', '.pptx', '.ppt', '.docx', '.doc', '.zip', '.tar', '.gz', '.rar', '.7z', '.exe'
 ];
 
