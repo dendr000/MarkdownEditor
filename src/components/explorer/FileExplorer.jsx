@@ -121,7 +121,7 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
       ref={resizeRef}
       className="file-explorer-container"
       style={{ 
-        position: isExplorerPinned ? 'relative' : 'absolute',
+        position: 'absolute',
         left: isExplorerOpen ? '0px' : `-${explorerWidth}px`,
         top: '0', 
         bottom: '0', 
