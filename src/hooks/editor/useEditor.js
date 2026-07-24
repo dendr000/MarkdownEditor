@@ -1,6 +1,9 @@
-// src/hooks/editor/useEditor.js v1.0
+// src/hooks/editor/useEditor.js v1.1
 /*
  * 파일 설명: Editor.jsx의 비즈니스 로직(저장, 포맷팅, 키보드 이벤트) 및 모달 상태를 관리하는 커스텀 훅입니다.
+ * (v1.1 수정사항): 마크다운 문서가 아닌 개발 코드 파일(java, json 등) 편집 시 
+ * 마크다운 전용 키보드 매크로(Enter 시 스페이스 2개 삽입, Shift+Enter 시 <br> 삽입 등)가 
+ * 오작동하여 코드 구조를 훼손하는 문제를 완전히 차단했습니다.
  */
 import { useState, useEffect } from 'react';
 import { saveFileContent } from '../../api/fileApi';
@@ -29,21 +32,24 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   };
   
   const fileExt = getFileExtension();
-  // [신규] pptx 등 미지원 파일들도 에디터 입력 방지를 위해 읽기 전용(isMediaFile) 목록에 추가합니다.
+  
+  // [신규] 코드 파일 판별 로직 추가 (마크다운 규칙 차단용)
+  const codeExtensions = ['java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx', 'sql'];
+  const isCodeFile = codeExtensions.includes(fileExt);
+
   const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf', 'pptx', 'ppt', 'docx', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'].includes(fileExt);
   const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
   const isReadOnly = isMediaFile || isGeneratedView;
 
-  // 자동 저장 훅
   useEffect(() => {
     if (!selectedFile || isReadOnly) {
-      if (isReadOnly) console.log(`[useEditor v1.0] 읽기 전용 뷰어 상태 감지: '${selectedFile}' 자동 저장 차단`);
+      if (isReadOnly) console.log(`[useEditor v1.1] 읽기 전용 뷰어 상태 감지: '${selectedFile}' 자동 저장 차단`);
       return;
     }
     const timer = setTimeout(async () => {
       try {
         await saveFileContent(selectedFile, markdown);
-        console.log(`[useEditor v1.0] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
+        console.log(`[useEditor v1.1] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
       } catch (e) {
         console.error('자동 저장 실패', e);
       }
@@ -129,7 +135,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v1.0] 수동 저장 완료: ${selectedFile}`));
+        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v1.1] 수동 저장 완료: ${selectedFile}`));
         return;
       }
       if (e.shiftKey && key === 'f') {
@@ -138,6 +144,10 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
         setIsFindReplaceOpen(true);
         return;
       }
+
+      // [핵심] 개발 코드 파일인 경우 마크다운 전용 단축키(볼드, 이탤릭 등) 무시
+      if (isCodeFile) return;
+
       if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
       if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
       if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
@@ -152,6 +162,12 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       return;
     }
 
+    // [핵심] 개발 코드 파일인 경우 깃허브 마크다운 엔터 규칙(<br> 삽입 등)을 완전히 중지하고, 브라우저 기본 동작인 순수 줄바꿈(\n)만 허용합니다.
+    if (isCodeFile && e.key === 'Enter') {
+      return;
+    }
+
+    // 이하 마크다운 전용 엔터 매크로 로직
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
       if (textareaRef.current) insertTextNatively(textareaRef.current, textareaRef.current.selectionStart, textareaRef.current.selectionStart, '<br>\n');

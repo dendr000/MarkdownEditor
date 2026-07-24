@@ -265,13 +265,15 @@
 /* =========================================
    개발 코드 파일 전용 에디터(Code Mode) 디자인
    ========================================= */
-.editor-textarea.code-mode {
+textarea.editor-textarea.code-mode {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
-  background-color: #f6f8fa;
-  color: #24292f;
-  padding: 24px;
-  line-height: 1.6;
-  white-space: pre !important;
+  background-color: #f6f8fa !important;
+  color: #24292f !important;
+  padding: 24px !important;
+  line-height: 1.6 !important;
+  white-space: pre !important; /* 순수 코드 에디터 속성: 창 길이에 맞춰 자동 줄바꿈 금지 */
   word-wrap: normal !important;
-  overflow-x: auto;
+  overflow-wrap: normal !important;
+  overflow-x: auto !important; /* 긴 코드 가로 스크롤 허용 */
+  overflow-y: auto !important;
 }
