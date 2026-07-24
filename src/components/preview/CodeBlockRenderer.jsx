@@ -1,8 +1,7 @@
-// src/components/preview/CodeBlockRenderer.jsx v1.0
+// src/components/preview/CodeBlockRenderer.jsx v3.0
 /*
- * 파일 설명: 마크다운 내부의 코드 블록을 언어(language)에 맞춰 렌더링하고 코드 복사 기능을 제공하는 컴포넌트입니다.
- * Preview.jsx에서 분리되었습니다.
- * 연결 위치: src/components/Preview.jsx 내부
+ * 파일 설명: 마크다운 내부의 코드 블록을 언어에 맞춰 렌더링하고 코드 복사 기능을 제공하는 컴포넌트입니다.
+ * (v3.0 수정사항): 임의로 추가된 다크 테마 및 줄 번호 기능을 완전히 제거하고 기본 테마(oneLight)로 복구했습니다.
  */
 import React, { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -60,7 +59,7 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
           )}
         </button>
         {isDiff ? (
-          <pre className="language-diff" style={{ backgroundColor: '#f6f8fa', padding: '16px', borderRadius: '6px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace', fontSize: '14px', lineHeight: '1.45' }}>
+          <pre className="language-diff" style={{ backgroundColor: '#f6f8fa', padding: '16px', borderRadius: '6px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace', fontSize: '14px', lineHeight: '1.45', margin: 0 }}>
             <code className="language-diff">
               {String(children).replace(/\n$/, '').split('\n').map((line, idx) => {
                 if (line.startsWith('+')) return <span key={idx} className="diff-add">{line}</span>;
@@ -75,7 +74,7 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
             style={oneLight}
             language={lang}
             PreTag="div"
-            customStyle={{ backgroundColor: 'transparent' }}
+            customStyle={{ backgroundColor: 'transparent', margin: 0, padding: '16px', borderRadius: '6px' }}
             {...props}
           >
             {String(children).replace(/\n$/, '')}
@@ -86,7 +85,11 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
   }
   
   return (
-    <code className={className} {...props}>
+    <code 
+      className={className} 
+      style={{ backgroundColor: '#f0f2f5', color: '#e83e8c', padding: '3px 6px', borderRadius: '4px', fontSize: '85%' }} 
+      {...props}
+    >
       {children}
     </code>
   );
