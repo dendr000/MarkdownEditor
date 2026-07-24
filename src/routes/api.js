@@ -58,7 +58,8 @@ router.get('/file', async (req, res) => {
       
       const items = [];
       for (const f of files) {
-        if (f.startsWith('.')) continue; 
+        // .gitkeep은 예외적으로 표시하고, 그 외의 숨김 파일(.으로 시작)은 제외합니다.
+        if (f.startsWith('.') && f !== '.gitkeep') continue; 
         try {
           const childStats = await fs.stat(path.join(safePath, f));
           items.push({ name: f, isDir: childStats.isDirectory() });

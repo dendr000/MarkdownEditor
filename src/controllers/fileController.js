@@ -16,8 +16,12 @@ export let DATA_DIR = path.join(__dirname, '..', 'data');
 const CONFIG_PATH = path.join(__dirname, '..', 'workspace-config.json');
 export let workspaceConfig = { workspace: DATA_DIR, history: [] }; 
 
-// 허용할 파일 확장자 목록
-const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xlsx', '.csv'];
+// 허용할 파일 확장자 목록 (pdf, pptx 등 미지원 파일 확장자 추가)
+const ALLOWED_EXTENSIONS = [
+  '.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', 
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xlsx', '.csv',
+  '.pdf', '.pptx', '.ppt', '.docx', '.doc', '.zip', '.tar', '.gz', '.rar', '.7z', '.exe'
+];
 
 // 서버 가동 시 기존 워크스페이스 정보 로드
 export const loadWorkspaceConfig = () => {
@@ -86,7 +90,8 @@ export const buildTree = async (currentPath, relativePath = '') => {
             if (childNode) children.push(childNode);
           } else {
             const ext = path.extname(file).toLowerCase();
-            if (ALLOWED_EXTENSIONS.includes(ext)) {
+            // .gitkeep 파일이거나 허용된 확장자인 경우 탐색기에 추가
+            if (ALLOWED_EXTENSIONS.includes(ext) || file === '.gitkeep') {
               children.push({ path: childRelPath, name: file, isFolder: false });
             }
           }
