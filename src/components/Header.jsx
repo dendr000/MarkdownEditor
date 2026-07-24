@@ -1,15 +1,16 @@
-// src/components/Header.jsx v2.1
+// src/components/Header.jsx v2.2
 /*
  * 파일 설명: 앱 상단의 헤더 컴포넌트입니다.
- * (v2.1 수정사항): 선택된 파일의 경로 및 이름을 옅은 색상으로 표시하는 UI가 추가되었습니다.
+ * (v2.2 수정사항): 설정(톱니바퀴) 메뉴가 추가되었으며, 향후 다양한 옵션(스크롤 동기화 등)을 켜고 끌 수 있는 드롭다운 UI가 적용되었습니다.
  */
 import { useState } from 'react';
-import { PanelLeft, Columns, PanelRight, FolderTree } from 'lucide-react';
+import { PanelLeft, Columns, PanelRight, FolderTree, Settings } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
-function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen, selectedFile }) {
+function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen, selectedFile, isSyncScroll, setIsSyncScroll }) {
   const [copied, setCopied] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // [신규] 설정 메뉴 토글 상태
 
   const handleCopy = async () => {
     const success = await copyToClipboard(markdown);
@@ -57,8 +58,8 @@ function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorer
         </div>
       </div>
       
-      {/* 우측: 복사 버튼 */}
-      <div className="header-right">
+      {/* 우측: 복사 버튼 및 설정 드롭다운 */}
+      <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button className="copy-btn" onClick={handleCopy} title="전체 복사">
           {copied ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e6ffed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,6 +72,45 @@ function Header({ markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorer
             </svg>
           )}
         </button>
+
+        {/* [신규] 설정 메뉴 그룹 */}
+        <div style={{ position: 'relative' }} onMouseLeave={() => setIsSettingsOpen(false)}>
+          <button 
+            className={`view-btn ${isSettingsOpen ? 'active' : ''}`} 
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)} 
+            title="에디터 설정"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Settings size={16} />
+          </button>
+          
+          {isSettingsOpen && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '4px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #d0d7de',
+              borderRadius: '6px',
+              boxShadow: '0 8px 24px rgba(140,149,159,0.2)',
+              padding: '8px 12px',
+              zIndex: 1000,
+              minWidth: '200px'
+            }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#24292f', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={isSyncScroll} 
+                  onChange={(e) => setIsSyncScroll(e.target.checked)} 
+                  style={{ cursor: 'pointer' }}
+                />
+                양면 스크롤 동기화
+              </label>
+              {/* 향후 추가 기능(폰트 크기, 테마 등)을 이 아래에 덧붙일 수 있습니다 */}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

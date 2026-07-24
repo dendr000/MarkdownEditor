@@ -16,13 +16,15 @@ import LinkRenderer, { resolvePath } from './preview/LinkRenderer';
 import 'github-markdown-css/github-markdown.css'; 
 import './Preview.css';
 
-function Preview({ markdown, selectedFile, onSelectFile }) {
+// previewRef 프롭스를 추가하여 App.jsx가 스크롤 이벤트를 제어할 수 있게 엽니다. [버전 2.8]
+function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
   const processedMarkdown = preprocessGitHubFlavored(markdown);
   
-  console.log("[Preview v2.7] 실시간 마크다운 뷰어 렌더링 실행 (컴포넌트 모듈화 적용됨)");
+  console.log("[Preview v2.8] 실시간 마크다운 뷰어 렌더링 실행 (스크롤 동기화 Ref 추가)");
 
   return (
-    <div className="preview-container">
+    // previewRef를 스크롤이 발생하는 최상위 래퍼에 연결합니다.
+    <div className="preview-container" ref={previewRef}>
       <div className="preview-content markdown-body">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
