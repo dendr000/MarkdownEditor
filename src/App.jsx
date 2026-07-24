@@ -9,6 +9,7 @@ import Preview from './components/Preview';
 import Editor from './components/editor/Editor';
 import FileExplorer from './components/explorer/FileExplorer';
 import OutlineMinimap from './components/editor/OutlineMinimap';
+import SqlViewer from './components/preview/SqlViewer'; // [신규] SQL 전용 시각화 뷰어 임포트
 import { useOutline } from './hooks/editor/useOutline';
 import { useFileLoader } from './hooks/app/useFileLoader';
 import { useScrollSync } from './hooks/app/useScrollSync';
@@ -89,12 +90,17 @@ function App() {
         >
           {viewMode !== 'editor' && (
             <div className="pane preview-pane">
-              <Preview 
-                markdown={markdown} 
-                selectedFile={selectedFile} 
-                onSelectFile={(path) => handleSelectFile(path, false)}
-                previewRef={previewRef}
-              />
+              {/* [수정] 확장자가 sql인 경우 전용 시각화 뷰어를 출력, 그 외에는 일반 마크다운 프리뷰 출력 */}
+              {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
+                <SqlViewer sql={markdown} />
+              ) : (
+                <Preview 
+                  markdown={markdown} 
+                  selectedFile={selectedFile} 
+                  onSelectFile={(path) => handleSelectFile(path, false)}
+                  previewRef={previewRef}
+                />
+              )}
             </div>
           )}
           
