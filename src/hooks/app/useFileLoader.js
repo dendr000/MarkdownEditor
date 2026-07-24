@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import { fetchFileContent } from '../../api/fileApi';
 import * as XLSX from 'xlsx';
+import * as mammoth from 'mammoth'; // [신규] docx 파싱 라이브러리 추가
 
 export const useFileLoader = (setMarkdown, setSelectedFile) => {
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
@@ -17,11 +18,25 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
       const fileExt = normalizedPath.split('.').pop().toLowerCase();
       setSelectedFile(normalizedPath);
       
-      const unsupportedExts = ['pptx', 'ppt', 'docx', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'];
+      // [수정] docx를 지원 목록으로 편입시키고 미지원 목록에서 제거합니다. doc는 바이너리라 지원하지 않습니다.
+      const unsupportedExts = ['pptx', 'ppt', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'];
 
       if (unsupportedExts.includes(fileExt)) {
-        console.log(`[useFileLoader v1.2] 미지원 파일 형식 감지: ${fileExt}`);
+        console.log(`[useFileLoader v1.3] 미지원 파일 형식 감지: ${fileExt}`);
         setMarkdown(`> **미지원 파일 형식 (읽기 전용)**: \`${normalizedPath}\`\n\n현재 에디터에서는 \`.${fileExt}\` 형식의 파일을 텍스트로 읽거나 실시간 뷰어로 렌더링할 수 없습니다.\n\n해당 파일은 로컬 저장소의 원본 프로그램을 사용하여 열어주세요.`);
+      } else if (fileExt === 'docx') {
+        console.log(`[useFileLoader v1.3] docx 파일 감지, 바이너리 로드 및 HTML 변환 시작`);
+        const content = await fetchFileContent(normalizedPath);
+        if (content instanceof ArrayBuffer) {
+          try {
+            const result = await mammoth.convertToHtml({ arrayBuffer: content });
+            const html = result.value || '문서에 텍스트가 존재하지 않습니다.';
+            setMarkdown(`> **Word 뷰어 (읽기 전용)**: \`${normalizedPath}\`\n\n<div style="width: 100%; background: #ffffff; padding: 24px; border-radius: 8px; border: 1px solid #d0d7de; margin-top: 16px; min-height: 200px;">\n${html}\n</div>`);
+          } catch (parseError) {
+            console.error("[useFileLoader v1.3] docx 파싱 에러:", parseError);
+            setMarkdown(`> **Word 로드 실패**: 파일이 손상되었거나 파싱할 수 없습니다.`);
+          }
+        }
       } else if (fileExt === 'pdf') {
         const pdfUrl = `/api/raw?target=${encodeURIComponent(normalizedPath)}`;
         setMarkdown(`> **PDF 뷰어 (읽기 전용)**: \`${normalizedPath}\`\n\n<iframe src="${pdfUrl}" width="100%" height="800px" style="border: 1px solid #d0d7de; border-radius: 8px; margin-top: 16px; background-color: #f6f8fa;"></iframe>`);

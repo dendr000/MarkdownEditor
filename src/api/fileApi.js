@@ -12,26 +12,26 @@ export const fetchTreeData = async () => {
   return await response.json();
 };
 
-// 특정 파일의 내용을 가져오기 (확장자에 따라 텍스트 또는 바이너리 분기 처리) [버전 1.3]
+// 특정 파일의 내용을 가져오기 (확장자에 따라 텍스트 또는 바이너리 분기 처리) [버전 1.4]
 export const fetchFileContent = async (path) => {
-  console.log(`[fileApi v1.3] 파일 읽기 API 호출 - 타겟: ${path}`);
+  console.log(`[fileApi v1.4] 파일 읽기 API 호출 - 타겟: ${path}`);
   
   const extMatch = path.match(/\.([^.]+)$/);
   const ext = extMatch ? extMatch[1].toLowerCase() : '';
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext);
-  const isExcel = ['xls', 'xlsx', 'csv'].includes(ext); // [수정] xls 확장자 추가
+  const isBinary = ['xls', 'xlsx', 'csv', 'docx'].includes(ext); // [수정] docx 확장자 추가 및 변수명 범용화
 
   if (isImage) {
-    console.log(`[fileApi v1.2] 이미지 파일 감지, 텍스트 변환 생략 후 마크다운 태그 반환`);
+    console.log(`[fileApi v1.4] 이미지 파일 감지, 텍스트 변환 생략 후 마크다운 태그 반환`);
     const fileName = path.split('/').pop();
     // 뷰어 컴포넌트가 가로채어 렌더링할 수 있도록 마크다운 이미지 문법을 반환합니다.
     return `![${fileName}](./${fileName})`; 
   }
 
-  if (isExcel) {
-    console.log(`[fileApi v1.2] 엑셀 파일 감지, 바이너리 파싱을 위해 ArrayBuffer 요청`);
+  if (isBinary) {
+    console.log(`[fileApi v1.4] 바이너리 파일(엑셀, 워드 등) 감지, 파싱을 위해 ArrayBuffer 요청`);
     const response = await fetch(`/api/raw?target=${encodeURIComponent(path)}`);
-    if (!response.ok) throw new Error('엑셀 파일을 읽지 못했습니다.');
+    if (!response.ok) throw new Error('바이너리 파일을 읽지 못했습니다.');
     return await response.arrayBuffer(); 
   }
 
