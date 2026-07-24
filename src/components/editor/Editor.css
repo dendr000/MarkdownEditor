@@ -271,9 +271,9 @@ textarea.editor-textarea.code-mode {
   color: #24292f !important;
   padding: 24px !important;
   line-height: 1.6 !important;
-  white-space: pre !important; /* 순수 코드 에디터 속성: 창 길이에 맞춰 자동 줄바꿈 금지 */
+  white-space: pre !important; 
   word-wrap: normal !important;
   overflow-wrap: normal !important;
-  overflow-x: auto !important; /* 긴 코드 가로 스크롤 허용 */
+  overflow-x: auto !important; 
   overflow-y: auto !important;
 }

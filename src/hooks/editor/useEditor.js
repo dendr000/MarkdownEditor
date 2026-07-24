@@ -31,6 +31,8 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   };
   
   const fileExt = getFileExtension();
+  const codeExtensions = ['java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx', 'sql'];
+  const isCodeFile = codeExtensions.includes(fileExt);
   const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv', 'pdf', 'pptx', 'ppt', 'docx', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'].includes(fileExt);
   const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
   const isReadOnly = isMediaFile || isGeneratedView;
@@ -129,7 +131,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v1.2] 수동 저장 완료: ${selectedFile}`));
+        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v1.3] 수동 저장 완료: ${selectedFile}`));
         return;
       }
       if (e.shiftKey && key === 'f') {
@@ -138,6 +140,9 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
         setIsFindReplaceOpen(true);
         return;
       }
+      
+      if (isCodeFile) return;
+
       if (key === 'b') { e.preventDefault(); handleFormat('**', '**'); return; }
       if (key === 'i') { e.preventDefault(); handleFormat('*', '*'); return; }
       if (key === 'q') { e.preventDefault(); handleFormat('[^1]', ''); return; }
@@ -151,6 +156,8 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       processTabIndentation(textareaRef.current, e);
       return;
     }
+
+    if (isCodeFile && e.key === 'Enter') return;
 
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();

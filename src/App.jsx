@@ -11,6 +11,7 @@ import Editor from './components/editor/Editor';
 import FileExplorer from './components/explorer/FileExplorer';
 import OutlineMinimap from './components/editor/OutlineMinimap';
 import SqlViewer from './components/preview/SqlViewer'; 
+import CodeViewer from './components/preview/CodeViewer';
 import { useOutline } from './hooks/editor/useOutline';
 import { useFileLoader } from './hooks/app/useFileLoader';
 import { useScrollSync } from './hooks/app/useScrollSync';
@@ -37,6 +38,10 @@ function App() {
   const outlineData = useOutline(markdown);
   const { handleSelectFile } = useFileLoader(setMarkdown, setSelectedFile);
   useScrollSync(textareaRef, previewRef, isSyncScroll, viewMode, markdown);
+
+  const fileExt = selectedFile ? selectedFile.split('.').pop().toLowerCase() : 'md';
+  const codeExtensions = ['java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx'];
+  const isCodeFile = codeExtensions.includes(fileExt);
 
   return (
     <div className="app-layout">
@@ -88,6 +93,8 @@ function App() {
             <div className="pane preview-pane">
               {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
                 <SqlViewer sql={markdown} />
+              ) : isCodeFile ? (
+                <CodeViewer content={markdown} fileExt={fileExt} previewRef={previewRef} />
               ) : (
                 <Preview 
                   markdown={markdown} 
@@ -106,6 +113,7 @@ function App() {
                 setMarkdown={setMarkdown} 
                 selectedFile={selectedFile}
                 textareaRef={textareaRef}
+                isCodeFile={isCodeFile}
               />
             </div>
           )}

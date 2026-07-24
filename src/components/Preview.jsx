@@ -1,9 +1,10 @@
-// src/components/Preview.jsx v2.4
+// src/components/Preview.jsx
 /*
  * 파일 위치: src/components/Preview.jsx
- * 연결 위치: src/App.jsx 내부에서 우측(또는 분할) 실시간 뷰어 영역에 렌더링됨
+ * 연결 위치: src/App.jsx 내부에서 우측(또는 좌측 분할) 실시간 뷰어 영역에 렌더링됨
  * 기능 요약: 마크다운 텍스트를 HTML로 파싱하여 렌더링하는 실시간 뷰어 컴포넌트입니다.
- * (v2.4 수정사항): 잔존해 있던 닫는 중괄호(}) 구문 오류를 수정하고, CodeViewer로 이관된 코드 렌더링 분기 로직을 완전히 제거하여 마크다운 전용으로 최적화했습니다.
+ * 수정사항: java, yml 등 개발 코드 파일일 경우, 뷰어가 일반 텍스트로 오인하여 줄바꿈을 뭉개는 것을 
+ * 방지하기 위해 내부적으로 텍스트 전체를 마크다운 코드 블록(```)으로 감싸서 렌더링합니다.
  */
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -14,12 +15,27 @@ import rehypeKatex from 'rehype-katex';
 import CodeBlockRenderer from './preview/CodeBlockRenderer';
 import LinkRenderer from './preview/LinkRenderer';
 import 'katex/dist/katex.min.css';
-import 'github-markdown-css/github-markdown.css'; 
+import 'github-markdown-css/github-markdown.css';
 import './Preview.css';
 
 function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
-  console.log("[Preview v2.4] 실시간 마크다운 뷰어 렌더링 실행 (코드 파일 렌더링은 CodeViewer로 이관됨)");
+  // 1. 현재 열려있는 파일의 확장자를 소문자로 추출 (없으면 기본값 md)
+  const fileExt = selectedFile ? selectedFile.split('.').pop().toLowerCase() : 'md';
   
+  // 2. 구문 강조 및 줄바꿈 보존을 적용할 개발 코드 확장자 목록
+  const codeExtensions = [
+    'java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 
+    'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 
+    'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx'
+  ];
+
+  // 3. 확장자에 따른 문자열 전처리
+  // 개발 파일인 경우에만 텍스트의 앞뒤로 마크다운 코드 블록 문법을 자동으로 씌워줍니다.
+  // 에디터(작업뷰)의 원본 데이터에는 영향을 주지 않으며, 오직 실시간 뷰어(왼쪽 화면)의 렌더링에만 적용됩니다.
+  const displayContent = codeExtensions.includes(fileExt)
+    ? `\`\`\`${fileExt}\n${markdown}\n\`\`\`` 
+    : markdown;
+
   return (
     <div className="preview-container" ref={previewRef}>
       <div className="preview-content markdown-body">
@@ -31,7 +47,7 @@ function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
             a: (props) => <LinkRenderer {...props} currentFile={selectedFile} onSelectFile={onSelectFile} />
           }}
         >
-          {markdown}
+          {displayContent}
         </ReactMarkdown>
       </div>
     </div>
