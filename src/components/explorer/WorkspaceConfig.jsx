@@ -1,7 +1,7 @@
-// src/components/explorer/WorkspaceConfig.jsx v1.0
+// src/components/explorer/WorkspaceConfig.jsx v1.1
 /*
  * 파일 설명: 탐색기 상단의 워크스페이스(루트 폴더) 경로를 설정하고 히스토리를 관리하는 컴포넌트입니다.
- * FileExplorer.jsx에서 분리되었습니다.
+ * (v1.1 수정사항): 히스토리 드롭다운 텍스트 좌측 정렬 및 엔터 키 입력 시 타이핑 값이 무시되고 첫 번째 항목이 제출되는 버그 수정.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
 import React, { useState } from 'react';
@@ -30,6 +30,7 @@ function WorkspaceConfig({
       e.preventDefault();
       setFocusedHistoryIndex((prev) => (prev > 0 ? prev - 1 : -1));
     } else if (e.key === 'Enter') {
+      // [수정] 방향키로 히스토리 목록을 명확히 선택한 상태(>= 0)일 때만 해당 항목으로 제출
       if (focusedHistoryIndex >= 0 && focusedHistoryIndex < workspaceHistory.length) {
         e.preventDefault();
         const selected = workspaceHistory[focusedHistoryIndex];
@@ -37,6 +38,7 @@ function WorkspaceConfig({
         submitWorkspacePath(selected);
         setIsHistoryOpen(false);
       } else {
+        // [수정] 직접 타이핑 중(-1)일 때는 가로채지 않고 form 태그의 기본 onSubmit 동작을 타도록 둡니다.
         setIsHistoryOpen(false);
       }
     } else if (e.key === 'Escape') {
@@ -48,13 +50,22 @@ function WorkspaceConfig({
   return (
     <div style={{ padding: '8px 12px', borderBottom: '1px solid #d0d7de', backgroundColor: '#ffffff', position: 'relative' }}>
       {isEditingWorkspace ? (
-        <form onSubmit={handleWorkspaceSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <form onSubmit={(e) => {
+          // 기본 form 제출 시 확실하게 드롭다운을 닫도록 보강
+          setIsHistoryOpen(false);
+          handleWorkspaceSubmit(e);
+        }} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#57606a' }}>루트 경로 설정 (예: D:/Folder)</span>
           <div style={{ position: 'relative' }}>
             <input 
               type="text" 
               value={tempWorkspacePath} 
-              onChange={(e) => setTempWorkspacePath(e.target.value)}
+              onChange={(e) => {
+                setTempWorkspacePath(e.target.value);
+                // [수정] 사용자가 타이핑을 하면 포커스 인덱스를 초기화하여 엔터 충돌 방지
+                setFocusedHistoryIndex(-1);
+                setIsHistoryOpen(true);
+              }}
               onFocus={() => setIsHistoryOpen(true)}
               onBlur={() => setTimeout(() => setIsHistoryOpen(false), 150)} 
               onKeyDown={handleKeyDown}
@@ -95,7 +106,8 @@ function WorkspaceConfig({
                       cursor: 'pointer',
                       backgroundColor: focusedHistoryIndex === idx ? '#f3f4f6' : '#ffffff',
                       borderBottom: idx < workspaceHistory.length - 1 ? '1px solid #eaeef2' : 'none',
-                      wordBreak: 'break-all'
+                      wordBreak: 'break-all',
+                      textAlign: 'left' // [수정] 텍스트 좌측 정렬 강제
                     }}
                   >
                     {histPath}
