@@ -12,14 +12,14 @@ export const fetchTreeData = async () => {
   return await response.json();
 };
 
-// 특정 파일의 내용을 가져오기 (확장자에 따라 텍스트 또는 바이너리 분기 처리) [버전 1.2]
+// 특정 파일의 내용을 가져오기 (확장자에 따라 텍스트 또는 바이너리 분기 처리) [버전 1.3]
 export const fetchFileContent = async (path) => {
-  console.log(`[fileApi v1.2] 파일 읽기 API 호출 - 타겟: ${path}`);
+  console.log(`[fileApi v1.3] 파일 읽기 API 호출 - 타겟: ${path}`);
   
   const extMatch = path.match(/\.([^.]+)$/);
   const ext = extMatch ? extMatch[1].toLowerCase() : '';
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext);
-  const isExcel = ['xlsx', 'csv'].includes(ext);
+  const isExcel = ['xls', 'xlsx', 'csv'].includes(ext); // [수정] xls 확장자 추가
 
   if (isImage) {
     console.log(`[fileApi v1.2] 이미지 파일 감지, 텍스트 변환 생략 후 마크다운 태그 반환`);
