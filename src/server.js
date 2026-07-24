@@ -52,8 +52,8 @@ const initDataDir = async () => {
 };
 initDataDir();
 
-// 허용할 텍스트 기반 파일 확장자 목록
-const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json', '.html', '.css', '.js', '.jsx'];
+// 허용할 파일 확장자 목록에 이미지 및 엑셀 추가 [버전 1.7]
+const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xlsx', '.csv'];
 
 // 경로 조작(Directory Traversal) 해킹 방지 및 Windows 슬래시 정규화 로직
 const getSafePath = (targetPath) => {
@@ -186,12 +186,29 @@ app.get('/api/file', async (req, res) => {
     res.send(content);
   } catch (error) {
     console.error(`[GET /api/file v1.2] 읽기 에러 발생:`, error.message);
-    // 파일이 존재하지 않는 경우(ENOENT) 500 에러 대신 404를 반환하여 프론트엔드가 인지하도록 합니다.
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: '해당 파일이 존재하지 않습니다.' });
     } else {
       res.status(500).json({ error: error.message });
     }
+  }
+});
+
+// [GET] 이미지 및 엑셀 바이너리 파일 원본 스트림 제공 [버전 1.0]
+app.get('/api/raw', (req, res) => {
+  const { target } = req.query;
+  console.log(`[GET /api/raw v1.0] 바이너리 파일 스트리밍 요청 수신 - 타겟: ${target}`);
+  try {
+    const safePath = getSafePath(target);
+    res.sendFile(safePath, (err) => {
+      if (err) {
+        console.error(`[GET /api/raw v1.0] 파일 전송 에러:`, err.message);
+        if (!res.headersSent) res.status(err.status || 500).json({ error: '파일을 전송할 수 없습니다.' });
+      }
+    });
+  } catch (error) {
+    console.error(`[GET /api/raw v1.0] 경로 검증 에러:`, error.message);
+    res.status(403).json({ error: error.message });
   }
 });
 

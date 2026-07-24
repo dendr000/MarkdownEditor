@@ -41,27 +41,31 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
 
-  // 5초 지연(Debounce) 자동 저장 로직
-  useEffect(() => {
-    if (!selectedFile) return;
-    const timer = setTimeout(async () => {
-      try {
-        await saveFileContent(selectedFile, markdown);
-        console.log(`[Editor v9.5] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
-      } catch (e) {
-        console.error('자동 저장 실패', e);
-      }
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [markdown, selectedFile]);
-
-  // [신규] 파일 확장자 추출 로직
+  // 파일 확장자 추출 및 읽기 전용 모드 판별 로직 [버전 9.6]
   const getFileExtension = () => {
     if (!selectedFile) return 'md';
     const parts = selectedFile.split('.');
     return parts.length > 1 ? parts.pop().toLowerCase() : 'md';
   };
   const fileExt = getFileExtension();
+  const isReadOnly = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv'].includes(fileExt);
+
+  // 5초 지연(Debounce) 자동 저장 로직 [버전 9.6]
+  useEffect(() => {
+    if (!selectedFile || isReadOnly) {
+      if (isReadOnly) console.log(`[Editor v9.6] 읽기 전용 파일 감지: '${selectedFile}' 자동 저장 차단`);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        await saveFileContent(selectedFile, markdown);
+        console.log(`[Editor v9.6] 5초 무입력 감지: '${selectedFile}' 자동 저장 완료`);
+      } catch (e) {
+        console.error('자동 저장 실패', e);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [markdown, selectedFile, isReadOnly]);
 
   const handleFormat = (originalPrefix, suffix = '', isBlock = false) => {
     if (!textareaRef.current) return;
@@ -141,7 +145,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile) saveFileContent(selectedFile, markdown).then(() => console.log(`[Editor] 수동 저장 완료: ${selectedFile}`));
+        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[Editor v9.6] 수동 저장 완료: ${selectedFile}`));
         return;
       }
       if (e.shiftKey && key === 'f') {
@@ -231,9 +235,9 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onPaste={handlePaste}
-        placeholder={selectedFile ? "여기에 마크다운을 작성하세요..." : "좌측 탐색기에서 파일을 선택해 주세요."}
+        placeholder={selectedFile ? (isReadOnly ? "이미지 및 엑셀 파일은 에디터에서 직접 수정할 수 없습니다." : "여기에 마크다운을 작성하세요...") : "좌측 탐색기에서 파일을 선택해 주세요."}
         spellCheck="false"
-        disabled={!selectedFile}
+        disabled={!selectedFile || isReadOnly}
       />
 
       <AutocompletePopup suggestState={suggestState} currentSuggestList={currentSuggestList} onSelect={handleSelectSuggest} />

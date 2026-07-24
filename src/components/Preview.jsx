@@ -158,6 +158,19 @@ function Preview({ markdown, selectedFile, onSelectFile }) {
           rehypePlugins={[rehypeRaw, rehypeKatex]}
           components={{
             code: CodeBlock,
+            // img 태그 렌더링 시 로컬 파일을 /api/raw 엔드포인트로 연결하는 커스텀 로직 (v2.8 업데이트)
+            img: ({ node, src, alt, ...props }) => {
+              const isExternal = src && (src.startsWith('http') || src.startsWith('data:'));
+              let displaySrc = src;
+              
+              if (!isExternal) {
+                const targetPath = resolvePath(selectedFile || '', src);
+                displaySrc = `/api/raw?target=${encodeURIComponent(targetPath)}`;
+                console.log(`[Preview v2.8] 이미지 경로 변환 - 원본: ${src}, 변환: ${displaySrc}`);
+              }
+              
+              return <img src={displaySrc} alt={alt} style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }} {...props} />;
+            },
             // a 태그 렌더링 시 클릭 이벤트를 가로채는 커스텀 로직 (v2.7 업데이트)
             a: ({ node, href, children, ...props }) => {
               const isInternal = href && !href.startsWith('http') && !href.startsWith('mailto:');

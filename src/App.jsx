@@ -11,6 +11,7 @@ import FileExplorer from './components/explorer/FileExplorer';
 import OutlineMinimap from './components/editor/OutlineMinimap';
 import { useOutline } from './hooks/editor/useOutline';
 import { fetchFileContent } from './api/fileApi';
+import * as XLSX from 'xlsx'; // [신규] 엑셀 파싱 라이브러리 추가
 import './App.css';
 
 function App() {
@@ -24,26 +25,56 @@ function App() {
   const textareaRef = useRef(null);
   const outlineData = useOutline(markdown);
 
-  // isHistoryEvent가 true이면 브라우저 히스토리 스택에 URL을 추가하지 않습니다 (뒤로가기/새로고침 시 무한 루프 방지) [버전 2.5]
+  // isHistoryEvent가 true이면 브라우저 히스토리 스택에 URL을 추가하지 않습니다 (뒤로가기/새로고침 시 무한 루프 방지) [버전 2.9]
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
-    // 윈도우 환경 탐색기에서 넘어오는 역슬래시(\)를 표준 슬래시(/)로 완벽히 정규화
     const normalizedPath = filePath ? filePath.replace(/\\/g, '/') : '';
-    console.log(`[App v2.5] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
+    console.log(`[App v2.9] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
     
     try {
       const content = await fetchFileContent(normalizedPath);
       setSelectedFile(normalizedPath);
-      setMarkdown(content);
+      
+      // 엑셀 바이너리 데이터(ArrayBuffer) 파싱 및 HTML 표 변환 로직
+      if (content instanceof ArrayBuffer) {
+        console.log("[App v2.9] 엑셀 바이너리 데이터 HTML 표 변환 시작 (병합 셀 지원)");
+        try {
+          const workbook = XLSX.read(content, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // 마크다운 표 문법은 셀 병합(rowspan/colspan)을 지원하지 않으므로, HTML 표 구조로 추출합니다.
+          let rawHtml = XLSX.utils.sheet_to_html(worksheet);
+          
+          // 생성된 HTML 문서 문자열에서 <table> 태그 부분만 정규식으로 안전하게 추출
+          const tableMatch = rawHtml.match(/<table[^>]*>[\s\S]*?<\/table>/i);
+          
+          if (tableMatch) {
+            let htmlTable = tableMatch[0];
+            
+            // 깃허브 마크다운 스타일과 이질감이 없도록 HTML 표에 인라인 스타일을 강제 주입합니다.
+            htmlTable = htmlTable.replace(/<table/, '<table style="border-collapse: collapse; min-width: 100%; font-size: 13px;" border="1"');
+            htmlTable = htmlTable.replace(/<td/g, '<td style="padding: 6px 10px; border: 1px solid #d0d7de;"');
+            
+            setMarkdown(`> **엑셀 뷰어 (읽기 전용)**: \`${normalizedPath}\`\n\n<div style="width: 100%; overflow-x: auto; background: #ffffff; padding: 16px; border-radius: 8px; border: 1px solid #d0d7de; margin-top: 16px;">\n${htmlTable}\n</div>`);
+          } else {
+            setMarkdown(`> **엑셀 뷰어**: \`${normalizedPath}\`\n\n데이터가 존재하지 않거나 빈 시트입니다.`);
+          }
+        } catch (parseError) {
+          console.error("[App v2.9] 엑셀 파싱 에러:", parseError);
+          setMarkdown(`> **엑셀 로드 실패**: 파일이 손상되었거나 지원하지 않는 형식입니다.`);
+        }
+      } else {
+        setMarkdown(content);
+      }
       
       if (!isHistoryEvent) {
         const newUrl = `${window.location.pathname}?file=${encodeURIComponent(normalizedPath)}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
       }
     } catch (error) {
-      console.error("[App v2.5] 파일 로드 실패:", error);
-      // 파일이 존재하지 않거나 권한이 없어 로드에 실패한 경우, 상태를 초기화하고 브라우저 URL 찌꺼기를 정리합니다.
+      console.error("[App v2.9] 파일 로드 실패:", error);
       if (isHistoryEvent) {
-        console.log("[App v2.5] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
+        console.log("[App v2.9] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
         window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
         setSelectedFile(null);
         setMarkdown('');
