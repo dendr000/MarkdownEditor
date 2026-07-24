@@ -133,7 +133,26 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile }) {
         submitWorkspacePath={submitWorkspacePath}
       />
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+      {/* 탐색기 전용 얇고 깔끔한 스크롤바 커스텀 스타일 */}
+      <style>{`
+        .explorer-scroll::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .explorer-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .explorer-scroll::-webkit-scrollbar-thumb {
+          background-color: #d0d7de;
+          border-radius: 4px;
+        }
+        .explorer-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: #8c959f;
+        }
+      `}</style>
+
+      {/* 가로 스크롤(overflowX: hidden)을 차단하고 커스텀 스크롤 클래스 적용 */}
+      <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px', paddingBottom: '60px' }}>
         {treeData && treeData.children && treeData.children.map(child => (
           child ? <ExplorerTreeNode 
                     key={child.path} 

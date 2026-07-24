@@ -148,9 +148,11 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
             style={{
               position: 'absolute',
               top: '100%',
-              left: '10%',
+              left: '0', 
               paddingTop: '4px', 
-              zIndex: 1000
+              zIndex: 1000,
+              width: 'max-content',
+              maxWidth: '210px'
             }}
             onMouseEnter={() => onTooltipOpen(node.path)} 
             onMouseLeave={onTooltipClose}
@@ -162,14 +164,16 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
               padding: '6px 10px',
               borderRadius: '6px',
               fontSize: '11px',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'normal',
+              wordBreak: 'break-all',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               gap: '8px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              border: '1px solid #57606a'
+              border: '1px solid #57606a',
+              lineHeight: '1.4'
             }}>
-              <span>{relativePath}</span>
+              <span style={{ flex: 1 }}>{relativePath}</span>
               <button 
                 onClick={handleCopy}
                 title="상대 경로 복사"
@@ -182,7 +186,8 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'color 0.2s'
+                  transition: 'color 0.2s',
+                  flexShrink: 0
                 }}
               >
                 {isCopied ? <Check size={14} /> : <Copy size={14} />}
