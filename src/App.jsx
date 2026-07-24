@@ -24,20 +24,30 @@ function App() {
   const textareaRef = useRef(null);
   const outlineData = useOutline(markdown);
 
-  // isHistoryEvent가 true이면 브라우저 히스토리 스택에 URL을 추가하지 않습니다 (뒤로가기/새로고침 시 무한 루프 방지)
+  // isHistoryEvent가 true이면 브라우저 히스토리 스택에 URL을 추가하지 않습니다 (뒤로가기/새로고침 시 무한 루프 방지) [버전 2.5]
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
-    console.log(`[App v2.4] 파일 선택됨: ${filePath}`);
+    // 윈도우 환경 탐색기에서 넘어오는 역슬래시(\)를 표준 슬래시(/)로 완벽히 정규화
+    const normalizedPath = filePath ? filePath.replace(/\\/g, '/') : '';
+    console.log(`[App v2.5] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
+    
     try {
-      const content = await fetchFileContent(filePath);
-      setSelectedFile(filePath);
+      const content = await fetchFileContent(normalizedPath);
+      setSelectedFile(normalizedPath);
       setMarkdown(content);
       
       if (!isHistoryEvent) {
-        const newUrl = `${window.location.pathname}?file=${encodeURIComponent(filePath)}`;
+        const newUrl = `${window.location.pathname}?file=${encodeURIComponent(normalizedPath)}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
       }
     } catch (error) {
-      console.error("파일 로드 실패:", error);
+      console.error("[App v2.5] 파일 로드 실패:", error);
+      // 파일이 존재하지 않거나 권한이 없어 로드에 실패한 경우, 상태를 초기화하고 브라우저 URL 찌꺼기를 정리합니다.
+      if (isHistoryEvent) {
+        console.log("[App v2.5] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
+        window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
+        setSelectedFile(null);
+        setMarkdown('');
+      }
     }
   };
 
@@ -47,19 +57,28 @@ function App() {
     const targetFile = params.get('file');
 
     if (targetFile) {
-      console.log(`[App v2.4] URL 파라미터 감지: ${targetFile} 로드 시도`);
+      console.log(`[App v2.6] URL 파라미터 감지: ${targetFile} 로드 시도`);
       handleSelectFile(targetFile, true);
     } else {
-      console.log("[App v2.4] 파라미터 없음: test.md 기본 로드 시도");
-      handleSelectFile('test.md', true);
+      // 워크스페이스가 변경되었을 때 test.md가 없을 확률이 높으므로, 강제로 불러오지 않고 에디터를 빈 상태로 대기시킵니다.
+      console.log("[App v2.6] 파라미터 없음: 에디터 대기 상태 진입");
+      setSelectedFile(null);
+      setMarkdown('');
     }
 
     // 브라우저 뒤로 가기 / 앞으로 가기 이벤트 감지
     const handlePopState = () => {
       const currentParams = new URLSearchParams(window.location.search);
-      const currentFile = currentParams.get('file') || 'test.md';
-      console.log(`[App v2.4] 브라우저 이동 감지 - 타겟 파일: ${currentFile}`);
-      handleSelectFile(currentFile, true);
+      const currentFile = currentParams.get('file');
+      
+      console.log(`[App v2.6] 브라우저 이동 감지 - 타겟 파일: ${currentFile || '없음'}`);
+      
+      if (currentFile) {
+        handleSelectFile(currentFile, true);
+      } else {
+        setSelectedFile(null);
+        setMarkdown('');
+      }
     };
 
     window.addEventListener('popstate', handlePopState);

@@ -58,12 +58,36 @@ export const deleteFileOrFolder = async (path) => {
 
 // 이름 변경 (이동)
 export const renameTarget = async (oldPath, newPath) => {
-  console.log(`[fileApi v1.0] 이름 변경 API 호출 - 기존: ${oldPath}, 변경: ${newPath}`);
+  console.log(`[fileApi v1.1] 이름 변경 API 호출 - 기존: ${oldPath}, 변경: ${newPath}`);
   const response = await fetch('/api/file', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ oldTarget: oldPath, newTarget: newPath }),
   });
   if (!response.ok) throw new Error('이름 변경에 실패했습니다.');
+  return await response.json();
+};
+
+// [신규] 현재 서버의 워크스페이스 경로 가져오기
+export const fetchWorkspacePath = async () => {
+  console.log("[fileApi v1.1] 현재 워크스페이스 경로 조회 API 호출");
+  const response = await fetch('/api/workspace');
+  if (!response.ok) throw new Error('워크스페이스 경로를 불러오지 못했습니다.');
+  return await response.json();
+};
+
+// [신규] 서버의 워크스페이스 경로 변경하기
+export const updateWorkspacePath = async (newPath) => {
+  console.log(`[fileApi v1.1] 워크스페이스 경로 업데이트 API 호출 - 새로운 경로: ${newPath}`);
+  const response = await fetch('/api/workspace', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newPath }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || '경로 변경에 실패했습니다.');
+  }
   return await response.json();
 };
