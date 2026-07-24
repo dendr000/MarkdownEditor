@@ -16,12 +16,13 @@ export let DATA_DIR = path.join(__dirname, '..', 'data');
 const CONFIG_PATH = path.join(__dirname, '..', 'workspace-config.json');
 export let workspaceConfig = { workspace: DATA_DIR, history: [] }; 
 
-// 허용할 파일 확장자 목록 (sql 포함)
+// 허용할 파일 확장자 목록 (java 등 주요 개발 언어 및 설정 파일 확장자 대거 추가)
 const ALLOWED_EXTENSIONS = [
-  '.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', 
+  '.md', '.txt', '.json', '.html', '.css', '.js', '.jsx', '.ts', '.tsx',
   '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.xls', '.xlsx', '.csv',
   '.pdf', '.pptx', '.ppt', '.docx', '.doc', '.zip', '.tar', '.gz', '.rar', '.7z', '.exe',
-  '.sql'
+  '.sql', '.java', '.py', '.c', '.cpp', '.cs', '.go', '.rb', '.php', '.sh', 
+  '.yaml', '.yml', '.xml', '.ini', '.env', '.properties', '.bat', '.cmd'
 ];
 
 // 서버 가동 시 기존 워크스페이스 정보 로드
