@@ -10,6 +10,7 @@ import Editor from './components/editor/Editor';
 import FileExplorer from './components/explorer/FileExplorer';
 import OutlineMinimap from './components/editor/OutlineMinimap';
 import SqlViewer from './components/preview/SqlViewer'; // [신규] SQL 전용 시각화 뷰어 임포트
+import CodeViewer from './components/preview/CodeViewer'; // [신규] 개발 코드 전용 뷰어 임포트
 import { useOutline } from './hooks/editor/useOutline';
 import { useFileLoader } from './hooks/app/useFileLoader';
 import { useScrollSync } from './hooks/app/useScrollSync';
@@ -41,6 +42,11 @@ function App() {
   const outlineData = useOutline(markdown);
   const { handleSelectFile } = useFileLoader(setMarkdown, setSelectedFile);
   useScrollSync(textareaRef, previewRef, isSyncScroll, viewMode, markdown);
+
+  // [신규] 현재 선택된 파일이 개발 코드 파일인지 판별하여 에디터와 뷰어의 렌더링 분기에 사용합니다.
+  const fileExt = selectedFile ? selectedFile.split('.').pop().toLowerCase() : 'md';
+  const codeExtensions = ['java', 'py', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'sh', 'yaml', 'yml', 'xml', 'ini', 'env', 'properties', 'bat', 'cmd', 'json', 'html', 'css', 'js', 'jsx', 'ts', 'tsx'];
+  const isCodeFile = codeExtensions.includes(fileExt);
 
   return (
     <div className="app-layout">
@@ -90,9 +96,11 @@ function App() {
         >
           {viewMode !== 'editor' && (
             <div className="pane preview-pane">
-              {/* [수정] 확장자가 sql인 경우 전용 시각화 뷰어를 출력, 그 외에는 일반 마크다운 프리뷰 출력 */}
+              {/* [수정] 확장자에 따라 SQL 뷰어, 개발 코드 뷰어, 마크다운 뷰어를 완전히 분기하여 출력합니다. */}
               {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
                 <SqlViewer sql={markdown} />
+              ) : isCodeFile ? (
+                <CodeViewer content={markdown} fileExt={fileExt} previewRef={previewRef} />
               ) : (
                 <Preview 
                   markdown={markdown} 
@@ -106,11 +114,13 @@ function App() {
           
           {viewMode !== 'preview' && (
             <div className="pane editor-pane">
+              {/* [수정] 에디터 내부에 isCodeFile 속성을 전달하여 툴바 출력 여부를 제어합니다. */}
               <Editor 
                 markdown={markdown} 
                 setMarkdown={setMarkdown} 
                 selectedFile={selectedFile}
                 textareaRef={textareaRef}
+                isCodeFile={isCodeFile}
               />
             </div>
           )}

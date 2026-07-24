@@ -21,7 +21,8 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
 import './Editor.css';
 
-function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
+// [수정] isCodeFile Prop 추가
+function Editor({ markdown, setMarkdown, selectedFile, textareaRef, isCodeFile }) {
   const toolbarRef = useRef(null); // [복구] 툴바 가로 스크롤 제어용 Ref
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
@@ -48,9 +49,10 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
-      {/* 가로 스크롤 이벤트를 감지하기 위해 실제 스크롤 영역을 담당하는 wrapper 요소에 ref를 연결합니다. */}
-      <div className="editor-toolbar-wrapper" ref={toolbarRef}>
-        <div className="editor-toolbar">
+      {/* [수정] 코드 파일이 아닐 때만 마크다운 툴바를 렌더링하여 환경을 완전히 분리합니다. */}
+      {!isCodeFile && (
+        <div className="editor-toolbar-wrapper" ref={toolbarRef}>
+          <div className="editor-toolbar">
           <HeadingGroup handleFormat={actions.handleFormat} />
           <div className="toolbar-divider" />
           <FormatGroup handleFormat={actions.handleFormat} onOpenMathModal={() => actions.setIsMathModalOpen(true)} />
@@ -70,11 +72,12 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
             <button onClick={() => { actions.prepareModalState('Diagram'); actions.setIsDiagramModalOpen(true); }} title="다이어그램 작성기"><Workflow size={18} /></button>
           </div>
         </div>
-      </div>
+      )}
       
+      {/* [수정] 코드 파일일 경우 code-mode 클래스를 추가하여 고정폭(Monospace) 폰트를 적용합니다. */}
       <textarea
         ref={textareaRef}
-        className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''}`}
+        className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''} ${isCodeFile ? 'code-mode' : ''}`}
         value={markdown}
         onChange={(e) => {
           setMarkdown(e.target.value);

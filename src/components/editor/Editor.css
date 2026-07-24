@@ -261,3 +261,17 @@
 .editor-textarea.ext-jsx { 
   color: #cf222e; 
 }
+
+/* =========================================
+   개발 코드 파일 전용 에디터(Code Mode) 디자인
+   ========================================= */
+.editor-textarea.code-mode {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  background-color: #f6f8fa;
+  color: #24292f;
+  padding: 24px;
+  line-height: 1.6;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  overflow-x: auto;
+}
