@@ -48,8 +48,9 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
-      <div className="editor-toolbar-wrapper">
-        <div className="editor-toolbar" ref={toolbarRef}>
+      {/* 가로 스크롤 이벤트를 감지하기 위해 실제 스크롤 영역을 담당하는 wrapper 요소에 ref를 연결합니다. */}
+      <div className="editor-toolbar-wrapper" ref={toolbarRef}>
+        <div className="editor-toolbar">
           <HeadingGroup handleFormat={actions.handleFormat} />
           <div className="toolbar-divider" />
           <FormatGroup handleFormat={actions.handleFormat} onOpenMathModal={() => actions.setIsMathModalOpen(true)} />
