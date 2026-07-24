@@ -137,6 +137,18 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
               onSelect(node.path);
             }
           }}
+          onMouseDown={(e) => {
+            // 마우스 휠 클릭(1) 시 브라우저 기본 스크롤 커서 방지
+            if (e.button === 1) e.preventDefault();
+          }}
+          onMouseUp={(e) => {
+            // 마우스 휠 클릭(1) 시 새 탭으로 해당 파일/폴더 열기
+            if (e.button === 1) {
+              e.preventDefault();
+              const targetUrl = `${window.location.pathname}?file=${encodeURIComponent(node.path || '')}`;
+              window.open(targetUrl, '_blank');
+            }
+          }}
         >
           {node.isFolder ? (
             <div style={{ display: 'flex', alignItems: 'center', color: '#57606a' }}>
