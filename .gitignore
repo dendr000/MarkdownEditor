@@ -29,3 +29,4 @@ dist-ssr
 
 # 로컬 데이터베이스(파일 DB) 폴더 무시
 src/data/
+src/workspace-config.json
