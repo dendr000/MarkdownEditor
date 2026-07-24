@@ -41,19 +41,23 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
 
-  // 파일 확장자 추출 및 읽기 전용 모드 판별 로직 [버전 9.6]
+  // 파일 확장자 추출 및 가상 뷰어 감지 로직 [버전 9.7]
   const getFileExtension = () => {
     if (!selectedFile) return 'md';
     const parts = selectedFile.split('.');
     return parts.length > 1 ? parts.pop().toLowerCase() : 'md';
   };
   const fileExt = getFileExtension();
-  const isReadOnly = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv'].includes(fileExt);
+  const isMediaFile = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'xlsx', 'csv'].includes(fileExt);
+  
+  // 백엔드나 App.jsx에서 임의로 생성한 가상 뷰어(엑셀, 폴더 등)인지 마크다운 텍스트 플래그를 통해 감지
+  const isGeneratedView = markdown && markdown.includes('(읽기 전용)');
+  const isReadOnly = isMediaFile || isGeneratedView;
 
-  // 5초 지연(Debounce) 자동 저장 로직 [버전 9.6]
+  // 5초 지연(Debounce) 자동 저장 로직 [버전 9.7]
   useEffect(() => {
     if (!selectedFile || isReadOnly) {
-      if (isReadOnly) console.log(`[Editor v9.6] 읽기 전용 파일 감지: '${selectedFile}' 자동 저장 차단`);
+      if (isReadOnly) console.log(`[Editor v9.7] 읽기 전용 뷰어 상태 감지: '${selectedFile}' 자동 저장 차단`);
       return;
     }
     const timer = setTimeout(async () => {
@@ -235,7 +239,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onPaste={handlePaste}
-        placeholder={selectedFile ? (isReadOnly ? "이미지 및 엑셀 파일은 에디터에서 직접 수정할 수 없습니다." : "여기에 마크다운을 작성하세요...") : "좌측 탐색기에서 파일을 선택해 주세요."}
+        placeholder={selectedFile ? (isReadOnly ? "읽기 전용 뷰어 상태이므로 에디터에서 직접 수정할 수 없습니다." : "여기에 마크다운을 작성하세요...") : "좌측 탐색기에서 파일을 선택해 주세요."}
         spellCheck="false"
         disabled={!selectedFile || isReadOnly}
       />
