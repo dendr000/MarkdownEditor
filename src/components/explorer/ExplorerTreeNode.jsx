@@ -1,7 +1,7 @@
-// src/components/explorer/ExplorerTreeNode.jsx v1.2
+// src/components/explorer/ExplorerTreeNode.jsx v1.3
 /*
  * 파일 설명: 탐색기의 개별 폴더/파일 노드를 렌더링하는 컴포넌트입니다.
- * (v1.2 수정사항): 툴팁과 항목 사이의 데드존(Dead Zone)을 투명 패딩으로 메우고, 활성화된 노드의 z-index를 올려 마우스 호버가 끊기는 현상을 해결했습니다.
+ * (v1.3 수정사항): 폴더 항목 위에서도 상대 경로 툴팁이 나타나도록 제한을 해제하였으며, 기준점이 폴더일 경우의 경로 계산 오류를 수정했습니다.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
 import React, { useState } from 'react';
@@ -12,7 +12,13 @@ import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/
 const getRelativePath = (currentPath, targetPath) => {
   if (!currentPath || !targetPath) return '';
   const currentParts = currentPath.split('/');
-  currentParts.pop(); 
+  
+  // 현재 에디터에 열려있는(selectedFile) 경로가 파일인지 폴더인지 확장자(.) 유무로 판별합니다.
+  const isFile = currentPath.split('/').pop().includes('.');
+  if (isFile) {
+    currentParts.pop(); // 기준이 파일이면 부모 디렉토리로 기준점을 한 칸 올립니다.
+  }
+
   const targetParts = targetPath.split('/');
 
   let commonLength = 0;
@@ -31,7 +37,8 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
   const [isOpen, setIsOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  const relativePath = (!node.isFolder && selectedFile && node.path !== selectedFile) 
+  // [수정] !node.isFolder 제한을 삭제하여 폴더 위에서도 툴팁이 뜨도록 허용합니다.
+  const relativePath = (selectedFile && node.path !== selectedFile) 
     ? getRelativePath(selectedFile, node.path) 
     : '';
   
@@ -42,7 +49,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     e.stopPropagation();
     if (relativePath) {
       navigator.clipboard.writeText(relativePath).then(() => {
-        console.log(`[ExplorerTreeNode v1.2] 상대 경로 복사 완료: ${relativePath}`);
+        console.log(`[ExplorerTreeNode v1.3] 상대 경로 복사 완료: ${relativePath}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       });
@@ -54,7 +61,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     if (!name) return;
     const ext = !isFolder && !name.includes('.') ? '.md' : '';
     const newPath = node.path ? `${node.path}/${name}${ext}` : `${name}${ext}`;
-    console.log(`[ExplorerTreeNode v1.2] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
+    console.log(`[ExplorerTreeNode v1.3] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
     await createFileOrFolder(newPath, isFolder);
     setIsOpen(true);
     onRefresh();
@@ -62,7 +69,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
 
   const handleDelete = async () => {
     if (window.confirm(`'${node.name}'을(를) 정말 삭제하시겠습니까?`)) {
-      console.log(`[ExplorerTreeNode v1.2] 삭제 요청 - 경로: ${node.path}`);
+      console.log(`[ExplorerTreeNode v1.3] 삭제 요청 - 경로: ${node.path}`);
       await deleteFileOrFolder(node.path);
       onRefresh();
     }
@@ -73,7 +80,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     if (!newName || newName === node.name) return;
     const basePath = node.path.substring(0, node.path.lastIndexOf('/'));
     const newPath = basePath ? `${basePath}/${newName}` : newName;
-    console.log(`[ExplorerTreeNode v1.2] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
+    console.log(`[ExplorerTreeNode v1.3] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
     await renameTarget(node.path, newPath);
     onRefresh();
   };
@@ -90,7 +97,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
           cursor: 'pointer', 
           transition: 'background 0.1s',
           position: 'relative',
-          // [신규] 툴팁이 활성화된 행의 z-index를 높여 아래 파일에 툴팁이 가려지는 현상 방지
           zIndex: isTooltipVisible ? 50 : 1 
         }}
         onMouseEnter={(e) => { 
@@ -127,7 +133,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
         </div>
 
         {isTooltipVisible && (
-          // [신규] 마우스 이동 시 데드존(Dead Zone)을 막기 위해 겉 래퍼(Wrapper)에 투명한 paddingTop을 적용하여 다리를 놓음
           <div 
             style={{
               position: 'absolute',

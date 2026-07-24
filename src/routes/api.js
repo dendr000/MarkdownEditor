@@ -1,7 +1,7 @@
-// src/routes/api.js v1.0
+// src/routes/api.js v1.1
 /*
  * 파일 설명: Express 라우터를 사용하여 API 엔드포인트를 정의하는 파일입니다.
- * server.js에서 분리되었습니다.
+ * (v1.1 수정사항): 폴더 뷰어 생성 시 파일명에 마크다운 링크 문법을 적용하여 프론트엔드 라우팅 기능을 활성화했습니다.
  */
 import express from 'express';
 import fs from 'fs/promises';
@@ -73,7 +73,15 @@ router.get('/file', async (req, res) => {
       for (const item of items) {
         const icon = item.isDir ? '📁' : '📄';
         const typeText = item.isDir ? 'Folder' : 'File';
-        md += `| ${icon} | **${item.name}** | ${typeText} |\n`;
+        
+        // 대상 폴더/파일의 고유 경로 생성
+        const itemPath = target ? `${target}/${item.name}` : item.name;
+        const encodedPath = encodeURIComponent(itemPath);
+        
+        // 프론트엔드의 커스텀 <a> 태그 렌더러가 URL 파라미터(?file=...)를 낚아채어 이동할 수 있도록 링크 생성
+        const link = `[**${item.name}**](?file=${encodedPath})`;
+        
+        md += `| ${icon} | ${link} | ${typeText} |\n`;
       }
       
       return res.send(md);
