@@ -1,246 +1,135 @@
-// src/components/explorer/FileExplorer.jsx v2.0
+// src/components/explorer/FileExplorer.jsx v5.0
 /*
- * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정(Pin) 기능을 제공하는 컴포넌트입니다.
- * (v2.0 수정사항): App.jsx로부터 storageMode를 전달받아, 스토리지 변경 시 트리 자동 리로딩 처리 및
- * 브라우저 가상 DB 모드일 경우 지원되지 않는 WorkspaceConfig 컴포넌트를 숨김 처리합니다.
+ * 파일 위치: src/components/explorer/FileExplorer.jsx
+ * 연결 위치: src/App.jsx 내부 좌측 패널
+ * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다.
+ * (v5.0 수정사항): 투톤(Two-Tone) 다크 헤더 디자인 적용. 탐색기 토글 버튼을 패널과 분리하여 최상단에 고정하고,
+ * 패널 상단부 배경색을 헤더/버튼과 동일하게 맞춰 서랍이 부드럽게 열리는 듯한 일체감을 구현했습니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { FilePlus, FolderPlus } from 'lucide-react';
+import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
 import { fetchTreeData, createFileOrFolder, fetchWorkspacePath, updateWorkspacePath } from '../../api/fileApi';
 import WorkspaceConfig from './WorkspaceConfig';
 import ExplorerTreeNode from './ExplorerTreeNode';
 
-function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode }) {
+function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode }) {
   const [treeData, setTreeData] = useState({ name: 'root', isFolder: true, children: [], path: '' });
   const [workspacePath, setWorkspacePath] = useState(''); 
   const [isEditingWorkspace, setIsEditingWorkspace] = useState(false); 
   const [tempWorkspacePath, setTempWorkspacePath] = useState(''); 
   const [workspaceHistory, setWorkspaceHistory] = useState([]); 
-  
   const [activeTooltipNode, setActiveTooltipNode] = useState(null);
   const tooltipHideTimer = useRef(null);
   const resizeRef = useRef(null);
 
   const loadTree = async () => {
-    try {
-      console.log(`[FileExplorer v2.0] 최신 트리 데이터를 요청합니다. (모드: ${storageMode})`);
-      const data = await fetchTreeData();
-      setTreeData(data);
-    } catch (error) {
-      console.error('[FileExplorer v2.0] 트리 데이터 로드 실패:', error);
-    }
+    try { console.log(`[FileExplorer v5.0] 트리 스캔`); setTreeData(await fetchTreeData()); }
+    catch (e) { console.error('트리 로드 실패', e); }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log(`[FileExplorer v2.0] 워크스페이스 상태 조회. (모드: ${storageMode})`);
+      console.log(`[FileExplorer v5.0] 경로 조회`);
       const data = await fetchWorkspacePath();
-      setWorkspacePath(data.path);
-      setTempWorkspacePath(data.path);
-      setWorkspaceHistory(data.history || []); 
-    } catch (error) {
-      console.error('[FileExplorer v2.0] 워크스페이스 데이터 로드 실패:', error);
-    }
+      setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
+    } catch (e) { console.error('경로 로드 실패', e); }
   };
 
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v2.0] 워크스페이스 경로 변경 승인 요청: ${targetPath}`);
+      console.log(`[FileExplorer v5.0] 경로 변경: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
-      setWorkspacePath(data.path);
-      setTempWorkspacePath(data.path);
-      setWorkspaceHistory(data.history || []);
-      setIsEditingWorkspace(false);
-      loadTree();
-    } catch (error) {
-      console.error('[FileExplorer v2.0] 경로 변경 거부됨:', error);
-      alert(`경로 변경 실패: ${error.message}`);
-    }
-  };
-
-  const handleWorkspaceSubmit = (e) => {
-    e.preventDefault();
-    submitWorkspacePath(tempWorkspacePath);
-  };
-
-  const handleTooltipOpen = (nodePath) => {
-    if (tooltipHideTimer.current) clearTimeout(tooltipHideTimer.current);
-    setActiveTooltipNode(nodePath);
-  };
-
-  const handleTooltipClose = () => {
-    tooltipHideTimer.current = setTimeout(() => {
-      setActiveTooltipNode(null);
-    }, 3000);
+      setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []);
+      setIsEditingWorkspace(false); loadTree();
+    } catch (e) { alert(`경로 변경 실패: ${e.message}`); }
   };
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!resizeRef.current) return;
-      const newWidth = e.clientX;
-      if (newWidth >= 180 && newWidth <= 500) {
-        setExplorerWidth(newWidth);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = 'auto'; 
-    };
-
-    const handleMouseDown = (e) => {
-      if (e.target.dataset.resizer) {
-        setIsResizing(true);
-        setIsEditingWorkspace(false);
-        document.body.style.userSelect = 'none'; 
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-      }
-    };
-
-    window.addEventListener('mousedown', handleMouseDown);
-    return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
+    const onMove = (e) => resizeRef.current && e.clientX >= 180 && e.clientX <= 500 && setExplorerWidth(e.clientX);
+    const onUp = () => { setIsResizing(false); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); document.body.style.userSelect = 'auto'; };
+    const onDown = (e) => { if (e.target.dataset.resizer) { setIsResizing(true); setIsEditingWorkspace(false); document.body.style.userSelect = 'none'; window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); } };
+    window.addEventListener('mousedown', onDown);
+    return () => window.removeEventListener('mousedown', onDown);
   }, [setExplorerWidth, setIsResizing]);
 
-  // [수정] 컴포넌트 마운트 시가 아닌 storageMode가 바뀔 때마다 트리를 다시 그립니다.
   useEffect(() => {
-    loadWorkspacePath();
-    loadTree();
-    return () => {
-      if (tooltipHideTimer.current) clearTimeout(tooltipHideTimer.current);
-    };
+    loadWorkspacePath(); loadTree();
+    return () => clearTimeout(tooltipHideTimer.current);
   }, [storageMode]);
 
   return (
-    <div 
-      ref={resizeRef}
-      className="file-explorer-container"
-      style={{ 
-        position: 'absolute',
-        left: isExplorerOpen ? '0px' : `-${explorerWidth}px`,
-        top: '0', 
-        bottom: '0', 
-        width: `${explorerWidth}px`, 
-        borderRight: '1px solid #d0d7de', 
-        backgroundColor: '#f6f8fa', 
-        display: 'flex', 
-        flexDirection: 'column',
-        boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none',
-        transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
-        zIndex: isExplorerPinned ? 1 : 9999,
-        flexShrink: 0
-      }}
-    >
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #d0d7de', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '14px', fontWeight: '600', color: '#24292f' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button 
-            onClick={() => setIsExplorerPinned(!isExplorerPinned)}
-            title={isExplorerPinned ? "오버레이 모드로 전환 (화면 덮기)" : "고정 모드로 전환 (화면 밀어내기)"}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer', 
-              padding: '2px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              color: isExplorerPinned ? '#0969da' : '#8c959f',
-              transition: 'color 0.2s'
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill={isExplorerPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="17" x2="12" y2="22"></line>
-              <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-.89 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
-            </svg>
-          </button>
-          
-          <FilePlus size={16} color="#2da44e" style={{ cursor: 'pointer' }} onClick={() => {
-            const name = window.prompt("루트에 생성할 새 파일명 (.md 권장)");
-            if (name) { 
-              console.log(`[FileExplorer v2.0] 루트 파일 생성 요청: ${name}`);
-              createFileOrFolder(name, false).then(loadTree); 
-            }
-          }} title="루트 파일 추가" />
-          <FolderPlus size={16} color="#0969da" style={{ cursor: 'pointer' }} onClick={() => {
-            const name = window.prompt("루트에 생성할 새 폴더명");
-            if (name) { 
-              console.log(`[FileExplorer v2.0] 루트 폴더 생성 요청: ${name}`);
-              createFileOrFolder(name, true).then(loadTree); 
-            }
-          }} title="루트 폴더 추가" />
-        </div>
-      </div>
-      
-      {/* [수정] BROWSER 모드에서는 가상 파일 시스템을 사용하므로 워크스페이스 입력 컴포넌트를 숨김 처리합니다. */}
-      {storageMode === 'SERVER' && (
-        <WorkspaceConfig 
-          workspacePath={workspacePath}
-          tempWorkspacePath={tempWorkspacePath}
-          setTempWorkspacePath={setTempWorkspacePath}
-          isEditingWorkspace={isEditingWorkspace}
-          setIsEditingWorkspace={setIsEditingWorkspace}
-          handleWorkspaceSubmit={handleWorkspaceSubmit}
-          workspaceHistory={workspaceHistory}
-          submitWorkspacePath={submitWorkspacePath}
-        />
-      )}
-
-      <style>{`
-        .explorer-scroll::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
-        }
-        .explorer-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .explorer-scroll::-webkit-scrollbar-thumb {
-          background-color: #d0d7de;
-          border-radius: 4px;
-        }
-        .explorer-scroll::-webkit-scrollbar-thumb:hover {
-          background-color: #8c959f;
-        }
-      `}</style>
-
-      <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '8px', paddingBottom: '60px' }}>
-        {treeData && treeData.children && treeData.children.map(child => (
-          child ? <ExplorerTreeNode 
-                    key={child.path} 
-                    node={child} 
-                    onSelect={onSelectFile} 
-                    onRefresh={loadTree} 
-                    selectedFile={selectedFile}
-                    activeTooltipNode={activeTooltipNode}
-                    onTooltipOpen={handleTooltipOpen}
-                    onTooltipClose={handleTooltipClose}
-                  /> : null
-        ))}
-        {(!treeData || !treeData.children || treeData.children.length === 0) && (
-          <div style={{ fontSize: '12px', color: '#8c959f', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>
-        )}
-      </div>
-
-      <div 
-        data-resizer="true"
-        style={{
-          position: 'absolute',
-          right: '-3px',
-          top: '0',
-          bottom: '0',
-          width: '6px',
-          cursor: 'ew-resize',
-          zIndex: 10000,
-          backgroundColor: 'transparent'
+    <>
+      {/* 1. 고정된 탐색기 토글 버튼 (패널 이동과 무관하게 0,0 위치에 상시 고정) */}
+      <button 
+        onClick={() => { 
+          console.log(`[FileExplorer v5.0] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
+          setIsExplorerOpen(!isExplorerOpen); 
+        }} 
+        title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
+        style={{ 
+          position: 'absolute', 
+          left: 0, 
+          top: 0, 
+          width: '46px', 
+          height: '46px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          backgroundColor: '#24292f', // 상단 헤더와 완벽히 동일한 다크 테마
+          borderBottomRightRadius: isExplorerOpen ? '0px' : '16px', // 닫혀있을 때만 라운딩 적용
+          border: 'none', 
+          cursor: 'pointer', 
+          zIndex: 10001, // 슬라이딩 패널보다 위쪽 레이어 차지
+          transition: 'border-radius 0.2s ease'
         }}
-        title="드래그하여 탐색기 너비 조절"
-      />
-    </div>
+      >
+        {/* 상태에 따른 직관적인 아이콘 전환 */}
+        {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
+        
+        {/* 닫혀있을 때 헤더와 부드럽게 이어지는 역방향 라운딩(Inverted Border Radius) 렌더링 */}
+        {!isExplorerOpen && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: '-16px',
+            width: '16px',
+            height: '16px',
+            backgroundColor: 'transparent',
+            borderTopLeftRadius: '16px',
+            boxShadow: '-8px -8px 0 8px #24292f',
+            pointerEvents: 'none'
+          }} />
+        )}
+      </button>
+
+      {/* 2. 탐색기 슬라이딩 패널 */}
+      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid #d0d7de', backgroundColor: '#f6f8fa', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
+        
+        {/* 타이틀 영역: 토글 버튼 및 상단 헤더와 색상을 동기화(투톤 디자인) */}
+        <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={() => setIsExplorerPinned(!isExplorerPinned)} title="고정 토글" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isExplorerPinned ? '#58a6ff' : '#8c959f' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill={isExplorerPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-.89 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
+            </button>
+            <FilePlus size={16} color="#4ac26b" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 파일명"); if (name) createFileOrFolder(name, false).then(loadTree); }} />
+            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 폴더명"); if (name) createFileOrFolder(name, true).then(loadTree); }} />
+          </div>
+        </div>
+        
+        {storageMode === 'SERVER' && <WorkspaceConfig workspacePath={workspacePath} tempWorkspacePath={tempWorkspacePath} setTempWorkspacePath={setTempWorkspacePath} isEditingWorkspace={isEditingWorkspace} setIsEditingWorkspace={setIsEditingWorkspace} handleWorkspaceSubmit={(e) => { e.preventDefault(); submitWorkspacePath(tempWorkspacePath); }} workspaceHistory={workspaceHistory} submitWorkspacePath={submitWorkspacePath} />}
+        
+        <style>{`.explorer-scroll::-webkit-scrollbar { width: 6px; height: 6px; } .explorer-scroll::-webkit-scrollbar-thumb { background-color: #d0d7de; border-radius: 4px; } .explorer-scroll::-webkit-scrollbar-thumb:hover { background-color: #8c959f; }`}</style>
+        
+        <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px', paddingBottom: '60px' }}>
+          {treeData?.children?.map(child => child && <ExplorerTreeNode key={child.path} node={child} onSelect={onSelectFile} onRefresh={loadTree} selectedFile={selectedFile} activeTooltipNode={activeTooltipNode} onTooltipOpen={(p) => { clearTimeout(tooltipHideTimer.current); setActiveTooltipNode(p); }} onTooltipClose={() => { tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 3000); }} />)}
+          {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: '#8c959f', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
+        </div>
+        
+        <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: 'ew-resize', zIndex: 10000 }} title="폭 조절" />
+      </div>
+    </>
   );
 }
-
 export default FileExplorer;
