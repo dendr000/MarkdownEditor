@@ -54,3 +54,38 @@ body {
 .mode-split .preview-pane {
   border-right: 1px solid #d0d7de;
 }
+
+/* =========================================
+   다크 테마 (눈뽕 방지 모드) CSS 변수 선언
+   ========================================= */
+:root {
+  --bg-main: #ffffff;
+  --explorer-bg: #f6f8fa;
+  --border-color: #d0d7de;
+  --text-main: #24292f;
+  --text-muted: #8c959f;
+}
+
+body[data-theme='dark'] {
+  --bg-main: #0d1117;          /* 에디터 배경색 (어두운 남색) */
+  --explorer-bg: #161b22;      /* 탐색기 배경색 */
+  --border-color: #30363d;     /* 테두리 라인 색상 */
+  --text-main: #c9d1d9;        /* 기본 폰트 색상 (밝은 회색) */
+  --text-muted: #8b949e;       /* 비활성 폰트 색상 */
+  
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* 에디터 메인 프레임워크 배경색 어둡게 처리 */
+body[data-theme='dark'] .workspace,
+body[data-theme='dark'] .app-layout {
+  background-color: var(--bg-main);
+}
+
+/* 에디터 (Textarea) 및 프리뷰 화면 눈부심 방지 덮어쓰기 */
+body[data-theme='dark'] .editor-pane textarea,
+body[data-theme='dark'] .preview-pane {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}

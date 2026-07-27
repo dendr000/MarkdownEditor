@@ -1,9 +1,9 @@
-// src/components/Preview.jsx v2.0
+// src/components/Preview.jsx v2.1
 /*
  * 파일 위치: src/components/Preview.jsx
  * 연결 위치: src/App.jsx 내부에서 우측(또는 좌측 분할) 실시간 뷰어 영역에 렌더링됨
  * 기능 요약: 마크다운 텍스트를 HTML로 파싱하여 렌더링하는 실시간 뷰어 컴포넌트입니다.
- * (v2.0 수정사항): 백틱(```) 강제 래핑 로직을 제거하고 원래의 렌더링 방식으로 완전 롤백했습니다.
+ * (v2.1 수정사항): 다크 테마(CSS 변수) 렌더링 로그 추가.
  */
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -18,7 +18,7 @@ import 'github-markdown-css/github-markdown.css';
 import './Preview.css';
 
 function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
-  console.log("[Preview v2.0] 실시간 뷰어 렌더링 시작 (롤백 적용)");
+  console.log("[Preview v2.1] 실시간 뷰어 렌더링 시작 (다크 테마 대응 완료)");
 
   return (
     <div className="preview-container" ref={previewRef}>

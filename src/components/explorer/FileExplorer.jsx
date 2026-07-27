@@ -1,10 +1,9 @@
-// src/components/explorer/FileExplorer.jsx v5.1
+// src/components/explorer/FileExplorer.jsx v6.0
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다.
- * (v5.1 수정사항): 클릭 시 깜빡이며 직사각형이 노출되는 현상을 해결하기 위해, 
- * 라운딩을 제어하는 조건부 렌더링을 삭제하고 상시 노출로 변경했습니다.
+ * (v6.0 수정사항): 하드코딩된 색상 코드(#f6f8fa 등)를 CSS 변수(var(--explorer-bg))로 모두 치환하여 다크 테마 전환에 완벽히 대응합니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -23,13 +22,13 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const resizeRef = useRef(null);
 
   const loadTree = async () => {
-    try { console.log(`[FileExplorer v5.1] 트리 스캔`); setTreeData(await fetchTreeData()); }
+    try { console.log(`[FileExplorer v6.0] 트리 스캔`); setTreeData(await fetchTreeData()); }
     catch (e) { console.error('트리 로드 실패', e); }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log(`[FileExplorer v5.1] 경로 조회`);
+      console.log(`[FileExplorer v6.0] 경로 조회`);
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
     } catch (e) { console.error('경로 로드 실패', e); }
@@ -38,7 +37,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v5.1] 경로 변경: ${targetPath}`);
+      console.log(`[FileExplorer v6.0] 경로 변경: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []);
       setIsEditingWorkspace(false); loadTree();
@@ -60,51 +59,24 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
 
   return (
     <>
-      {/* 1. 고정된 탐색기 토글 버튼 (패널 이동과 무관하게 0,0 위치에 상시 고정) */}
       <button 
         onClick={() => { 
-          console.log(`[FileExplorer v5.1] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
+          console.log(`[FileExplorer v6.0] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
           setIsExplorerOpen(!isExplorerOpen); 
         }} 
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
         style={{ 
-          position: 'absolute', 
-          left: 0, 
-          top: 0, 
-          width: '46px', 
-          height: '46px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          backgroundColor: '#24292f', 
-          borderBottomRightRadius: '16px', // [핵심 수정] 조건부 제거. 항상 16px 라운딩 유지
-          border: 'none', 
-          outline: 'none', // [추가] 클릭 시 아웃라인 깜빡임 방지
-          cursor: 'pointer', 
-          zIndex: 10001,
-          transition: 'background-color 0.2s ease'
+          position: 'absolute', left: 0, top: 0, width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 10001, transition: 'background-color 0.2s ease'
         }}
       >
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
-        
-        {/* [핵심 수정] 조건부 렌더링 제거. 상시 존재시키어 슬라이딩 패널에 자연스럽게 먹히도록 유도 */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          right: '-16px',
-          width: '16px',
-          height: '16px',
-          backgroundColor: 'transparent',
-          borderTopLeftRadius: '16px',
-          boxShadow: '-8px -8px 0 8px #24292f',
-          pointerEvents: 'none'
-        }} />
+        <div style={{ position: 'absolute', top: 0, right: '-16px', width: '16px', height: '16px', backgroundColor: 'transparent', borderTopLeftRadius: '16px', boxShadow: '-8px -8px 0 8px #24292f', pointerEvents: 'none' }} />
       </button>
 
-      {/* 2. 탐색기 슬라이딩 패널 */}
-      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid #d0d7de', backgroundColor: '#f6f8fa', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
+      {/* [핵심 수정] backgroundColor: 'var(--explorer-bg)' 및 borderRight: '1px solid var(--border-color)' 로 치환 */}
+      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
         
-        {/* 타이틀 영역 */}
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -118,11 +90,11 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         
         {storageMode === 'SERVER' && <WorkspaceConfig workspacePath={workspacePath} tempWorkspacePath={tempWorkspacePath} setTempWorkspacePath={setTempWorkspacePath} isEditingWorkspace={isEditingWorkspace} setIsEditingWorkspace={setIsEditingWorkspace} handleWorkspaceSubmit={(e) => { e.preventDefault(); submitWorkspacePath(tempWorkspacePath); }} workspaceHistory={workspaceHistory} submitWorkspacePath={submitWorkspacePath} />}
         
-        <style>{`.explorer-scroll::-webkit-scrollbar { width: 6px; height: 6px; } .explorer-scroll::-webkit-scrollbar-thumb { background-color: #d0d7de; border-radius: 4px; } .explorer-scroll::-webkit-scrollbar-thumb:hover { background-color: #8c959f; }`}</style>
+        <style>{`.explorer-scroll::-webkit-scrollbar { width: 6px; height: 6px; } .explorer-scroll::-webkit-scrollbar-thumb { background-color: var(--border-color, #d0d7de); border-radius: 4px; } .explorer-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted, #8c959f); }`}</style>
         
         <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px', paddingBottom: '60px' }}>
           {treeData?.children?.map(child => child && <ExplorerTreeNode key={child.path} node={child} onSelect={onSelectFile} onRefresh={loadTree} selectedFile={selectedFile} activeTooltipNode={activeTooltipNode} onTooltipOpen={(p) => { clearTimeout(tooltipHideTimer.current); setActiveTooltipNode(p); }} onTooltipClose={() => { tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 3000); }} />)}
-          {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: '#8c959f', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
+          {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: 'var(--text-muted, #8c959f)', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
         </div>
         
         <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: 'ew-resize', zIndex: 10000 }} title="폭 조절" />

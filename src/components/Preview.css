@@ -1,7 +1,7 @@
-/* src/components/Preview.css v2.1 */
+/* src/components/Preview.css v2.2 */
 /*
- * 파일 설명: 실시간 뷰어의 5:5 화면 분할 레이아웃, 깃허브 마크다운 기본 스타일 오버라이드, 그리고 Alerts 및 Diff 확장 문법의 디자인을 총괄하는 완전한 통합 CSS 파일입니다.
- * (v2.1 수정사항): 개발 코드 파일(java 등)이 한 줄로 뭉개지지 않고 줄바꿈이 정상적으로 유지되도록 백그라운드 및 pre-wrap 속성 보완.
+ * 파일 설명: 실시간 뷰어의 5:5 화면 분할 레이아웃, 깃허브 마크다운 기본 스타일 오버라이드, 그리고 Alerts 등의 디자인을 총괄합니다.
+ * (v2.2 수정사항): github-markdown-css 라이브러리의 하얀색 배경 강제성을 무력화하고, 전역 CSS 변수에 완벽히 종속되도록 !important 처리를 강화했습니다.
  * 연결 위치: src/components/Preview.jsx
  */
 
@@ -10,12 +10,12 @@
   flex: 1; 
   flex-direction: column;
   height: 100%;
-  background-color: #ffffff; 
-  border-right: 1px solid #d0d7de; 
+  background-color: var(--bg-main, #ffffff); 
+  border-right: 1px solid var(--border-color, #d0d7de); 
   overflow-y: auto;
 }
 
-/* 깃허브 마크다운 스타일(github-markdown-css)이 적용되는 핵심 본문 영역 */
+/* github-markdown-css 색상 오버라이드 (핵심 강제 처리) */
 .preview-content.markdown-body {
   box-sizing: border-box;
   width: 100%;
@@ -23,28 +23,32 @@
   min-width: 200px;
   margin: 0;
   padding: 32px 40px;
-  text-align: left; /* 마크다운 텍스트 중앙 정렬 붕괴 방지 */
+  text-align: left;
+  background-color: transparent !important; /* 라이브러리 배경 무력화 */
+  color: var(--text-main, #24292f) !important; /* 폰트 색상 강제 지정 */
 }
 
-/* [신규] 코드 파일 전용 뷰어 영역의 여백 및 배경 처리 */
+/* 코드 뷰어 배경 처리 */
 .preview-content.code-file-view {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   padding: 16px;
-  background-color: #f6f8fa; /* 깃허브 코드 뷰어와 유사한 연한 회색 배경 */
+  background-color: var(--explorer-bg, #f6f8fa); 
 }
 
-/* [신규] 코드 파일 렌더링 시 줄바꿈(\n)이 무시되어 한 줄로 뭉개지는 현상 방지 */
 .preview-content.code-file-view pre,
 .preview-content.code-file-view code {
   white-space: pre-wrap !important;
   word-break: break-all;
 }
 
-.preview-content.markdown-body table tr,
+/* 마크다운 표 배경색 다크테마 대응 */
+.preview-content.markdown-body table tr {
+  background-color: var(--bg-main, #ffffff) !important; 
+}
 .preview-content.markdown-body table tr:nth-child(2n) {
-  background-color: #ffffff !important; 
+  background-color: var(--explorer-bg, #f6f8fa) !important; 
 }
 
 .code-block-wrapper {
@@ -62,9 +66,9 @@
   align-items: center;
   justify-content: center;
   padding: 6px;
-  color: #57606a;
-  background-color: #f6f8fa;
-  border: 1px solid #d0d7de;
+  color: var(--text-muted, #57606a);
+  background-color: var(--explorer-bg, #f6f8fa);
+  border: 1px solid var(--border-color, #d0d7de);
   border-radius: 6px;
   opacity: 0; 
   cursor: pointer;
@@ -76,7 +80,7 @@
 }
 
 .code-copy-btn:hover {
-  background-color: #e3e8ee;
+  background-color: rgba(140, 149, 159, 0.25);
 }
 
 /* GitHub Alerts */
@@ -96,44 +100,25 @@
 
 .gh-alert-note { border-color: #0969da; }
 .gh-alert-note .gh-alert-title { color: #0969da; }
-
 .gh-alert-tip { border-color: #1a7f37; }
 .gh-alert-tip .gh-alert-title { color: #1a7f37; }
-
 .gh-alert-important { border-color: #8250df; }
 .gh-alert-important .gh-alert-title { color: #8250df; }
-
 .gh-alert-warning { border-color: #9a6700; }
 .gh-alert-warning .gh-alert-title { color: #9a6700; }
-
 .gh-alert-caution { border-color: #cf222e; }
 .gh-alert-caution .gh-alert-title { color: #cf222e; }
 
 /* GitHub Diff */
-.diff-add { 
-  display: block; 
-  background-color: #dafbe1; 
-  color: #1a7f37; 
-}
-
-.diff-remove { 
-  display: block; 
-  background-color: #ffebe9; 
-  color: #cf222e; 
-}
-
-.diff-change { 
-  display: block; 
-  background-color: #ffebd1; 
-  color: #9a6700; 
-}
+.diff-add { display: block; background-color: rgba(46, 160, 67, 0.15); color: #3fb950; }
+.diff-remove { display: block; background-color: rgba(248, 81, 73, 0.15); color: #ff7b72; }
+.diff-change { display: block; background-color: rgba(210, 153, 34, 0.15); color: #d29922; }
 
 .gh-alert-title svg.octicon {
   margin-right: 8px;
   fill: currentColor;
 }
 
-/* Color Visualization */
 .color-viz-code {
   background-color: rgba(175, 184, 193, 0.2);
   padding: 0.2em 0.4em;
@@ -151,5 +136,5 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 1px solid rgba(27, 31, 36, 0.15);
+  border: 1px solid var(--border-color, #d0d7de);
 }

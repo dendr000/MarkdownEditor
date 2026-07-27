@@ -1,54 +1,29 @@
-// src/components/explorer/ExplorerTreeNode.jsx v1.3
+// src/components/explorer/ExplorerTreeNode.jsx v2.0
 /*
- * 파일 설명: 탐색기의 개별 폴더/파일 노드를 렌더링하는 컴포넌트입니다.
- * (v1.3 수정사항): 폴더 항목 위에서도 상대 경로 툴팁이 나타나도록 제한을 해제하였으며, 기준점이 폴더일 경우의 경로 계산 오류를 수정했습니다.
+ * 파일 설명: 탐색기의 개별 폴더/파일 노드를 렌더링하는 메인 컴포넌트입니다.
+ * (v2.0 수정사항): 파일 라인 수 200줄 초과 방지를 위해 유틸리티(상대 경로 연산)와 하위 UI(툴팁, 액션 버튼)를 분리 모듈화했습니다.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { Folder, FolderOpen, FileText, FilePlus, FolderPlus, Trash2, Edit2, ChevronRight, ChevronDown, Copy, Check } from 'lucide-react';
+import { Folder, FolderOpen, FileText, ChevronRight, ChevronDown } from 'lucide-react';
 import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/fileApi';
-
-// 상대 경로 계산 유틸리티
-const getRelativePath = (currentPath, targetPath) => {
-  if (!currentPath || !targetPath) return '';
-  const currentParts = currentPath.split('/');
-  
-  // 현재 에디터에 열려있는(selectedFile) 경로가 파일인지 폴더인지 확장자(.) 유무로 판별합니다.
-  const isFile = currentPath.split('/').pop().includes('.');
-  if (isFile) {
-    currentParts.pop(); // 기준이 파일이면 부모 디렉토리로 기준점을 한 칸 올립니다.
-  }
-
-  const targetParts = targetPath.split('/');
-
-  let commonLength = 0;
-  while (commonLength < currentParts.length && commonLength < targetParts.length && currentParts[commonLength] === targetParts[commonLength]) {
-    commonLength++;
-  }
-
-  const upCount = currentParts.length - commonLength;
-  const upString = upCount > 0 ? '../'.repeat(upCount) : './';
-  const downString = targetParts.slice(commonLength).join('/');
-
-  return upString + downString;
-};
+import { getRelativePath } from '../../utils/pathUtils';
+import NodeTooltip from './NodeTooltip';
+import NodeActions from './NodeActions';
 
 function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
+  console.log(`[ExplorerTreeNode v2.0] 노드 렌더링 - 경로: ${node.path}`);
   const [isOpen, setIsOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const nodeRef = useRef(null);
 
-  // [신규] 선택된 파일 경로에 현재 폴더가 포함되면 자동 펼침 (Link with Editor)
   useEffect(() => {
     if (node.isFolder && selectedFile && selectedFile.startsWith(node.path + '/')) {
       setIsOpen(true);
     }
   }, [selectedFile, node.path, node.isFolder]);
 
-  // [신규] 현재 노드가 선택된 상태인지 확인
   const isSelected = selectedFile === node.path;
 
-  // [신규] 선택된 항목이 뷰포트 바깥에 있을 경우 스크롤 이동
   useEffect(() => {
     if (isSelected && nodeRef.current) {
       nodeRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -61,23 +36,12 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
   
   const isTooltipVisible = activeTooltipNode === node.path && relativePath !== '';
 
-  const handleCopy = (e) => {
-    e.stopPropagation();
-    if (relativePath) {
-      navigator.clipboard.writeText(relativePath).then(() => {
-        console.log(`[ExplorerTreeNode v1.4] 상대 경로 복사 완료: ${relativePath}`);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-      });
-    }
-  };
-
   const handleAdd = async (isFolder) => {
     const name = window.prompt(`새 ${isFolder ? '폴더' : '파일'} 이름을 입력하세요.\n(파일은 .md 또는 .txt 확장자 권장)`);
     if (!name) return;
     const ext = !isFolder && !name.includes('.') ? '.md' : '';
     const newPath = node.path ? `${node.path}/${name}${ext}` : `${name}${ext}`;
-    console.log(`[ExplorerTreeNode v1.4] 신규 ${isFolder ? '폴더' : '파일'} 생성 요청 - 경로: ${newPath}`);
+    console.log(`[ExplorerTreeNode v2.0] 신규 생성 요청 - 경로: ${newPath}`);
     await createFileOrFolder(newPath, isFolder);
     setIsOpen(true);
     onRefresh();
@@ -85,7 +49,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
 
   const handleDelete = async () => {
     if (window.confirm(`'${node.name}'을(를) 정말 삭제하시겠습니까?`)) {
-      console.log(`[ExplorerTreeNode v1.4] 삭제 요청 - 경로: ${node.path}`);
+      console.log(`[ExplorerTreeNode v2.0] 삭제 요청 - 경로: ${node.path}`);
       await deleteFileOrFolder(node.path);
       onRefresh();
     }
@@ -96,7 +60,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
     if (!newName || newName === node.name) return;
     const basePath = node.path.substring(0, node.path.lastIndexOf('/'));
     const newPath = basePath ? `${basePath}/${newName}` : newName;
-    console.log(`[ExplorerTreeNode v1.4] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
+    console.log(`[ExplorerTreeNode v2.0] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
     await renameTarget(node.path, newPath);
     onRefresh();
   };
@@ -106,59 +70,41 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
       <div 
         ref={nodeRef}
         style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          padding: '4px 6px', 
-          borderRadius: '4px', 
-          cursor: 'pointer', 
-          transition: 'background 0.1s',
-          position: 'relative',
-          zIndex: isTooltipVisible ? 50 : 1,
-          backgroundColor: isSelected ? '#d0d7de' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+          padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', transition: 'background 0.1s',
+          position: 'relative', zIndex: isTooltipVisible ? 50 : 1,
+          backgroundColor: isSelected ? 'var(--border-color, #d0d7de)' : 'transparent',
           fontWeight: isSelected ? '600' : 'normal'
         }}
         onMouseEnter={(e) => { 
-          e.currentTarget.style.backgroundColor = isSelected ? '#d0d7de' : '#e1e4e8'; 
+          e.currentTarget.style.backgroundColor = isSelected ? 'var(--border-color, #d0d7de)' : 'rgba(140, 149, 159, 0.15)'; 
           if (relativePath) onTooltipOpen(node.path); 
         }}
         onMouseLeave={(e) => { 
-          e.currentTarget.style.backgroundColor = isSelected ? '#d0d7de' : 'transparent'; 
+          e.currentTarget.style.backgroundColor = isSelected ? 'var(--border-color, #d0d7de)' : 'transparent'; 
           if (relativePath) onTooltipClose();
         }}
       >
         <div 
           style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, overflow: 'hidden' }}
           onClick={() => {
-            if (node.isFolder) {
-              setIsOpen(!isOpen);
-              onSelect(node.path || ''); 
-            } else {
-              onSelect(node.path);
-            }
+            if (node.isFolder) { setIsOpen(!isOpen); onSelect(node.path || ''); } 
+            else { onSelect(node.path); }
           }}
-          onMouseDown={(e) => {
-            // 마우스 휠 클릭(1) 시 브라우저 기본 스크롤 커서 방지
-            if (e.button === 1) e.preventDefault();
-          }}
+          onMouseDown={(e) => { if (e.button === 1) e.preventDefault(); }}
           onMouseUp={(e) => {
-            // 마우스 휠 클릭(1) 시 새 탭으로 해당 파일/폴더 열기
             if (e.button === 1) {
               e.preventDefault();
-              const targetUrl = `${window.location.pathname}?file=${encodeURIComponent(node.path || '')}`;
-              window.open(targetUrl, '_blank');
+              window.open(`${window.location.pathname}?file=${encodeURIComponent(node.path || '')}`, '_blank');
             }
           }}
         >
           {node.isFolder ? (
-            <div style={{ display: 'flex', alignItems: 'center', color: '#57606a' }}>
+            <div style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted, #57606a)' }}>
               <div 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsOpen(!isOpen);
-                }}
+                onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
                 style={{ display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '-2px', borderRadius: '4px' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d0d7de'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--border-color, #d0d7de)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 title="폴더 열기/닫기"
               >
@@ -167,82 +113,32 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
               {isOpen ? <FolderOpen size={14} color="#0969da" style={{ marginLeft: '2px' }} /> : <Folder size={14} color="#0969da" style={{ marginLeft: '2px' }} />}
             </div>
           ) : (
-            <FileText size={14} color="#57606a" style={{ marginLeft: '18px' }} />
+            <FileText size={14} color="var(--text-muted, #57606a)" style={{ marginLeft: '18px' }} />
           )}
-          <span style={{ fontSize: '13px', color: '#24292f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: '13px', color: 'var(--text-main, #24292f)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {node.name}
           </span>
         </div>
 
         {isTooltipVisible && (
-          <div 
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '0', 
-              paddingTop: '4px', 
-              zIndex: 1000,
-              width: 'max-content',
-              maxWidth: '210px'
-            }}
-            onMouseEnter={() => onTooltipOpen(node.path)} 
-            onMouseLeave={onTooltipClose}
-            onClick={(e) => e.stopPropagation()} 
-          >
-            <div 
-              onClick={handleCopy}
-              title="클릭하여 상대 경로 복사"
-              style={{
-                backgroundColor: '#24292f',
-                color: '#ffffff',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                whiteSpace: 'normal',
-                wordBreak: 'break-all',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                border: '1px solid #57606a',
-                lineHeight: '1.4',
-                cursor: 'pointer'
-              }}
-            >
-              <span style={{ flex: 1 }}>{relativePath}</span>
-              <button 
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: isCopied ? '#2da44e' : '#8c959f',
-                  padding: '2px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'color 0.2s',
-                  flexShrink: 0,
-                  pointerEvents: 'none'
-                }}
-              >
-                {isCopied ? <Check size={14} /> : <Copy size={14} />}
-              </button>
-            </div>
-          </div>
+          <NodeTooltip 
+            relativePath={relativePath} 
+            nodePath={node.path} 
+            onTooltipOpen={onTooltipOpen} 
+            onTooltipClose={onTooltipClose} 
+          />
         )}
 
         {node.path && (
-          <div style={{ display: 'flex', gap: '4px', opacity: 0.7 }}>
-            {node.isFolder && (
-              <>
-                <FilePlus size={14} color="#2da44e" onClick={(e) => { e.stopPropagation(); handleAdd(false); }} title="파일 추가" />
-                <FolderPlus size={14} color="#0969da" onClick={(e) => { e.stopPropagation(); handleAdd(true); }} title="폴더 추가" />
-              </>
-            )}
-            <Edit2 size={14} color="#57606a" onClick={(e) => { e.stopPropagation(); handleRename(); }} title="이름 변경" />
-            <Trash2 size={14} color="#cf222e" onClick={(e) => { e.stopPropagation(); handleDelete(); }} title="삭제" />
-          </div>
+          <NodeActions 
+            isFolder={node.isFolder} 
+            onAdd={handleAdd} 
+            onRename={handleRename} 
+            onDelete={handleDelete} 
+          />
         )}
       </div>
+      
       {isOpen && node.children && (
         <div>
           {node.children.map(child => (

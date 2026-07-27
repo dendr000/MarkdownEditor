@@ -1,8 +1,8 @@
-// src/components/editor/Editor.jsx v12.0
+// src/components/editor/Editor.jsx v13.0
 /*
  * 파일 위치: src/components/editor/Editor.jsx
  * 기능 요약: 마크다운 텍스트 편집 및 매크로 기능을 제공하는 메인 에디터입니다.
- * (v12.0 수정사항): CodeEditor 분리 아키텍처 폐기로 인해 단일 에디터 구조로 롤백했습니다.
+ * (v13.0 수정사항): 다크 테마(CSS 변수) 렌더링 로그 추가 및 컨테이너 스타일 구조 유지.
  */
 import { useRef, useEffect } from 'react';
 import { Table, FileCode2, FolderTree, Workflow, Library, GitCommit } from 'lucide-react';
@@ -23,7 +23,7 @@ import { useEditor } from '../../hooks/editor/useEditor';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  console.log("[Editor v12.0] 단일 에디터 렌더링 시작 (롤백 적용)");
+  console.log("[Editor v13.0] 단일 에디터 렌더링 시작 (다크 테마 CSS 변수 연동 완료)");
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);

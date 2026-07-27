@@ -1,4 +1,11 @@
+<!-- 
+  위치: docs/folderTree.md
+  기능 요약: Markdown Editor 프로젝트의 전체 디렉토리 및 파일 구조, 각 파일의 핵심 역할을 정리한 명세서입니다. 
+-->
+
 # 프로젝트 폴더 구조 (Markdown Editor)
+
+```text
 MARKDOWNEDITOR
 ├── .vscode
 ├── data                        # 워크스페이스 타겟으로 사용될 파일 DB 루트
@@ -10,7 +17,8 @@ MARKDOWNEDITOR
 │   └── icons.svg
 ├── src
 │   ├── api
-│   │   └── fileApi.js          # 백엔드 서버 통신 API 유틸
+│   │   ├── browserDb.js        # 브라우저 내장 가상 파일 시스템(IndexedDB) 모듈
+│   │   └── fileApi.js          # 백엔드 서버 및 브라우저 DB 통신 어댑터 API
 │   ├── assets
 │   │   ├── hero.png
 │   │   ├── react.svg
@@ -29,21 +37,21 @@ MARKDOWNEDITOR
 │   │   │   │   ├── TemplateModal.jsx
 │   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
 │   │   │   ├── AutocompletePopup.jsx
-│   │   │   ├── CodeEditor.jsx  # [신규] 개발 코드 전용 순수 텍스트 에디터
 │   │   │   ├── Editor.css
-│   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부)
+│   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부 - 단일 구조)
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
 │   │   ├── explorer
-│   │   │   ├── ExplorerTreeNode.jsx # 탐색기 개별 폴더/파일 노드 및 복사 툴팁
+│   │   │   ├── ExplorerTreeNode.jsx # 탐색기 개별 폴더/파일 메인 렌더링 노드
 │   │   │   ├── FileExplorer.jsx # 좌측 탐색기 메인 컴포넌트
+│   │   │   ├── NodeActions.jsx # 파일/폴더 추가, 수정, 삭제 액션 버튼 그룹
+│   │   │   ├── NodeTooltip.jsx # 상대 경로 표시 및 클립보드 복사 툴팁
 │   │   │   └── WorkspaceConfig.jsx # 상단 워크스페이스 경로 및 히스토리 제어바
 │   │   ├── preview
 │   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 렌더러 분리
-│   │   │   ├── CodeViewer.jsx  # [신규] 개발 코드 파일 전용 실시간 뷰어
 │   │   │   ├── GeoJsonBlock.jsx
 │   │   │   ├── LinkRenderer.jsx # 뷰어 내 상대 경로 링크 가로채기 모듈
 │   │   │   ├── MermaidBlock.jsx
-│   │   │   ├── SqlViewer.jsx   # [신규] SQL 전용 시각화 뷰어
+│   │   │   ├── SqlViewer.jsx   # SQL 전용 시각화 뷰어
 │   │   │   └── StlBlock.jsx
 │   │   ├── table
 │   │   │   ├── html-table/
@@ -54,9 +62,9 @@ MARKDOWNEDITOR
 │   │   ├── tree
 │   │   │   └── FolderTreeModal.jsx # 폴더 구조도 마크다운 생성기
 │   │   ├── Header.css
-│   │   ├── Header.jsx          # 상단 헤더
+│   │   ├── Header.jsx          # 상단 헤더 (테마 및 스토리지 스위칭 포함)
 │   │   ├── Preview.css
-│   │   └── Preview.jsx         # 실시간 뷰어 메인 컴포넌트 (마크다운 전용)
+│   │   └── Preview.jsx         # 실시간 뷰어 메인 컴포넌트 (마크다운 파싱)
 │   ├── controllers
 │   │   └── fileController.js   # 백엔드 로컬 시스템 접근 핵심 로직 제어
 │   ├── hooks
@@ -79,7 +87,7 @@ MARKDOWNEDITOR
 │   │   ├── editorCore.js       # 에디터 DOM 제어 및 VSC 스타일 들여쓰기 래퍼
 │   │   ├── githubMarkdownParser.js
 │   │   ├── htmlTableParser.js
-│   │   ├── pathUtils.js        # 상대 경로 계산 유틸
+│   │   ├── pathUtils.js        # 파일 트리 상대 경로 연산 유틸
 │   │   ├── tableConverter.js
 │   │   └── templates.js
 │   ├── App.css
