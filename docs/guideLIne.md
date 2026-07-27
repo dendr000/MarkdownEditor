@@ -38,3 +38,8 @@ npm install
 ```
 npm run dev
 ```
+
+취약점이 있는 패키지를 안전한 버전으로 자동 업데이트(패치)합니다.
+```
+npm audit fix
+```
