@@ -169,14 +169,14 @@ function Header({
         {/* 설정 메뉴 그룹 */}
         <div style={{ position: 'relative' }} onMouseLeave={() => {
           if (isSettingsOpen) {
-            console.log("[Header v2.5] 마우스 아웃: 설정 메뉴 닫힘");
+            console.log("[Header v2.6] 마우스 아웃: 설정 메뉴 닫힘");
             setIsSettingsOpen(false);
           }
         }}>
           <button 
             className={`view-btn ${isSettingsOpen ? 'active' : ''}`} 
             onClick={() => {
-              console.log(`[Header v2.5] 설정 메뉴 토글 클릭 (현재 상태: ${isSettingsOpen})`);
+              console.log(`[Header v2.6] 설정 메뉴 토글 클릭 (현재 상태: ${isSettingsOpen})`);
               setIsSettingsOpen(!isSettingsOpen);
             }} 
             title="에디터 환경 설정"
@@ -190,40 +190,43 @@ function Header({
               position: 'absolute',
               top: '100%',
               right: 0,
-              marginTop: '4px',
-              backgroundColor: '#ffffff',
-              border: '1px solid #d0d7de',
-              borderRadius: '6px',
-              boxShadow: '0 8px 24px rgba(140,149,159,0.2)',
-              padding: '8px 12px',
+              paddingTop: '4px',
               zIndex: 1000,
               minWidth: '200px'
             }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#24292f', cursor: 'pointer', marginBottom: '8px' }}>
-                <input 
-                  type="checkbox" 
-                  checked={isSyncScroll} 
-                  onChange={(e) => {
-                    console.log(`[Header v2.5] 양면 스크롤 동기화 설정 변경: ${e.target.checked}`);
-                    setIsSyncScroll(e.target.checked);
-                  }} 
-                  style={{ cursor: 'pointer' }}
-                />
-                양면 스크롤 동기화
-              </label>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#24292f', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={isExplorerAutoClose} 
-                  onChange={(e) => {
-                    console.log(`[Header v2.5] 외부 클릭 시 탐색기 닫기 설정 변경: ${e.target.checked}`);
-                    setIsExplorerAutoClose(e.target.checked);
-                  }} 
-                  style={{ cursor: 'pointer' }}
-                />
-                외부 클릭 시 탐색기 자동 닫기
-              </label>
+              <div style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #d0d7de',
+                borderRadius: '6px',
+                boxShadow: '0 8px 24px rgba(140,149,159,0.2)',
+                padding: '8px 12px'
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#24292f', cursor: 'pointer', marginBottom: '8px' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={isSyncScroll} 
+                    onChange={(e) => {
+                      console.log(`[Header v2.6] 양면 스크롤 동기화 설정 변경: ${e.target.checked}`);
+                      setIsSyncScroll(e.target.checked);
+                    }} 
+                    style={{ cursor: 'pointer' }}
+                  />
+                  양면 스크롤 동기화
+                </label>
+                
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#24292f', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={isExplorerAutoClose} 
+                    onChange={(e) => {
+                      console.log(`[Header v2.6] 외부 클릭 시 탐색기 닫기 설정 변경: ${e.target.checked}`);
+                      setIsExplorerAutoClose(e.target.checked);
+                    }} 
+                    style={{ cursor: 'pointer' }}
+                  />
+                  외부 클릭 시 탐색기 자동 닫기
+                </label>
+              </div>
             </div>
           )}
         </div>
