@@ -1,10 +1,10 @@
-// src/components/explorer/FileExplorer.jsx v5.0
+// src/components/explorer/FileExplorer.jsx v5.1
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다.
- * (v5.0 수정사항): 투톤(Two-Tone) 다크 헤더 디자인 적용. 탐색기 토글 버튼을 패널과 분리하여 최상단에 고정하고,
- * 패널 상단부 배경색을 헤더/버튼과 동일하게 맞춰 서랍이 부드럽게 열리는 듯한 일체감을 구현했습니다.
+ * (v5.1 수정사항): 클릭 시 깜빡이며 직사각형이 노출되는 현상을 해결하기 위해, 
+ * 라운딩을 제어하는 조건부 렌더링을 삭제하고 상시 노출로 변경했습니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -23,13 +23,13 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const resizeRef = useRef(null);
 
   const loadTree = async () => {
-    try { console.log(`[FileExplorer v5.0] 트리 스캔`); setTreeData(await fetchTreeData()); }
+    try { console.log(`[FileExplorer v5.1] 트리 스캔`); setTreeData(await fetchTreeData()); }
     catch (e) { console.error('트리 로드 실패', e); }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log(`[FileExplorer v5.0] 경로 조회`);
+      console.log(`[FileExplorer v5.1] 경로 조회`);
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
     } catch (e) { console.error('경로 로드 실패', e); }
@@ -38,7 +38,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v5.0] 경로 변경: ${targetPath}`);
+      console.log(`[FileExplorer v5.1] 경로 변경: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []);
       setIsEditingWorkspace(false); loadTree();
@@ -63,7 +63,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
       {/* 1. 고정된 탐색기 토글 버튼 (패널 이동과 무관하게 0,0 위치에 상시 고정) */}
       <button 
         onClick={() => { 
-          console.log(`[FileExplorer v5.0] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
+          console.log(`[FileExplorer v5.1] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
           setIsExplorerOpen(!isExplorerOpen); 
         }} 
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
@@ -76,37 +76,35 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          backgroundColor: '#24292f', // 상단 헤더와 완벽히 동일한 다크 테마
-          borderBottomRightRadius: isExplorerOpen ? '0px' : '16px', // 닫혀있을 때만 라운딩 적용
+          backgroundColor: '#24292f', 
+          borderBottomRightRadius: '16px', // [핵심 수정] 조건부 제거. 항상 16px 라운딩 유지
           border: 'none', 
+          outline: 'none', // [추가] 클릭 시 아웃라인 깜빡임 방지
           cursor: 'pointer', 
-          zIndex: 10001, // 슬라이딩 패널보다 위쪽 레이어 차지
-          transition: 'border-radius 0.2s ease'
+          zIndex: 10001,
+          transition: 'background-color 0.2s ease'
         }}
       >
-        {/* 상태에 따른 직관적인 아이콘 전환 */}
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
         
-        {/* 닫혀있을 때 헤더와 부드럽게 이어지는 역방향 라운딩(Inverted Border Radius) 렌더링 */}
-        {!isExplorerOpen && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            right: '-16px',
-            width: '16px',
-            height: '16px',
-            backgroundColor: 'transparent',
-            borderTopLeftRadius: '16px',
-            boxShadow: '-8px -8px 0 8px #24292f',
-            pointerEvents: 'none'
-          }} />
-        )}
+        {/* [핵심 수정] 조건부 렌더링 제거. 상시 존재시키어 슬라이딩 패널에 자연스럽게 먹히도록 유도 */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: '-16px',
+          width: '16px',
+          height: '16px',
+          backgroundColor: 'transparent',
+          borderTopLeftRadius: '16px',
+          boxShadow: '-8px -8px 0 8px #24292f',
+          pointerEvents: 'none'
+        }} />
       </button>
 
       {/* 2. 탐색기 슬라이딩 패널 */}
       <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid #d0d7de', backgroundColor: '#f6f8fa', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
         
-        {/* 타이틀 영역: 토글 버튼 및 상단 헤더와 색상을 동기화(투톤 디자인) */}
+        {/* 타이틀 영역 */}
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
