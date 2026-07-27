@@ -1,9 +1,9 @@
-// src/components/explorer/FileExplorer.jsx v6.0
+// src/components/explorer/FileExplorer.jsx v6.1
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다.
- * (v6.0 수정사항): 하드코딩된 색상 코드(#f6f8fa 등)를 CSS 변수(var(--explorer-bg))로 모두 치환하여 다크 테마 전환에 완벽히 대응합니다.
+ * (v6.1 수정사항): 마우스 호버 시 경로 팝업(툴팁)이 즉시 열리고 오래 남아 갑자기 메뉴가 펼쳐진 것처럼 보이던 불편함을 개선했습니다. (0.6초 딜레이 후 열림, 마우스 이탈 시 즉시 닫힘)
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -18,17 +18,20 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const [tempWorkspacePath, setTempWorkspacePath] = useState(''); 
   const [workspaceHistory, setWorkspaceHistory] = useState([]); 
   const [activeTooltipNode, setActiveTooltipNode] = useState(null);
+  
+  // [신규] 툴팁 등장 및 소멸 타이머 분리
+  const tooltipShowTimer = useRef(null);
   const tooltipHideTimer = useRef(null);
   const resizeRef = useRef(null);
 
   const loadTree = async () => {
-    try { console.log(`[FileExplorer v6.0] 트리 스캔`); setTreeData(await fetchTreeData()); }
+    try { console.log(`[FileExplorer v6.1] 트리 스캔`); setTreeData(await fetchTreeData()); }
     catch (e) { console.error('트리 로드 실패', e); }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log(`[FileExplorer v6.0] 경로 조회`);
+      console.log(`[FileExplorer v6.1] 경로 조회`);
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
     } catch (e) { console.error('경로 로드 실패', e); }
@@ -37,7 +40,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v6.0] 경로 변경: ${targetPath}`);
+      console.log(`[FileExplorer v6.1] 경로 변경: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []);
       setIsEditingWorkspace(false); loadTree();
@@ -54,14 +57,32 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
 
   useEffect(() => {
     loadWorkspacePath(); loadTree();
-    return () => clearTimeout(tooltipHideTimer.current);
+    return () => {
+      clearTimeout(tooltipShowTimer.current);
+      clearTimeout(tooltipHideTimer.current);
+    };
   }, [storageMode]);
+
+  // [신규] 툴팁 제어 로직 모듈화 (0.6초 이상 머물러야 열림)
+  const handleTooltipOpen = (nodePath) => {
+    clearTimeout(tooltipHideTimer.current);
+    if (activeTooltipNode !== nodePath) {
+      clearTimeout(tooltipShowTimer.current);
+      tooltipShowTimer.current = setTimeout(() => setActiveTooltipNode(nodePath), 600);
+    }
+  };
+
+  // [신규] 마우스가 벗어나면 즉시(0.1초) 닫힘
+  const handleTooltipClose = () => {
+    clearTimeout(tooltipShowTimer.current);
+    tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 100);
+  };
 
   return (
     <>
       <button 
         onClick={() => { 
-          console.log(`[FileExplorer v6.0] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
+          console.log(`[FileExplorer v6.1] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
           setIsExplorerOpen(!isExplorerOpen); 
         }} 
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
@@ -74,7 +95,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         <div style={{ position: 'absolute', top: 0, right: '-16px', width: '16px', height: '16px', backgroundColor: 'transparent', borderTopLeftRadius: '16px', boxShadow: '-8px -8px 0 8px #24292f', pointerEvents: 'none' }} />
       </button>
 
-      {/* [핵심 수정] backgroundColor: 'var(--explorer-bg)' 및 borderRight: '1px solid var(--border-color)' 로 치환 */}
       <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
         
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -93,7 +113,18 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         <style>{`.explorer-scroll::-webkit-scrollbar { width: 6px; height: 6px; } .explorer-scroll::-webkit-scrollbar-thumb { background-color: var(--border-color, #d0d7de); border-radius: 4px; } .explorer-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted, #8c959f); }`}</style>
         
         <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', padding: '8px', paddingBottom: '60px' }}>
-          {treeData?.children?.map(child => child && <ExplorerTreeNode key={child.path} node={child} onSelect={onSelectFile} onRefresh={loadTree} selectedFile={selectedFile} activeTooltipNode={activeTooltipNode} onTooltipOpen={(p) => { clearTimeout(tooltipHideTimer.current); setActiveTooltipNode(p); }} onTooltipClose={() => { tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 3000); }} />)}
+          {treeData?.children?.map(child => child && (
+            <ExplorerTreeNode 
+              key={child.path} 
+              node={child} 
+              onSelect={onSelectFile} 
+              onRefresh={loadTree} 
+              selectedFile={selectedFile} 
+              activeTooltipNode={activeTooltipNode} 
+              onTooltipOpen={handleTooltipOpen} 
+              onTooltipClose={handleTooltipClose} 
+            />
+          ))}
           {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: 'var(--text-muted, #8c959f)', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
         </div>
         
