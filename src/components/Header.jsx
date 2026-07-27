@@ -1,10 +1,9 @@
-// src/components/Header.jsx v2.5
+// src/components/Header.jsx v2.7
 /*
  * 파일 위치: src/components/Header.jsx
  * 연결 위치: src/App.jsx 내부에서 최상단 네비게이션 바로 렌더링됨
  * 기능 요약: 앱 상단의 헤더 컴포넌트로, 뷰 모드 제어, 스크롤/탐색기 설정, 복사 기능 및 브레드크럼(경로) 네비게이션을 제공합니다.
- * (v2.5 수정사항): 스토리지 전환(로컬/브라우저 DB) 기능을 통합 복구하였으며, 
- * 텍스트 버튼을 모두 배제하고 SVG 아이콘과 툴팁(title) 팝업 형태로 디자인을 슬림하게 압축했습니다.
+ * (v2.7 수정사항): 어두운 헤더 배경색과 동일하게 설정되어 보이지 않던 브레드크럼 텍스트 색상을 흰색(#ffffff)과 밝은 회색(#8c959f)으로 수정했습니다.
  */
 import React, { useState } from 'react';
 import { PanelLeft, Columns, PanelRight, FolderTree, Settings, Server, Database } from 'lucide-react';
@@ -20,7 +19,7 @@ function Header({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleCopy = async () => {
-    console.log("[Header v2.5] 전체 마크다운 복사 이벤트 호출");
+    console.log("[Header v2.7] 전체 마크다운 복사 이벤트 호출");
     const success = await copyToClipboard(markdown);
     if (success) {
       setCopied(true);
@@ -35,7 +34,7 @@ function Header({
         <button 
           className={`header-icon-btn ${isExplorerOpen ? 'active' : ''}`}
           onClick={() => {
-            console.log(`[Header v2.5] 탐색기 토글 클릭 (현재 상태: ${isExplorerOpen})`);
+            console.log(`[Header v2.7] 탐색기 토글 클릭 (현재 상태: ${isExplorerOpen})`);
             setIsExplorerOpen(!isExplorerOpen);
           }}
           title="파일 탐색기 열기/닫기"
@@ -55,22 +54,22 @@ function Header({
                 <React.Fragment key={path}>
                   <span 
                     onClick={() => {
-                      console.log(`[Header v2.5] 브레드크럼 클릭 감지: 타겟 경로 = ${path}`);
+                      console.log(`[Header v2.7] 브레드크럼 클릭 감지: 타겟 경로 = ${path}`);
                       if (onBreadcrumbClick) onBreadcrumbClick(path);
                     }}
                     style={{ 
                       cursor: 'pointer', 
-                      color: isLast ? '#24292f' : '#57606a',
+                      color: isLast ? '#ffffff' : '#8c959f', // [핵심 수정] 어두운 배경에 맞게 텍스트 색상 변경
                       fontWeight: isLast ? '600' : 'normal',
                       transition: 'color 0.2s' 
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.textDecoration = 'underline';
-                      e.target.style.color = '#0969da';
+                      e.target.style.color = '#58a6ff'; // [수정] 호버 색상도 어두운 배경에 잘 보이는 밝은 파란색으로 변경
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.textDecoration = 'none';
-                      e.target.style.color = isLast ? '#24292f' : '#57606a';
+                      e.target.style.color = isLast ? '#ffffff' : '#8c959f'; // [핵심 수정] 마우스 아웃 시 색상 복구
                     }}
                     title={`'${path}' 위치로 이동`}
                   >
@@ -90,7 +89,7 @@ function Header({
           <button 
             className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} 
             onClick={() => {
-              console.log("[Header v2.5] 뷰 모드 변경: preview");
+              console.log("[Header v2.7] 뷰 모드 변경: preview");
               setViewMode('preview');
             }} 
             title="실시간 뷰어 단독 보기"
@@ -100,7 +99,7 @@ function Header({
           <button 
             className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} 
             onClick={() => {
-              console.log("[Header v2.5] 뷰 모드 변경: split");
+              console.log("[Header v2.7] 뷰 모드 변경: split");
               setViewMode('split');
             }} 
             title="양면 분할 보기"
@@ -110,7 +109,7 @@ function Header({
           <button 
             className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} 
             onClick={() => {
-              console.log("[Header v2.5] 뷰 모드 변경: editor");
+              console.log("[Header v2.7] 뷰 모드 변경: editor");
               setViewMode('editor');
             }} 
             title="에디터 단독 보기"
@@ -169,14 +168,14 @@ function Header({
         {/* 설정 메뉴 그룹 */}
         <div style={{ position: 'relative' }} onMouseLeave={() => {
           if (isSettingsOpen) {
-            console.log("[Header v2.6] 마우스 아웃: 설정 메뉴 닫힘");
+            console.log("[Header v2.7] 마우스 아웃: 설정 메뉴 닫힘");
             setIsSettingsOpen(false);
           }
         }}>
           <button 
             className={`view-btn ${isSettingsOpen ? 'active' : ''}`} 
             onClick={() => {
-              console.log(`[Header v2.6] 설정 메뉴 토글 클릭 (현재 상태: ${isSettingsOpen})`);
+              console.log(`[Header v2.7] 설정 메뉴 토글 클릭 (현재 상태: ${isSettingsOpen})`);
               setIsSettingsOpen(!isSettingsOpen);
             }} 
             title="에디터 환경 설정"
@@ -206,7 +205,7 @@ function Header({
                     type="checkbox" 
                     checked={isSyncScroll} 
                     onChange={(e) => {
-                      console.log(`[Header v2.6] 양면 스크롤 동기화 설정 변경: ${e.target.checked}`);
+                      console.log(`[Header v2.7] 양면 스크롤 동기화 설정 변경: ${e.target.checked}`);
                       setIsSyncScroll(e.target.checked);
                     }} 
                     style={{ cursor: 'pointer' }}
@@ -219,12 +218,12 @@ function Header({
                     type="checkbox" 
                     checked={isExplorerAutoClose} 
                     onChange={(e) => {
-                      console.log(`[Header v2.6] 외부 클릭 시 탐색기 닫기 설정 변경: ${e.target.checked}`);
+                      console.log(`[Header v2.7] 외부 클릭 시 탐색기 닫기 설정 변경: ${e.target.checked}`);
                       setIsExplorerAutoClose(e.target.checked);
                     }} 
                     style={{ cursor: 'pointer' }}
                   />
-                  외부 클릭 시 탐색기 닫기
+                  외부 클릭 시 탐색기 자동 닫기
                 </label>
               </div>
             </div>
