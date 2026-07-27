@@ -1,8 +1,8 @@
-// src/components/explorer/FileExplorer.jsx v1.9
+// src/components/explorer/FileExplorer.jsx v2.0
 /*
- * 파일 설명: 로컬 백엔드 서버와 통신하여 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정(Pin) 기능을 제공하는 컴포넌트입니다.
- * (v1.9 수정사항): 마우스 드래그를 통한 가로 폭 리사이징(Resizable) 기능과 SVG 핀 토글 버튼이 추가되었습니다.
- * 연결 위치: src/App.jsx 내부
+ * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정(Pin) 기능을 제공하는 컴포넌트입니다.
+ * (v2.0 수정사항): App.jsx로부터 storageMode를 전달받아, 스토리지 변경 시 트리 자동 리로딩 처리 및
+ * 브라우저 가상 DB 모드일 경우 지원되지 않는 WorkspaceConfig 컴포넌트를 숨김 처리합니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus } from 'lucide-react';
@@ -10,7 +10,7 @@ import { fetchTreeData, createFileOrFolder, fetchWorkspacePath, updateWorkspaceP
 import WorkspaceConfig from './WorkspaceConfig';
 import ExplorerTreeNode from './ExplorerTreeNode';
 
-function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing }) {
+function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode }) {
   const [treeData, setTreeData] = useState({ name: 'root', isFolder: true, children: [], path: '' });
   const [workspacePath, setWorkspacePath] = useState(''); 
   const [isEditingWorkspace, setIsEditingWorkspace] = useState(false); 
@@ -23,30 +23,30 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
 
   const loadTree = async () => {
     try {
-      console.log('[FileExplorer v1.9] 최신 트리 데이터를 서버에 요청합니다.');
+      console.log(`[FileExplorer v2.0] 최신 트리 데이터를 요청합니다. (모드: ${storageMode})`);
       const data = await fetchTreeData();
       setTreeData(data);
     } catch (error) {
-      console.error('[FileExplorer v1.9] 트리 데이터 로드 실패:', error);
+      console.error('[FileExplorer v2.0] 트리 데이터 로드 실패:', error);
     }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log('[FileExplorer v1.9] 서버에 현재 워크스페이스 경로 및 히스토리 조회를 요청합니다.');
+      console.log(`[FileExplorer v2.0] 워크스페이스 상태 조회. (모드: ${storageMode})`);
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path);
       setTempWorkspacePath(data.path);
       setWorkspaceHistory(data.history || []); 
     } catch (error) {
-      console.error('[FileExplorer v1.9] 워크스페이스 데이터 로드 실패:', error);
+      console.error('[FileExplorer v2.0] 워크스페이스 데이터 로드 실패:', error);
     }
   };
 
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v1.9] 워크스페이스 경로 변경 승인 요청: ${targetPath}`);
+      console.log(`[FileExplorer v2.0] 워크스페이스 경로 변경 승인 요청: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path);
       setTempWorkspacePath(data.path);
@@ -54,7 +54,7 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
       setIsEditingWorkspace(false);
       loadTree();
     } catch (error) {
-      console.error('[FileExplorer v1.9] 경로 변경 거부됨:', error);
+      console.error('[FileExplorer v2.0] 경로 변경 거부됨:', error);
       alert(`경로 변경 실패: ${error.message}`);
     }
   };
@@ -75,12 +75,11 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
     }, 3000);
   };
 
-  // [신규] 탐색기 우측 경계 마우스 드래그 리사이징 로직
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!resizeRef.current) return;
       const newWidth = e.clientX;
-      if (newWidth >= 180 && newWidth <= 500) { // 최소 180px, 최대 500px 제한
+      if (newWidth >= 180 && newWidth <= 500) {
         setExplorerWidth(newWidth);
       }
     };
@@ -89,14 +88,14 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
       setIsResizing(false);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = 'auto'; // 드래그 중 텍스트 선택 방지 해제
+      document.body.style.userSelect = 'auto'; 
     };
 
     const handleMouseDown = (e) => {
       if (e.target.dataset.resizer) {
         setIsResizing(true);
         setIsEditingWorkspace(false);
-        document.body.style.userSelect = 'none'; // 드래그 중 텍스트 선택 방지
+        document.body.style.userSelect = 'none'; 
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
       }
@@ -108,13 +107,14 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
     };
   }, [setExplorerWidth, setIsResizing]);
 
+  // [수정] 컴포넌트 마운트 시가 아닌 storageMode가 바뀔 때마다 트리를 다시 그립니다.
   useEffect(() => {
     loadWorkspacePath();
     loadTree();
     return () => {
       if (tooltipHideTimer.current) clearTimeout(tooltipHideTimer.current);
     };
-  }, []);
+  }, [storageMode]);
 
   return (
     <div 
@@ -137,12 +137,11 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
       }}
     >
       <div style={{ padding: '12px 16px', borderBottom: '1px solid #d0d7de', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '14px', fontWeight: '600', color: '#24292f' }}>탐색기 (DB)</span>
+        <span style={{ fontSize: '14px', fontWeight: '600', color: '#24292f' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* [신규] SVG 핀(Pin) 고정 토글 버튼 */}
           <button 
             onClick={() => setIsExplorerPinned(!isExplorerPinned)}
-            title={isExplorerPinned ? "오버레이 모드로전환 (화면 덮기)" : "고정 모드로 전환 (화면 밀어내기)"}
+            title={isExplorerPinned ? "오버레이 모드로 전환 (화면 덮기)" : "고정 모드로 전환 (화면 밀어내기)"}
             style={{ 
               background: 'none', 
               border: 'none', 
@@ -163,30 +162,33 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
           <FilePlus size={16} color="#2da44e" style={{ cursor: 'pointer' }} onClick={() => {
             const name = window.prompt("루트에 생성할 새 파일명 (.md 권장)");
             if (name) { 
-              console.log(`[FileExplorer v1.9] 루트 파일 생성 요청: ${name}`);
+              console.log(`[FileExplorer v2.0] 루트 파일 생성 요청: ${name}`);
               createFileOrFolder(name, false).then(loadTree); 
             }
           }} title="루트 파일 추가" />
           <FolderPlus size={16} color="#0969da" style={{ cursor: 'pointer' }} onClick={() => {
             const name = window.prompt("루트에 생성할 새 폴더명");
             if (name) { 
-              console.log(`[FileExplorer v1.9] 루트 폴더 생성 요청: ${name}`);
+              console.log(`[FileExplorer v2.0] 루트 폴더 생성 요청: ${name}`);
               createFileOrFolder(name, true).then(loadTree); 
             }
           }} title="루트 폴더 추가" />
         </div>
       </div>
       
-      <WorkspaceConfig 
-        workspacePath={workspacePath}
-        tempWorkspacePath={tempWorkspacePath}
-        setTempWorkspacePath={setTempWorkspacePath}
-        isEditingWorkspace={isEditingWorkspace}
-        setIsEditingWorkspace={setIsEditingWorkspace}
-        handleWorkspaceSubmit={handleWorkspaceSubmit}
-        workspaceHistory={workspaceHistory}
-        submitWorkspacePath={submitWorkspacePath}
-      />
+      {/* [수정] BROWSER 모드에서는 가상 파일 시스템을 사용하므로 워크스페이스 입력 컴포넌트를 숨김 처리합니다. */}
+      {storageMode === 'SERVER' && (
+        <WorkspaceConfig 
+          workspacePath={workspacePath}
+          tempWorkspacePath={tempWorkspacePath}
+          setTempWorkspacePath={setTempWorkspacePath}
+          isEditingWorkspace={isEditingWorkspace}
+          setIsEditingWorkspace={setIsEditingWorkspace}
+          handleWorkspaceSubmit={handleWorkspaceSubmit}
+          workspaceHistory={workspaceHistory}
+          submitWorkspacePath={submitWorkspacePath}
+        />
+      )}
 
       <style>{`
         .explorer-scroll::-webkit-scrollbar {
@@ -223,7 +225,6 @@ function FileExplorer({ isExplorerOpen, onSelectFile, selectedFile, explorerWidt
         )}
       </div>
 
-      {/* [신규] 우측 경계 마우스 리사이징 핸들 (Drag Handle) */}
       <div 
         data-resizer="true"
         style={{

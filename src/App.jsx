@@ -1,8 +1,8 @@
-// src/App.jsx v6.0
+// src/App.jsx v7.0
 /*
  * 파일 위치: src/App.jsx
  * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
- * (v6.0 수정사항): CodeViewer 및 CodeEditor 아키텍처를 전면 폐기하고, 마크다운 전용 환경으로 롤백했습니다.
+ * (v7.0 수정사항): 스토리지 모드(SERVER / BROWSER) 전환 로직을 전역 상태로 관리합니다.
  */
 import { useState, useRef } from 'react';
 import Header from './components/Header';
@@ -14,11 +14,13 @@ import SqlViewer from './components/preview/SqlViewer';
 import { useOutline } from './hooks/editor/useOutline';
 import { useFileLoader } from './hooks/app/useFileLoader';
 import { useScrollSync } from './hooks/app/useScrollSync';
+import { getStorageMode, setStorageMode as apiSetStorageMode } from './api/fileApi';
 import './App.css';
 
 function App() {
-  console.log("App 컴포넌트(v6.0) 렌더링 시작 - 뷰어/에디터 아키텍처 롤백 적용");
+  console.log("App 컴포넌트(v7.0) 렌더링 시작 - 스토리지 스위칭 모드 탑재");
 
+  const [storageMode, setStorageMode] = useState(getStorageMode());
   const [markdown, setMarkdown] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewMode, setViewMode] = useState('split');
@@ -38,6 +40,17 @@ function App() {
   const { handleSelectFile } = useFileLoader(setMarkdown, setSelectedFile);
   useScrollSync(textareaRef, previewRef, isSyncScroll, viewMode, markdown);
 
+  // 스토리지 스위칭 제어 핸들러
+  const handleStorageModeChange = (mode) => {
+    console.log(`[App v7.0] 스토리지 스위칭 감지: ${mode}`);
+    apiSetStorageMode(mode);
+    setStorageMode(mode);
+    // 모드 변경 시 에디터 초기화 및 URL 쿼리 제거
+    setSelectedFile(null);
+    setMarkdown('');
+    window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
+  };
+
   return (
     <div className="app-layout">
       <Header
@@ -52,6 +65,8 @@ function App() {
         isExplorerAutoClose={isExplorerAutoClose}
         setIsExplorerAutoClose={setIsExplorerAutoClose}
         onBreadcrumbClick={(path) => handleSelectFile(path, false)}
+        storageMode={storageMode}
+        onStorageModeChange={handleStorageModeChange}
       />
 
       <main
@@ -74,6 +89,7 @@ function App() {
           isExplorerPinned={isExplorerPinned}
           setIsExplorerPinned={setIsExplorerPinned}
           setIsResizing={setIsResizing}
+          storageMode={storageMode}
         />
 
         <div
