@@ -1,7 +1,8 @@
-/* src/components/Preview.css v2.4 */
+/* src/components/Preview.css v3.0 */
 /*
  * 파일 설명: 실시간 뷰어 레이아웃 및 github-markdown-css 오버라이드 스타일.
- * (v2.4 수정사항): 코드 블록(pre) 내부의 가로 스크롤바 디자인을 다크 테마에 맞게 얇고 어두운 톤으로 커스텀했습니다.
+ * (v3.0 수정사항): 마우스 호버 시 노출되어야 할 코드 블록 복사 버튼(SVG)이 
+ * 다른 CSS 우선순위에 밀려 사라지던 현상을 방지하기 위해 !important 가드 로직을 철저히 추가했습니다.
  */
 
 .preview-container {
@@ -58,22 +59,6 @@
   text-shadow: none !important;
 }
 
-/* [신규] 코드 블록 전용 스크롤바 다크 테마 커스텀 */
-.preview-content.markdown-body pre::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-.preview-content.markdown-body pre::-webkit-scrollbar-track {
-  background: transparent;
-}
-.preview-content.markdown-body pre::-webkit-scrollbar-thumb {
-  background-color: var(--border-color, #d0d7de);
-  border-radius: 4px;
-}
-.preview-content.markdown-body pre::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-muted, #8c959f);
-}
-
 .preview-content.markdown-body pre code {
   background-color: transparent !important;
   border: none !important;
@@ -100,38 +85,46 @@
   background-color: var(--explorer-bg, #f6f8fa) !important; 
 }
 
+/* =========================================
+   복사 버튼 및 래퍼 스타일 우선순위 강제 보호 (신규)
+   ========================================= */
 .code-block-wrapper {
-  position: relative;
-  margin-bottom: 16px;
-  width: 100%;
+  position: relative !important;
+  margin-bottom: 16px !important;
+  width: 100% !important;
 }
 
 .code-copy-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  color: var(--text-muted, #57606a);
-  background-color: var(--explorer-bg, #f6f8fa);
-  border: 1px solid var(--border-color, #d0d7de);
-  border-radius: 6px;
-  opacity: 0; 
-  cursor: pointer;
-  transition: opacity 0.2s, background-color 0.2s;
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  color: var(--text-muted, #57606a) !important;
+  background-color: var(--bg-main, #ffffff) !important;
+  border: 1px solid var(--border-color, #d0d7de) !important;
+  border-radius: 6px !important;
+  opacity: 0 !important; 
+  visibility: hidden !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s, visibility 0.2s, background-color 0.2s !important;
 }
 
+/* 마우스 호버 시 무조건 노출되도록 강제 설정 */
 .code-block-wrapper:hover .code-copy-btn {
-  opacity: 1;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .code-copy-btn:hover {
-  background-color: rgba(140, 149, 159, 0.25);
+  background-color: var(--explorer-bg, #f6f8fa) !important;
+  color: var(--text-main, #24292f) !important;
 }
 
+/* GitHub Alerts */
 .gh-alert {
   padding: 8px 16px;
   margin-bottom: 16px;
