@@ -224,7 +224,7 @@ function Header({
                     }} 
                     style={{ cursor: 'pointer' }}
                   />
-                  외부 클릭 시 탐색기 자동 닫기
+                  외부 클릭 시 탐색기 닫기
                 </label>
               </div>
             </div>
