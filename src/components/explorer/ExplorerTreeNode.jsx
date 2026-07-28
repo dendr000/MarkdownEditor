@@ -8,11 +8,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Folder, FolderOpen, FileText, ChevronRight, ChevronDown } from 'lucide-react';
 import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/fileApi';
 import { getRelativePath } from '../../utils/pathUtils';
-import NodeTooltip from './NodeTooltip';
 import NodeActions from './NodeActions';
 
 function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
-  console.log(`[ExplorerTreeNode v2.0] 노드 렌더링 - 경로: ${node.path}`);
+  console.log(`[ExplorerTreeNode v2.1] 노드 렌더링 - 경로: ${node.path}`);
   const [isOpen, setIsOpen] = useState(false);
   const nodeRef = useRef(null);
 
@@ -33,8 +32,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
   const relativePath = (selectedFile && node.path !== selectedFile) 
     ? getRelativePath(selectedFile, node.path) 
     : '';
-  
-  const isTooltipVisible = activeTooltipNode === node.path && relativePath !== '';
 
   const handleAdd = async (isFolder) => {
     const name = window.prompt(`새 ${isFolder ? '폴더' : '파일'} 이름을 입력하세요.\n(파일은 .md 또는 .txt 확장자 권장)`);
@@ -72,17 +69,15 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
         style={{ 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
           padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', transition: 'background 0.1s',
-          position: 'relative', zIndex: isTooltipVisible ? 50 : 1,
+          position: 'relative', zIndex: 1,
           backgroundColor: isSelected ? 'var(--border-color, #d0d7de)' : 'transparent',
           fontWeight: isSelected ? '600' : 'normal'
         }}
         onMouseEnter={(e) => { 
           e.currentTarget.style.backgroundColor = isSelected ? 'var(--border-color, #d0d7de)' : 'rgba(140, 149, 159, 0.15)'; 
-          if (relativePath) onTooltipOpen(node.path); 
         }}
         onMouseLeave={(e) => { 
           e.currentTarget.style.backgroundColor = isSelected ? 'var(--border-color, #d0d7de)' : 'transparent'; 
-          if (relativePath) onTooltipClose();
         }}
       >
         <div 
@@ -120,21 +115,14 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
           </span>
         </div>
 
-        {isTooltipVisible && (
-          <NodeTooltip 
-            relativePath={relativePath} 
-            nodePath={node.path} 
-            onTooltipOpen={onTooltipOpen} 
-            onTooltipClose={onTooltipClose} 
-          />
-        )}
-
         {node.path && (
           <NodeActions 
             isFolder={node.isFolder} 
             onAdd={handleAdd} 
             onRename={handleRename} 
-            onDelete={handleDelete} 
+            onDelete={handleDelete}
+            relativePath={relativePath}
+            absolutePath={node.path}
           />
         )}
       </div>
