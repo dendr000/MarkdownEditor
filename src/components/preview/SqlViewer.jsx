@@ -5,9 +5,11 @@
  */
 import React, { useMemo } from 'react';
 import { Database, Table, Key } from 'lucide-react';
+import SqlFlowViewer from './SqlFlowViewer';
+import SqlErdViewer from './SqlErdViewer';
 
 function SqlViewer({ sql }) {
-  console.log("[SqlViewer v1.0] SQL 구문 분석 및 시각화 렌더링 시작");
+  console.log("[SqlViewer v1.2] SQL 구문 분석 및 시각화 렌더링 시작 (ERD 연동 포함)");
 
   const parsedTables = useMemo(() => {
     if (!sql) return [];
@@ -73,54 +75,20 @@ function SqlViewer({ sql }) {
       </div>
 
       {parsedTables.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#57606a', marginTop: '40px' }}>
-          <p>현재 스크립트에서 <code>CREATE TABLE</code> 구문을 찾을 수 없거나 분석할 수 없습니다.</p>
-          <p style={{ fontSize: '12px', marginTop: '8px' }}>데이터베이스 생성문 외의 쿼리는 좌측 에디터에서 텍스트로 확인해 주세요.</p>
-        </div>
+        // 정규식을 통해 SELECT, WITH, VIEW 등의 키워드가 있는지 검사하여 데이터 조회/흐름 쿼리인지 판별
+        /(SELECT|WITH|VIEW)\s+/i.test(sql) ? (
+          <div style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden' }}>
+            <SqlFlowViewer sql={sql} />
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', color: '#57606a', marginTop: '40px' }}>
+            <p>현재 스크립트에서 <code>CREATE TABLE</code> 구문을 찾을 수 없거나 분석할 수 없습니다.</p>
+            <p style={{ fontSize: '12px', marginTop: '8px' }}>데이터베이스 생성문 외의 쿼리는 좌측 에디터에서 텍스트로 확인해 주세요.</p>
+          </div>
+        )
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {parsedTables.map((table, idx) => (
-            <div key={idx} style={{ backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-              <div style={{ backgroundColor: '#f3f4f6', padding: '12px 16px', borderBottom: '1px solid #d0d7de', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Table size={18} color="#2da44e" />
-                <h3 style={{ margin: 0, fontSize: '16px', color: '#24292f', fontFamily: 'monospace', fontWeight: 'bold' }}>
-                  {table.name}
-                </h3>
-              </div>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#fafbfc', borderBottom: '1px solid #d0d7de' }}>
-                      <th style={{ padding: '10px 16px', color: '#57606a', fontWeight: '600', width: '25%' }}>컬럼명 (Name)</th>
-                      <th style={{ padding: '10px 16px', color: '#57606a', fontWeight: '600', width: '25%' }}>타입 (Type)</th>
-                      <th style={{ padding: '10px 16px', color: '#57606a', fontWeight: '600', width: '50%' }}>추가 속성 / 제약 (Extra)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {table.columns.map((col, cIdx) => (
-                      <tr key={cIdx} style={{ borderBottom: '1px solid #eaeef2' }}>
-                        {col.isConstraint ? (
-                          <td colSpan="3" style={{ padding: '8px 16px', backgroundColor: '#fff8c5', color: '#9a6700', fontFamily: 'monospace' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <Key size={14} />
-                              {col.text}
-                            </div>
-                          </td>
-                        ) : (
-                          <>
-                            <td style={{ padding: '8px 16px', color: '#24292f', fontWeight: 'bold', fontFamily: 'monospace' }}>{col.name}</td>
-                            <td style={{ padding: '8px 16px', color: '#0969da', fontFamily: 'monospace' }}>{col.type}</td>
-                            <td style={{ padding: '8px 16px', color: '#57606a', fontFamily: 'monospace' }}>{col.extra}</td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
+        // 파싱된 CREATE TABLE 배열 데이터를 통째로 SqlErdViewer로 넘겨 시각화합니다.
+        <SqlErdViewer parsedTables={parsedTables} />
       )}
     </div>
   );
