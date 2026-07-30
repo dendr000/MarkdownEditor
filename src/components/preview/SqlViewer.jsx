@@ -64,7 +64,10 @@ function SqlViewer({ sql }) {
 
   return (
     <div style={{ padding: '24px', backgroundColor: '#f6f8fa', minHeight: '100%', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}>
+      <div 
+        className="safe-area-header"
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}
+      >
         <Database size={24} color="#0969da" />
         <h2 style={{ margin: 0, fontSize: '20px', color: '#24292f' }}>SQL 테이블 시각화 뷰어</h2>
       </div>

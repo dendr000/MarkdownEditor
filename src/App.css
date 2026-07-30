@@ -124,3 +124,11 @@ body[data-theme='dark'] .preview-pane {
 ::-webkit-scrollbar-corner {
   background: var(--bg-main, #ffffff);
 }
+
+/* =========================================
+   커스텀 뷰어 전용 안전 여백 (Safe Area) 전역 클래스
+   ========================================= */
+.main-content[data-explorer-floating="true"] .safe-area-header {
+  padding-left: 54px !important;
+  transition: padding-left 0.3s ease;
+}

@@ -115,6 +115,7 @@ function App() {
 
         <div
           className={`main-content mode-${viewMode}`}
+          data-explorer-floating={!(isExplorerPinned && isExplorerOpen)}
           style={{
             width: isExplorerPinned && isExplorerOpen ? `calc(100% - ${explorerWidth}px)` : '100%',
             marginLeft: isExplorerPinned && isExplorerOpen ? `${explorerWidth}px` : '0',
