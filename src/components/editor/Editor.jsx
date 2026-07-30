@@ -20,16 +20,18 @@ import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
 import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
+import { useSqlFormatter } from '../../hooks/editor/useSqlFormatter';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  console.log("[Editor v13.0] 단일 에디터 렌더링 시작 (다크 테마 CSS 변수 연동 완료)");
+  console.log("[Editor v13.1] 단일 에디터 렌더링 시작 (SQL 예약어 자동 포매팅 훅 연동 완료)");
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
   
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
+  const { handleSqlFormatKeyDown } = useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef);
 
   useEffect(() => {
     const toolbar = toolbarRef.current;
@@ -79,7 +81,14 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           setMarkdown(e.target.value);
           handleAutocompleteChange(e.target.value, e.target.selectionStart);
         }}
-        onKeyDown={actions.handleKeyDown}
+        onKeyDown={(e) => {
+          // SQL 예약어 치환이 먼저 감지되어 처리(true)되지 않은 경우에만, 
+          // 기존 마크다운 포매팅(useEditor)의 KeyDown 이벤트를 실행하여 충돌을 방지합니다.
+          const isSqlHandled = handleSqlFormatKeyDown(e);
+          if (!isSqlHandled) {
+            actions.handleKeyDown(e);
+          }
+        }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
