@@ -5,8 +5,10 @@
  * 연결 위치: src/components/preview/SqlViewer.jsx
  * 기능: 테이블 간의 FOREIGN KEY 참조 관계를 정규식으로 추출하여 선(Edge)으로 연결하고, 그리드 형태의 오토 레이아웃을 계산합니다.
  */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import ReactFlow, { Background, Controls, MarkerType, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import ReactFlow, { Background, Controls, MarkerType, applyNodeChanges, applyEdgeChanges, Panel, MiniMap } from 'reactflow';
+import { toPng } from 'html-to-image';
+import { Download } from 'lucide-react';
 import 'reactflow/dist/style.css';
 import ErdNode from './ErdNode';
 
@@ -111,8 +113,35 @@ function SqlErdViewer({ parsedTables }) {
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
+  const flowWrapperRef = useRef(null);
+
+  const handleDownloadImage = useCallback(() => {
+    if (flowWrapperRef.current === null) return;
+    
+    console.log("[SqlErdViewer v1.1] 고해상도 ERD 이미지 다운로드 시작");
+    
+    // 현재 화면에 보이는 상태 그대로 픽셀 비율(해상도)만 4배로 증폭하여 캡처합니다.
+    toPng(flowWrapperRef.current, {
+      backgroundColor: '#f6f8fa',
+      pixelRatio: 4, 
+    })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'erd-diagram.png';
+        link.href = dataUrl;
+        link.click();
+        console.log("[SqlErdViewer v1.1] 고해상도 ERD 이미지 다운로드 완료");
+      })
+      .catch((err) => {
+        console.error("[SqlErdViewer v1.1] 이미지 캡처 실패:", err);
+      });
+  }, []);
+
   return (
-    <div style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f6f8fa' }}>
+    <div 
+      ref={flowWrapperRef}
+      style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f6f8fa' }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -124,6 +153,26 @@ function SqlErdViewer({ parsedTables }) {
       >
         <Background color="#d0d7de" gap={16} />
         <Controls />
+        <MiniMap 
+          nodeColor={(node) => '#1d3557'}
+          maskColor="rgba(246, 248, 250, 0.7)"
+          style={{ border: '1px solid #d0d7de', borderRadius: '4px', backgroundColor: '#ffffff' }}
+        />
+        <Panel position="top-right">
+          <button 
+            onClick={handleDownloadImage}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 12px', backgroundColor: '#ffffff',
+              border: '1px solid #d0d7de', borderRadius: '6px',
+              cursor: 'pointer', fontSize: '13px', fontWeight: '600',
+              color: '#24292f', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+            }}
+          >
+            <Download size={16} color="#0969da" />
+            고해상도 캡처
+          </button>
+        </Panel>
       </ReactFlow>
     </div>
   );

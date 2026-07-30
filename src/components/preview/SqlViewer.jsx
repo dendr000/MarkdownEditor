@@ -15,50 +15,98 @@ function SqlViewer({ sql }) {
     if (!sql) return [];
     
     const tables = [];
-    // CREATE TABLE 블록을 대소문자 구분 없이 추출하는 정규식
-    const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([^\s(]+)\s*\(([\s\S]*?)\)\s*(?:;|ENGINE|DEFAULT|CHARACTER|PARTITION|$)/gi;
-    let match;
+    let isDbml = false;
 
-    while ((match = createTableRegex.exec(sql)) !== null) {
+    console.log("[SqlViewer v1.3] DBML 및 SQL DDL 혼합 구문 분석 시작");
+
+    // 1. DBML 문법 파싱 (Table ... { ... })
+    const dbmlTableRegex = /Table\s+([^\s{]+)\s*\{([^}]+)\}/gi;
+    let match;
+    
+    while ((match = dbmlTableRegex.exec(sql)) !== null) {
+      isDbml = true;
       const tableName = match[1].replace(/[`"']/g, '');
       const columnsRaw = match[2];
-
-      // 괄호 깊이를 추적하여 안전하게 콤마(,) 기준으로 컬럼을 분리합니다. (예: VARCHAR(255,0) 보호)
-      const colsStrArray = [];
-      let current = '';
-      let depth = 0;
-      for (let i = 0; i < columnsRaw.length; i++) {
-        const char = columnsRaw[i];
-        if (char === '(') depth++;
-        else if (char === ')') depth--;
-        else if (char === ',' && depth === 0) {
-          colsStrArray.push(current.trim());
-          current = '';
-          continue;
+      
+      const columns = columnsRaw.split('\n').map(line => {
+        const cleanLine = line.replace(/\/\/.*$/, '').trim(); // // 주석 제거
+        if (!cleanLine) return null;
+        
+        // DBML 속성 (예: [pk, increment])을 포함한 일반 컬럼 파싱
+        const parts = cleanLine.match(/^([a-zA-Z0-9_]+)\s+([a-zA-Z0-9_()]+)(?:\s+(.*))?$/);
+        if (parts) {
+           return { isConstraint: false, name: parts[1], type: parts[2], extra: parts[3] || '' };
         }
-        current += char;
-      }
-      if (current.trim()) colsStrArray.push(current.trim());
-
-      const columns = colsStrArray.map(colStr => {
-        // 주석 제거 및 공백 정규화
-        const cleanStr = colStr.replace(/--.*$/m, '').trim();
-        if (!cleanStr) return null;
-
-        // 테이블 레벨 제약 조건 감지 (PRIMARY KEY, FOREIGN KEY, CONSTRAINT 등)
-        if (/^(PRIMARY KEY|CONSTRAINT|FOREIGN KEY|UNIQUE|KEY)/i.test(cleanStr)) {
-          return { isConstraint: true, text: cleanStr };
-        }
-
-        const parts = cleanStr.split(/\s+/);
-        const colName = (parts[0] || '').replace(/[`"']/g, '');
-        const colType = (parts[1] || '').toUpperCase();
-        const colExtra = parts.slice(2).join(' ');
-
-        return { isConstraint: false, name: colName, type: colType, extra: colExtra };
+        // 컬럼 형식이 아닌 메타데이터나 내부 설정인 경우
+        return { isConstraint: true, text: cleanLine }; 
       }).filter(Boolean);
-
+      
       tables.push({ name: tableName, columns });
+    }
+
+    // 2. DBML 관계선(Ref) 파싱 및 SqlErdViewer 호환용 가상 외래키(FOREIGN KEY) 주입
+    if (isDbml) {
+      const refRegex = /Ref:\s*([^\s.]+)\.([^\s\-><]+)\s*[-<>|]+\s*([^\s.]+)\.([^\s]+)/gi;
+      let refMatch;
+      while ((refMatch = refRegex.exec(sql)) !== null) {
+        const sourceTable = refMatch[1].replace(/[`"']/g, '');
+        const sourceCol = refMatch[2];
+        const targetTable = refMatch[3].replace(/[`"']/g, '');
+        const targetCol = refMatch[4];
+        
+        const table = tables.find(t => t.name === sourceTable);
+        if (table) {
+          table.columns.push({
+            isConstraint: true,
+            text: `FOREIGN KEY (${sourceCol}) REFERENCES ${targetTable}(${targetCol})`
+          });
+          console.log(`[SqlViewer v1.3] DBML Ref 변환 성공: ${sourceTable} -> ${targetTable}`);
+        }
+      }
+    }
+
+    // 3. DBML 구문이 아닐 경우 기존 표준 SQL (CREATE TABLE) 파싱 폴백
+    if (!isDbml) {
+      const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([^\s(]+)\s*\(([\s\S]*?)\)\s*(?:;|ENGINE|DEFAULT|CHARACTER|PARTITION|$)/gi;
+      
+      while ((match = createTableRegex.exec(sql)) !== null) {
+        const tableName = match[1].replace(/[`"']/g, '');
+        const columnsRaw = match[2];
+
+        const colsStrArray = [];
+        let current = '';
+        let depth = 0;
+        for (let i = 0; i < columnsRaw.length; i++) {
+          const char = columnsRaw[i];
+          if (char === '(') depth++;
+          else if (char === ')') depth--;
+          else if (char === ',' && depth === 0) {
+            colsStrArray.push(current.trim());
+            current = '';
+            continue;
+          }
+          current += char;
+        }
+        if (current.trim()) colsStrArray.push(current.trim());
+
+        const columns = colsStrArray.map(colStr => {
+          const cleanStr = colStr.replace(/--.*$/m, '').trim();
+          if (!cleanStr) return null;
+
+          if (/^(PRIMARY KEY|CONSTRAINT|FOREIGN KEY|UNIQUE|KEY)/i.test(cleanStr)) {
+            return { isConstraint: true, text: cleanStr };
+          }
+
+          const parts = cleanStr.split(/\s+/);
+          const colName = (parts[0] || '').replace(/[`"']/g, '');
+          const colType = (parts[1] || '').toUpperCase();
+          const colExtra = parts.slice(2).join(' ');
+
+          return { isConstraint: false, name: colName, type: colType, extra: colExtra };
+        }).filter(Boolean);
+
+        tables.push({ name: tableName, columns });
+      }
     }
     
     return tables;
@@ -82,8 +130,8 @@ function SqlViewer({ sql }) {
           </div>
         ) : (
           <div style={{ textAlign: 'center', color: '#57606a', marginTop: '40px' }}>
-            <p>현재 스크립트에서 <code>CREATE TABLE</code> 구문을 찾을 수 없거나 분석할 수 없습니다.</p>
-            <p style={{ fontSize: '12px', marginTop: '8px' }}>데이터베이스 생성문 외의 쿼리는 좌측 에디터에서 텍스트로 확인해 주세요.</p>
+            <p>현재 스크립트에서 <code>CREATE TABLE</code> (표준 SQL) 또는 <code>Table</code> (DBML) 구문을 찾을 수 없거나 분석할 수 없습니다.</p>
+            <p style={{ fontSize: '12px', marginTop: '8px' }}>스키마 생성문 외의 쿼리는 좌측 에디터에서 텍스트로 확인해 주세요.</p>
           </div>
         )
       ) : (
