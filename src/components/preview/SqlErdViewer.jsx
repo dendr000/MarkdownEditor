@@ -186,22 +186,35 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
   const handleDownloadImage = useCallback(() => {
     if (flowWrapperRef.current === null) return;
     
-    console.log("[SqlErdViewer v1.2] 고해상도 ERD 이미지 다운로드 시작");
+    console.log("[SqlErdViewer v1.5] 고해상도 ERD 이미지 다운로드 시작 (UI 요소 제외)");
+
+    // 캡처 화면에서 제외할 UI 요소들의 CSS 클래스를 걸러내는 필터 함수입니다.
+    const filterUiElements = (node) => {
+      // HTML 요소가 아니면 통과시킵니다.
+      if (node?.classList === undefined) return true;
+      
+      // 패널(상단 버튼 묶음), 미니맵, 좌측 하단 컨트롤(줌/이동 버튼) 클래스를 포함하면 캡처에서 제외(false)합니다.
+      const excludedClasses = ['react-flow__panel', 'react-flow__minimap', 'react-flow__controls'];
+      const hasExcludedClass = excludedClasses.some(cls => node.classList.contains(cls));
+      
+      return !hasExcludedClass;
+    };
     
-    // 현재 화면에 보이는 상태 그대로 픽셀 비율(해상도)만 4배로 증폭하여 캡처합니다.
+    // 필터 함수를 적용하여 부가적인 UI 요소 없이 노드와 화살표(관계선)만 깨끗하게 캡처합니다.
     toPng(flowWrapperRef.current, {
       backgroundColor: '#f6f8fa',
       pixelRatio: 4, 
+      filter: filterUiElements
     })
       .then((dataUrl) => {
         const link = document.createElement('a');
         link.download = 'erd-diagram.png';
         link.href = dataUrl;
         link.click();
-        console.log("[SqlErdViewer v1.3] 고해상도 ERD 이미지 다운로드 완료");
+        console.log("[SqlErdViewer v1.5] 고해상도 ERD 이미지 다운로드 완료");
       })
       .catch((err) => {
-        console.error("[SqlErdViewer v1.3] 이미지 캡처 실패:", err);
+        console.error("[SqlErdViewer v1.5] 이미지 캡처 실패:", err);
       });
   }, []);
 
