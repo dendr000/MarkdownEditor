@@ -8,12 +8,12 @@ import { Database, Table, Key } from 'lucide-react';
 import SqlFlowViewer from './SqlFlowViewer';
 import SqlErdViewer from './SqlErdViewer';
 
-function SqlViewer({ sql }) {
-  console.log("[SqlViewer v1.2] SQL 구문 분석 및 시각화 렌더링 시작 (ERD 연동 포함)");
+function SqlViewer({ sql, selectedFile }) {
+  console.log("[SqlViewer v1.4] SQL 구문 분석 및 시각화 렌더링 시작 (파일명 프롭스 추가)");
 
   const parsedTables = useMemo(() => {
     if (!sql) return [];
-    
+
     const tables = [];
     let isDbml = false;
 
@@ -22,25 +22,25 @@ function SqlViewer({ sql }) {
     // 1. DBML 문법 파싱 (Table ... { ... })
     const dbmlTableRegex = /Table\s+([^\s{]+)\s*\{([^}]+)\}/gi;
     let match;
-    
+
     while ((match = dbmlTableRegex.exec(sql)) !== null) {
       isDbml = true;
       const tableName = match[1].replace(/[`"']/g, '');
       const columnsRaw = match[2];
-      
+
       const columns = columnsRaw.split('\n').map(line => {
         const cleanLine = line.replace(/\/\/.*$/, '').trim(); // // 주석 제거
         if (!cleanLine) return null;
-        
+
         // DBML 속성 (예: [pk, increment])을 포함한 일반 컬럼 파싱
         const parts = cleanLine.match(/^([a-zA-Z0-9_]+)\s+([a-zA-Z0-9_()]+)(?:\s+(.*))?$/);
         if (parts) {
-           return { isConstraint: false, name: parts[1], type: parts[2], extra: parts[3] || '' };
+          return { isConstraint: false, name: parts[1], type: parts[2], extra: parts[3] || '' };
         }
         // 컬럼 형식이 아닌 메타데이터나 내부 설정인 경우
-        return { isConstraint: true, text: cleanLine }; 
+        return { isConstraint: true, text: cleanLine };
       }).filter(Boolean);
-      
+
       tables.push({ name: tableName, columns });
     }
 
@@ -53,7 +53,7 @@ function SqlViewer({ sql }) {
         const sourceCol = refMatch[2];
         const targetTable = refMatch[3].replace(/[`"']/g, '');
         const targetCol = refMatch[4];
-        
+
         const table = tables.find(t => t.name === sourceTable);
         if (table) {
           table.columns.push({
@@ -68,7 +68,7 @@ function SqlViewer({ sql }) {
     // 3. DBML 구문이 아닐 경우 기존 표준 SQL (CREATE TABLE) 파싱 폴백
     if (!isDbml) {
       const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([^\s(]+)\s*\(([\s\S]*?)\)\s*(?:;|ENGINE|DEFAULT|CHARACTER|PARTITION|$)/gi;
-      
+
       while ((match = createTableRegex.exec(sql)) !== null) {
         const tableName = match[1].replace(/[`"']/g, '');
         const columnsRaw = match[2];
@@ -108,13 +108,13 @@ function SqlViewer({ sql }) {
         tables.push({ name: tableName, columns });
       }
     }
-    
+
     return tables;
   }, [sql]);
 
   return (
     <div style={{ padding: '24px', backgroundColor: '#f6f8fa', minHeight: '100%', overflowY: 'auto' }}>
-      <div 
+      <div
         className="safe-area-header"
         style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}
       >
@@ -135,8 +135,8 @@ function SqlViewer({ sql }) {
           </div>
         )
       ) : (
-        // 파싱된 CREATE TABLE 배열 데이터를 통째로 SqlErdViewer로 넘겨 시각화합니다.
-        <SqlErdViewer parsedTables={parsedTables} />
+        // 파싱된 CREATE TABLE 배열 데이터를 통째로 SqlErdViewer로 넘겨 시각화합니다. (선택된 파일 경로 전달)
+        <SqlErdViewer parsedTables={parsedTables} selectedFile={selectedFile} />
       )}
     </div>
   );

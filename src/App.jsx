@@ -125,7 +125,7 @@ function App() {
           {viewMode !== 'editor' && (
             <div className="pane preview-pane">
               {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
-                <SqlViewer sql={markdown} />
+                <SqlViewer sql={markdown} selectedFile={selectedFile} />
               ) : (
                 <Preview
                   markdown={markdown}

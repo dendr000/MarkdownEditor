@@ -17,8 +17,8 @@ const nodeTypes = {
   erdNode: ErdNode,
 };
 
-function SqlErdViewer({ parsedTables }) {
-  console.log("[SqlErdViewer v1.3] ERD 다이어그램 변환 및 렌더링 시작 (JSON 파일 포터블 기능 포함)");
+function SqlErdViewer({ parsedTables, selectedFile }) {
+  console.log(`[SqlErdViewer v1.4] ERD 다이어그램 변환 및 렌더링 시작 - 연결된 파일: ${selectedFile}`);
 
   const { initialNodes, initialEdges } = useMemo(() => {
     console.log("[SqlErdViewer v1.2] 파싱된 테이블 데이터를 기반으로 노드 및 엣지 계산 시작");
@@ -119,13 +119,44 @@ function SqlErdViewer({ parsedTables }) {
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
-  // 노드 드래그가 끝날 때마다 위치를 로컬 스토리지에 자동 저장하는 함수입니다.
-  const onNodeDragStop = useCallback((event, node) => {
-    console.log(`[SqlErdViewer v1.2] 노드 드래그 종료, 위치 저장: ${node.id}`);
-    const savedPositions = JSON.parse(localStorage.getItem('erd-node-positions') || '{}');
-    savedPositions[node.id] = node.position;
-    localStorage.setItem('erd-node-positions', JSON.stringify(savedPositions));
-  }, []);
+  // 노드 드래그가 끝날 때마다 위치를 백엔드 API를 통해 로컬 물리 폴더에 자동 저장하는 함수입니다.
+  const onNodeDragStop = useCallback(async (event, node) => {
+    console.log(`[SqlErdViewer v1.4] 노드 드래그 종료, 백엔드 API로 위치 자동 저장 요청: ${node.id}`);
+    
+    const currentPositions = {};
+    nodes.forEach(n => {
+      currentPositions[n.id] = n.id === node.id ? node.position : n.position;
+    });
+
+    // 파일 경로에서 순수 파일명(예: test)만 추출하여 _coords.json을 붙입니다.
+    let baseName = 'default';
+    if (selectedFile) {
+      const parts = selectedFile.split(/[/\\]/);
+      const fileName = parts[parts.length - 1];
+      const dotIndex = fileName.lastIndexOf('.');
+      baseName = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
+    }
+    const targetFileName = `${baseName}_coords.json`;
+
+    try {
+      const response = await fetch('http://127.0.0.1:3001/api/save-coords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: targetFileName, coords: currentPositions })
+      });
+      
+      if (!response.ok) {
+         console.error(`[SqlErdViewer v1.4] 좌표 자동 저장 서버 응답 오류`);
+      } else {
+         console.log(`[SqlErdViewer v1.4] 물리 파일 좌표 자동 저장 완료: ${targetFileName}`);
+      }
+    } catch (error) {
+      console.error(`[SqlErdViewer v1.4] 백엔드 통신 실패:`, error);
+    }
+
+    // 렌더링 즉시 반영을 위해 로컬 스토리지에도 백업을 남깁니다.
+    localStorage.setItem('erd-node-positions', JSON.stringify(currentPositions));
+  }, [nodes, selectedFile]);
 
   // 노드 위치를 초기 상태(그리드 배열)로 되돌리고 로컬 스토리지를 비우는 함수입니다.
   const handleResetPositions = useCallback(() => {
@@ -176,22 +207,32 @@ function SqlErdViewer({ parsedTables }) {
 
   const fileInputRef = useRef(null);
 
-  // 현재 노드들의 좌표를 JSON 파일로 추출하여 다운로드합니다.
+  // 현재 노드들의 좌표를 동적 파일명으로 추출하여 수동 다운로드합니다.
   const handleExportCoords = useCallback(() => {
-    console.log("[SqlErdViewer v1.3] 좌표 데이터 JSON 내보내기 시작");
+    console.log("[SqlErdViewer v1.4] 좌표 데이터 JSON 내보내기 시작");
     const currentPositions = {};
     nodes.forEach(node => {
       currentPositions[node.id] = node.position;
     });
     
+    // 파일 경로에서 순수 파일명(예: test)만 추출하여 _coords.json을 붙입니다.
+    let baseName = 'default';
+    if (selectedFile) {
+      const parts = selectedFile.split(/[/\\]/);
+      const fileName = parts[parts.length - 1];
+      const dotIndex = fileName.lastIndexOf('.');
+      baseName = dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
+    }
+    const targetFileName = `${baseName}_coords.json`;
+    
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentPositions, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "erd_coords.json");
+    downloadAnchorNode.setAttribute("download", targetFileName);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-  }, [nodes]);
+  }, [nodes, selectedFile]);
 
   // JSON 파일을 읽어들여 노드 좌표를 갱신하고 로컬 스토리지에 동기화합니다.
   const handleImportCoords = useCallback((event) => {
