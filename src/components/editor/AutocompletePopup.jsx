@@ -11,9 +11,10 @@ function AutocompletePopup({ suggestState, currentSuggestList, onSelect }) {
   return (
     <div className="suggest-popup">
       <div className="suggest-popup-header">
-        {suggestState.trigger === '@' && 'GitHub 멤버 언급하기'}
-        {suggestState.trigger === '#' && 'GitHub 이슈 연계'}
-        {suggestState.trigger === ':' && '이모티콘 단축 코드'}
+        {suggestState.type === 'markdown' && suggestState.trigger === '@' && 'GitHub 멤버 언급하기'}
+        {suggestState.type === 'markdown' && suggestState.trigger === '#' && 'GitHub 이슈 연계'}
+        {suggestState.type === 'markdown' && suggestState.trigger === ':' && '이모티콘 단축 코드'}
+        {suggestState.type === 'code' && '코드 예약어 추천'}
       </div>
       <div className="suggest-popup-body">
         {currentSuggestList.map((item, idx) => (

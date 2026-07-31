@@ -161,7 +161,7 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
               )}
             </div>
             
-            {/* [신규] 선택 영역에서만 바꾸기 체크박스 UI 추가 */}
+            {/* 선택 영역에서만 바꾸기 체크박스 UI 추가 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
               <input 
                 type="checkbox" 

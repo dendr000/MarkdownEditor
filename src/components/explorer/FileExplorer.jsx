@@ -19,7 +19,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const [workspaceHistory, setWorkspaceHistory] = useState([]); 
   const [activeTooltipNode, setActiveTooltipNode] = useState(null);
   
-  // [신규] 툴팁 등장 및 소멸 타이머 분리
+  // 툴팁 등장 및 소멸 타이머 분리
   const tooltipShowTimer = useRef(null);
   const tooltipHideTimer = useRef(null);
   const resizeRef = useRef(null);
@@ -63,7 +63,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     };
   }, [storageMode]);
 
-  // [신규] 툴팁 제어 로직 모듈화 (0.6초 이상 머물러야 열림)
+  // 툴팁 제어 로직 모듈화 (0.6초 이상 머물러야 열림)
   const handleTooltipOpen = (nodePath) => {
     clearTimeout(tooltipHideTimer.current);
     if (activeTooltipNode !== nodePath) {
@@ -72,7 +72,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     }
   };
 
-  // [신규] 마우스가 벗어나면 즉시(0.1초) 닫힘
+  // 마우스가 벗어나면 즉시(0.1초) 닫힘
   const handleTooltipClose = () => {
     clearTimeout(tooltipShowTimer.current);
     tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 100);

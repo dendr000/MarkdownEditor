@@ -1,9 +1,10 @@
-// src/hooks/editor/useAutocomplete.js v1.0
+// src/hooks/editor/useAutocomplete.js v2.0
 /*
- * 파일 설명: GitHub 스타일 가상 자동완성(@유저, #이슈, :이모지)의 데이터 매핑 및 키보드 조작, 텍스트 삽입 로직을 관리하는 훅입니다.
- * 연결 위치: src/components/editor/Editor.jsx
+ * 파일 위치: src/hooks/editor/useAutocomplete.js
+ * 파일 설명: 마크다운 가상 자동완성(@, #, :) 및 프로그래밍 언어의 예약어 자동완성을 통합 관리하는 훅입니다.
  */
 import { useState } from 'react';
+import { getLanguage, KEYWORD_DICT } from '../../utils/editor/codeDictionary';
 
 const MOCK_AUTOCOMPLETE_DATA = {
   '@': [
@@ -30,53 +31,66 @@ const MOCK_AUTOCOMPLETE_DATA = {
   ]
 };
 
-export const useAutocomplete = (markdown, setMarkdown, textareaRef) => {
+// selectedFile 인자를 추가하여 파일 확장자를 식별합니다.
+export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile) => {
   const [suggestState, setSuggestState] = useState({
     isOpen: false,
+    type: 'markdown', // 'markdown' 또는 'code'
     trigger: '',
     query: '',
     index: 0,
     cursorPosition: 0
   });
 
-  const currentSuggestList = (MOCK_AUTOCOMPLETE_DATA[suggestState.trigger] || []).filter(item =>
-    (item.name || item.id || '').toLowerCase().includes(suggestState.query.toLowerCase())
-  );
+  // 현재 언어 컨텍스트와 타입에 따라 필터링된 리스트를 반환합니다.
+  const currentSuggestList = (() => {
+    if (!suggestState.isOpen) return [];
+    
+    if (suggestState.type === 'markdown') {
+      return (MOCK_AUTOCOMPLETE_DATA[suggestState.trigger] || []).filter(item =>
+        (item.name || item.id || '').toLowerCase().includes(suggestState.query.toLowerCase())
+      );
+    } else {
+      const lang = getLanguage(selectedFile);
+      const dict = KEYWORD_DICT[lang] || [];
+      return dict.filter(item =>
+        (item.name || item.id).toLowerCase().includes(suggestState.query.toLowerCase())
+      );
+    }
+  })();
 
   const handleSelectSuggest = (item) => {
-    console.log("[useAutocomplete] 자동완성 항목 선택 완료:", item);
+    console.log("[useAutocomplete v2.0] 자동완성 항목 선택 완료:", item);
     const textarea = textareaRef.current;
-    if (!textarea) {
-      console.log("[useAutocomplete] 에러: textarea 인스턴스를 찾을 수 없습니다.");
-      return;
-    }
+    if (!textarea) return;
 
     const cursor = textarea.selectionStart;
     const textBeforeCursor = markdown.substring(0, cursor);
     const textAfterCursor = markdown.substring(cursor);
 
-    const lastTriggerIndex = textBeforeCursor.lastIndexOf(suggestState.trigger + suggestState.query);
-    if (lastTriggerIndex === -1) {
-      console.log("[useAutocomplete] 경고: 텍스트 내에서 검색 위치 역추적 실패");
-      return;
+    let insertVal = '';
+    let queryLength = 0;
+
+    // 마크다운과 코드의 치환 텍스트 길이를 다르게 계산합니다.
+    if (suggestState.type === 'markdown') {
+      queryLength = suggestState.trigger.length + suggestState.query.length;
+      if (suggestState.trigger === '@') insertVal = `@${item.name || item.id} `;
+      else if (suggestState.trigger === '#') insertVal = `#${item.id} `;
+      else if (suggestState.trigger === ':') insertVal = `:${item.name}: `;
+    } else {
+      queryLength = suggestState.query.length;
+      insertVal = item.name || item.id;
     }
 
-    let insertVal = '';
-    if (suggestState.trigger === '@') {
-      insertVal = `@${item.name || item.id} `;
-    } else if (suggestState.trigger === '#') {
-      insertVal = `#${item.id} `;
-    } else if (suggestState.trigger === ':') {
-      insertVal = `:${item.name}: `;
-    }
+    const lastTriggerIndex = cursor - queryLength;
+    if (lastTriggerIndex < 0) return;
 
     const newText = markdown.substring(0, lastTriggerIndex) + insertVal + textAfterCursor;
     setMarkdown(newText);
 
-    setSuggestState({ isOpen: false, trigger: '', query: '', index: 0, cursorPosition: 0 });
+    setSuggestState({ isOpen: false, type: 'markdown', trigger: '', query: '', index: 0, cursorPosition: 0 });
 
     setTimeout(() => {
-      console.log("[useAutocomplete] 텍스트 갱신 후 커서 위치 동기화 완료");
       textarea.focus();
       const nextCursorPos = lastTriggerIndex + insertVal.length;
       textarea.setSelectionRange(nextCursorPos, nextCursorPos);
@@ -85,20 +99,37 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef) => {
 
   const handleAutocompleteChange = (val, cursor) => {
     const textBeforeCursor = val.substring(0, cursor);
-    const match = textBeforeCursor.match(/(?:^|\s)([@#:])([a-zA-Z0-9_\-+가-힣]*)$/);
-    
-    if (match) {
-      console.log(`[useAutocomplete] 트리거 감지: ${match[1]}, 검색어: ${match[2]}`);
-      setSuggestState({
-        isOpen: true,
-        trigger: match[1],
-        query: match[2],
-        index: 0,
-        cursorPosition: cursor
-      });
+    const lang = getLanguage(selectedFile);
+
+    if (lang === 'markdown') {
+      // 1. 마크다운 트리거 검사
+      const mdMatch = textBeforeCursor.match(/(?:^|\s)([@#:])([a-zA-Z0-9_\-+가-힣]*)$/);
+      if (mdMatch) {
+        setSuggestState({
+          isOpen: true, type: 'markdown', trigger: mdMatch[1], query: mdMatch[2], index: 0, cursorPosition: cursor
+        });
+        return;
+      }
     } else {
-      setSuggestState(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
+      // 2. 개발 언어 키워드 트리거 검사 (공백이나 줄바꿈 뒤에 영문/@ 시작)
+      const codeMatch = textBeforeCursor.match(/(?:^|[\s(])([@a-zA-Z_][a-zA-Z0-9_]*)$/);
+      // 최소 2글자 이상 입력했을 때만 팝업을 엽니다.
+      if (codeMatch && codeMatch[1].length >= 2) {
+        // 사전에 해당 텍스트를 포함하는 키워드가 1개 이상 존재할 때만 팝업을 엽니다.
+        const dict = KEYWORD_DICT[lang] || [];
+        const hasMatch = dict.some(item => (item.name || item.id).toLowerCase().includes(codeMatch[1].toLowerCase()));
+        
+        if (hasMatch) {
+          setSuggestState({
+            isOpen: true, type: 'code', trigger: '', query: codeMatch[1], index: 0, cursorPosition: cursor
+          });
+          return;
+        }
+      }
     }
+
+    // 조건에 맞지 않으면 닫기
+    setSuggestState(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
   };
 
   const handleAutocompleteKeyDown = (e) => {
@@ -106,40 +137,26 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef) => {
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      console.log("[useAutocomplete] 방향키 하향 조작");
-      setSuggestState(prev => ({
-        ...prev,
-        index: prev.index + 1 >= currentSuggestList.length ? 0 : prev.index + 1
-      }));
+      setSuggestState(prev => ({ ...prev, index: prev.index + 1 >= currentSuggestList.length ? 0 : prev.index + 1 }));
       return true;
     }
-    
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      console.log("[useAutocomplete] 방향키 상향 조작");
-      setSuggestState(prev => ({
-        ...prev,
-        index: prev.index - 1 < 0 ? currentSuggestList.length - 1 : prev.index - 1
-      }));
+      setSuggestState(prev => ({ ...prev, index: prev.index - 1 < 0 ? currentSuggestList.length - 1 : prev.index - 1 }));
       return true;
     }
-
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') { // 코드 작성 편의를 위해 Tab 키 추가
       e.preventDefault();
-      console.log("[useAutocomplete] 엔터 키 수신 - 선택 실행");
       if (currentSuggestList[suggestState.index]) {
         handleSelectSuggest(currentSuggestList[suggestState.index]);
       }
       return true;
     }
-
     if (e.key === 'Escape') {
       e.preventDefault();
-      console.log("[useAutocomplete] ESC 키 수신 - 팝업 닫기");
       setSuggestState(prev => ({ ...prev, isOpen: false }));
       return true;
     }
-
     return false;
   };
 

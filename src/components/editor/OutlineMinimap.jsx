@@ -38,8 +38,8 @@ function OutlineMinimap({ outline, textareaRef }) {
         top: '0',
         bottom: '0',
         width: '260px',
-        backgroundColor: 'var(--bg-main, #ffffff)', // [수정] 다크 테마 변수 적용
-        borderLeft: '1px solid var(--border-color, #d0d7de)', // [수정] 다크 테마 변수 적용
+        backgroundColor: 'var(--bg-main, #ffffff)', // 다크 테마 변수 적용
+        borderLeft: '1px solid var(--border-color, #d0d7de)', // 다크 테마 변수 적용
         boxShadow: isHovered ? '-4px 0 16px rgba(0,0,0,0.2)' : 'none',
         transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
         zIndex: 9999,
@@ -55,8 +55,8 @@ function OutlineMinimap({ outline, textareaRef }) {
         transform: 'translateY(-50%)',
         width: '32px',
         height: '56px',
-        backgroundColor: 'var(--bg-main, #ffffff)', // [수정] 다크 테마 변수 적용
-        border: '1px solid var(--border-color, #d0d7de)', // [수정] 다크 테마 변수 적용
+        backgroundColor: 'var(--bg-main, #ffffff)', // 다크 테마 변수 적용
+        border: '1px solid var(--border-color, #d0d7de)', // 다크 테마 변수 적용
         borderRight: 'none',
         borderRadius: '8px 0 0 8px',
         boxShadow: '-4px 0 8px rgba(0,0,0,0.1)',
@@ -87,7 +87,7 @@ function OutlineMinimap({ outline, textareaRef }) {
               style={{ 
                 flexShrink: 0,
                 fontSize: '13px', 
-                color: 'var(--text-main, #24292f)', // [수정] 다크 테마 가독성을 위해 기본 폰트 색상으로 치환 
+                color: 'var(--text-main, #24292f)', // 다크 테마 가독성을 위해 기본 폰트 색상으로 치환 
                 cursor: 'pointer', 
                 padding: '6px 8px', 
                 marginLeft: `${(node.level - 1) * 12}px`, 

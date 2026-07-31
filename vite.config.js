@@ -11,7 +11,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
-    // [신규] src 폴더 외의 파일(루트 폴더의 index.html, .md 등)이 수정될 때 발생하는 강제 새로고침을 가로채어 차단하는 커스텀 플러그인
+    // src 폴더 외의 파일(루트 폴더의 index.html, .md 등)이 수정될 때 발생하는 강제 새로고침을 가로채어 차단하는 커스텀 플러그인
     {
       name: 'prevent-reload-for-workspace-files',
       handleHotUpdate({ file }) {

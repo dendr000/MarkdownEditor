@@ -20,7 +20,7 @@ app.use(express.json());
 // 모듈화된 API 라우트 연결
 app.use('/api', apiRoutes);
 
-// [신규] 프론트엔드에서 전송한 좌표 데이터를 지정된 로컬 폴더에 자동 저장하는 API
+// 프론트엔드에서 전송한 좌표 데이터를 지정된 로컬 폴더에 자동 저장하는 API
 app.post('/api/save-coords', (req, res) => {
   console.log(`[Server v2.1] ERD 좌표 자동 저장 요청 수신`);
   try {

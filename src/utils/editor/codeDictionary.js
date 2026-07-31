@@ -18,7 +18,8 @@ export const getLanguage = (fileName) => {
     'html': 'html', 'xml': 'html', 'svg': 'html',
     'css': 'css', 'scss': 'css',
     'sql': 'sql',
-    'md': 'markdown'
+    'md': 'markdown',
+    'java': 'java'
   };
   
   const result = languageMap[ext] || 'text';
@@ -74,4 +75,25 @@ export const REPLACE_DICT = {
     'update': 'UPDATE', 'delete': 'DELETE', 'create': 'CREATE', 'table': 'TABLE',
     'int': 'INT', 'varchar': 'VARCHAR', 'bigint': 'BIGINT', 'and': 'AND', 'or': 'OR'
   }
+};
+
+// 언어별 자동완성(Autocomplete) 추천 키워드 사전입니다.
+export const KEYWORD_DICT = {
+  java: [
+    { id: '@RequestMapping', name: '@RequestMapping', desc: 'Spring URL 매핑 애노테이션' },
+    { id: '@RestController', name: '@RestController', desc: 'Spring REST 컨트롤러' },
+    { id: '@Autowired', name: '@Autowired', desc: 'Spring 의존성 주입' },
+    { id: 'public static void main', name: 'public static void main', desc: '메인 메서드' },
+    { id: 'System.out.println', name: 'System.out.println', desc: '표준 출력' }
+  ],
+  javascript: [
+    { id: 'document.getElementById', name: 'document.getElementById', desc: 'DOM 요소 선택' },
+    { id: 'setTimeout', name: 'setTimeout', desc: '타이머 함수' },
+    { id: 'Promise', name: 'Promise', desc: '비동기 객체' }
+  ],
+  sql: [
+    { id: 'LEFT OUTER JOIN', name: 'LEFT OUTER JOIN', desc: '외부 조인' },
+    { id: 'ORDER BY', name: 'ORDER BY', desc: '정렬 기준' },
+    { id: 'GROUP BY', name: 'GROUP BY', desc: '그룹화' }
+  ]
 };

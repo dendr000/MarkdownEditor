@@ -30,7 +30,7 @@ function WorkspaceConfig({
       e.preventDefault();
       setFocusedHistoryIndex((prev) => (prev > 0 ? prev - 1 : -1));
     } else if (e.key === 'Enter') {
-      // [수정] 방향키로 히스토리 목록을 명확히 선택한 상태(>= 0)일 때만 해당 항목으로 제출
+      // 방향키로 히스토리 목록을 명확히 선택한 상태(>= 0)일 때만 해당 항목으로 제출
       if (focusedHistoryIndex >= 0 && focusedHistoryIndex < workspaceHistory.length) {
         e.preventDefault();
         const selected = workspaceHistory[focusedHistoryIndex];
@@ -38,7 +38,7 @@ function WorkspaceConfig({
         submitWorkspacePath(selected);
         setIsHistoryOpen(false);
       } else {
-        // [수정] 직접 타이핑 중(-1)일 때는 가로채지 않고 form 태그의 기본 onSubmit 동작을 타도록 둡니다.
+        // 직접 타이핑 중(-1)일 때는 가로채지 않고 form 태그의 기본 onSubmit 동작을 타도록 둡니다.
         setIsHistoryOpen(false);
       }
     } else if (e.key === 'Escape') {
@@ -62,7 +62,7 @@ function WorkspaceConfig({
               value={tempWorkspacePath} 
               onChange={(e) => {
                 setTempWorkspacePath(e.target.value);
-                // [수정] 사용자가 타이핑을 하면 포커스 인덱스를 초기화하여 엔터 충돌 방지
+                // 사용자가 타이핑을 하면 포커스 인덱스를 초기화하여 엔터 충돌 방지
                 setFocusedHistoryIndex(-1);
                 setIsHistoryOpen(true);
               }}
@@ -107,7 +107,7 @@ function WorkspaceConfig({
                       backgroundColor: focusedHistoryIndex === idx ? '#f3f4f6' : '#ffffff',
                       borderBottom: idx < workspaceHistory.length - 1 ? '1px solid #eaeef2' : 'none',
                       wordBreak: 'break-all',
-                      textAlign: 'left' // [수정] 텍스트 좌측 정렬 강제
+                      textAlign: 'left' // 텍스트 좌측 정렬 강제
                     }}
                   >
                     {histPath}

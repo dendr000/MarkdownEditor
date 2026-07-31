@@ -29,11 +29,12 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
-  const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
+  // 파일 확장자에 따른 코드 추천을 위해 selectedFile을 훅으로 전달합니다.
+  const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef, selectedFile);
   
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
   
-  // [신규] 코드 어시스트를 위한 커스텀 훅을 연결합니다. 기존 SQL 포매터는 통합 사전 시스템으로 흡수되었습니다.
+  // 코드 어시스트를 위한 커스텀 훅을 연결합니다. 기존 SQL 포매터는 통합 사전 시스템으로 흡수되었습니다.
   const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
 

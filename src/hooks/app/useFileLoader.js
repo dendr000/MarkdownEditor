@@ -7,7 +7,7 @@
 import { useEffect } from 'react';
 import { fetchFileContent } from '../../api/fileApi';
 import * as XLSX from 'xlsx';
-import * as mammoth from 'mammoth'; // [신규] docx 파싱 라이브러리 추가
+import * as mammoth from 'mammoth'; // docx 파싱 라이브러리 추가
 
 export const useFileLoader = (setMarkdown, setSelectedFile) => {
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
@@ -18,7 +18,7 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
       const fileExt = normalizedPath.split('.').pop().toLowerCase();
       setSelectedFile(normalizedPath);
       
-      // [수정] docx를 지원 목록으로 편입시키고 미지원 목록에서 제거합니다. doc는 바이너리라 지원하지 않습니다.
+      // docx를 지원 목록으로 편입시키고 미지원 목록에서 제거합니다. doc는 바이너리라 지원하지 않습니다.
       const unsupportedExts = ['pptx', 'ppt', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'];
 
       if (unsupportedExts.includes(fileExt)) {
@@ -50,7 +50,7 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             
-            // [신규] 유효 데이터 범위(Bounding Box) 재계산 로직 (빈 행/열 무한 렌더링 방지)
+            // 유효 데이터 범위(Bounding Box) 재계산 로직 (빈 행/열 무한 렌더링 방지)
             let maxRow = 0, maxCol = 0;
             let minRow = Infinity, minCol = Infinity;
             let hasData = false;
@@ -81,7 +81,7 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
             
             if (tableMatch) {
               let htmlTable = tableMatch[0];
-              // [신규] 라이브러리가 자동 생성하는 수백 개의 불필요한 id 속성 제거 (마크다운 에디터 부하 감소)
+              // 라이브러리가 자동 생성하는 수백 개의 불필요한 id 속성 제거 (마크다운 에디터 부하 감소)
               htmlTable = htmlTable.replace(/ id="sjs-[^"]*"/g, '');
               
               htmlTable = htmlTable.replace(/<table/, '<table style="border-collapse: collapse; min-width: 100%; font-size: 13px;" border="1"');
