@@ -22,21 +22,21 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
 import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
 import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
+import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  console.log("[Editor v13.2] 단일 에디터 렌더링 시작 (통합 코드 어시스트 훅 연동 완료)");
+  console.log("[Editor v13.3] 단일 에디터 렌더링 시작 (자동 타이핑 어시스트 연동 완료)");
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
-  // 파일 확장자에 따른 코드 추천을 위해 selectedFile을 훅으로 전달합니다.
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef, selectedFile);
   
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
   
-  // 코드 어시스트를 위한 커스텀 훅을 연결합니다. 기존 SQL 포매터는 통합 사전 시스템으로 흡수되었습니다.
   const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
+  const { handleAutoTyping } = useAutoTyping(markdown, setMarkdown, selectedFile, textareaRef);
 
   useEffect(() => {
     const toolbar = toolbarRef.current;
@@ -93,7 +93,10 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           // 2. 스니펫 전개(Ctrl+Space) 및 자동 치환(Space/Enter) 처리
           if (handleSnippetAndReplace(e)) return;
           
-          // 3. 위 두 조건에 해당하지 않을 경우 기존 마크다운 에디터의 키 이벤트를 실행합니다.
+          // 3. 자동 타이핑 어시스트 (태그 닫기, 괄호 자동 쌍 맞추기 등) 처리
+          if (handleAutoTyping(e)) return;
+          
+          // 4. 위 조건들에 해당하지 않을 경우 기존 마크다운 에디터의 키 이벤트를 실행합니다.
           actions.handleKeyDown(e);
         }}
         onDragOver={handleDragOver}

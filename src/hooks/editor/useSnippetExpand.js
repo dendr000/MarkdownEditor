@@ -45,8 +45,14 @@ export function useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRe
             ? textBefore.length - word.length + cursorOffset 
             : newTextBefore.length;
             
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
+          textarea.value = newValue;
           setMarkdown(newValue);
+          
+          // React 상태 업데이트 후 커서가 맨 뒤로 밀리는 현상 방지
+          setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+          }, 0);
           
           return true;
         }
@@ -80,10 +86,16 @@ export function useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRe
           const newValue = newTextBefore + insertChar + textAfter;
 
           textarea.value = newValue;
-          const newCursorPos = newTextBefore.length + insertChar.length;
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
-          
           setMarkdown(newValue);
+          
+          const newCursorPos = newTextBefore.length + insertChar.length;
+          
+          // React 상태 업데이트 후 커서 밀림 방지
+          setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+          }, 0);
+          
           return true;
         }
       }
