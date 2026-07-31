@@ -36,7 +36,7 @@ MARKDOWNEDITOR
 │   │   │   │   ├── MathModal.jsx
 │   │   │   │   ├── TemplateModal.jsx
 │   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
-│   │   │   ├── AutocompletePopup.jsx
+│   │   │   ├── AutocompletePopup.jsx # 가상 자동완성 팝업 UI
 │   │   │   ├── Editor.css
 │   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부 - 단일 구조)
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
@@ -48,9 +48,12 @@ MARKDOWNEDITOR
 │   │   │   └── WorkspaceConfig.jsx # 상단 워크스페이스 경로 및 히스토리 제어바
 │   │   ├── preview
 │   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 렌더러 분리
+│   │   │   ├── ErdNode.jsx     # ERD 다이어그램 커스텀 노드 렌더러
 │   │   │   ├── GeoJsonBlock.jsx
 │   │   │   ├── LinkRenderer.jsx # 뷰어 내 상대 경로 링크 가로채기 모듈
 │   │   │   ├── MermaidBlock.jsx
+│   │   │   ├── SqlErdViewer.jsx # SQL 기반 ERD 시각화 및 자동 저장 뷰어
+│   │   │   ├── SqlFlowViewer.jsx # SQL 리니지 데이터 흐름 다이어그램 렌더러
 │   │   │   ├── SqlViewer.jsx   # SQL 전용 시각화 뷰어
 │   │   │   └── StlBlock.jsx
 │   │   ├── table
@@ -72,15 +75,20 @@ MARKDOWNEDITOR
 │   │   │   ├── useFileLoader.js # App.jsx 파일 로드/라우팅 제어 훅
 │   │   │   └── useScrollSync.js # 양면 스크롤 동기화 연산 훅
 │   │   ├── editor
-│   │   │   ├── useAutocomplete.js
-│   │   │   ├── useEditor.js    # 에디터 파일 모드 및 자동저장 제어 훅
+│   │   │   ├── useAutocomplete.js # 예약어 추천 및 팝업 제어 훅
+│   │   │   ├── useAutoTyping.js # 괄호 및 HTML 태그 자동 닫기 등 타이핑 어시스트 훅
+│   │   │   ├── useCommentToggle.js # 확장자 기반 주석(Ctrl+/) 토글 제어 훅
+│   │   │   ├── useEditor.js    # 에디터 기본 조작 및 단축키 제어 훅
 │   │   │   ├── useImageUpload.js
-│   │   │   └── useOutline.js   # 마크다운 헤딩 목차 추출 훅
+│   │   │   ├── useOutline.js   # 마크다운 헤딩 목차 추출 훅
+│   │   │   └── useSnippetExpand.js # 예약어 치환 및 스니펫(Ctrl+Space) 전개 훅
 │   │   └── table
 │   │       └── useTableGrid.js
 │   ├── routes
 │   │   └── api.js              # 백엔드 Express 라우터 정의부
 │   ├── utils
+│   │   ├── editor/
+│   │   │   └── codeDictionary.js # 언어별 스니펫, 주석 기호 등 통합 데이터 사전
 │   │   ├── clipboard.js
 │   │   ├── colorPresets.js
 │   │   ├── diagramParser.js
