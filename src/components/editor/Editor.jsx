@@ -20,18 +20,22 @@ import AutocompletePopup from './AutocompletePopup';
 import { useImageUpload } from '../../hooks/editor/useImageUpload';
 import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
-import { useSqlFormatter } from '../../hooks/editor/useSqlFormatter';
+import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
+import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  console.log("[Editor v13.1] 단일 에디터 렌더링 시작 (SQL 예약어 자동 포매팅 훅 연동 완료)");
+  console.log("[Editor v13.2] 단일 에디터 렌더링 시작 (통합 코드 어시스트 훅 연동 완료)");
   const toolbarRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef);
   
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
-  const { handleSqlFormatKeyDown } = useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef);
+  
+  // [신규] 코드 어시스트를 위한 커스텀 훅을 연결합니다. 기존 SQL 포매터는 통합 사전 시스템으로 흡수되었습니다.
+  const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
+  const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
 
   useEffect(() => {
     const toolbar = toolbarRef.current;
@@ -82,12 +86,14 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           handleAutocompleteChange(e.target.value, e.target.selectionStart);
         }}
         onKeyDown={(e) => {
-          // SQL 예약어 치환이 먼저 감지되어 처리(true)되지 않은 경우에만, 
-          // 기존 마크다운 포매팅(useEditor)의 KeyDown 이벤트를 실행하여 충돌을 방지합니다.
-          const isSqlHandled = handleSqlFormatKeyDown(e);
-          if (!isSqlHandled) {
-            actions.handleKeyDown(e);
-          }
+          // 1. 주석 토글 (Ctrl+/) 처리
+          if (handleToggleComment(e)) return;
+          
+          // 2. 스니펫 전개(Ctrl+Space) 및 자동 치환(Space/Enter) 처리
+          if (handleSnippetAndReplace(e)) return;
+          
+          // 3. 위 두 조건에 해당하지 않을 경우 기존 마크다운 에디터의 키 이벤트를 실행합니다.
+          actions.handleKeyDown(e);
         }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
