@@ -30,6 +30,7 @@ export const getLanguage = (fileName) => {
 // 언어별 주석 기호 매핑 테이블입니다.
 export const COMMENT_DICT = {
   javascript: { type: 'single', symbol: '// ' },
+  java: { type: 'single', symbol: '// ' },
   css: { type: 'multi', start: '/* ', end: ' */' },
   html: { type: 'multi', start: '<!-- ', end: ' -->' },
   sql: { type: 'single', symbol: '-- ' },
