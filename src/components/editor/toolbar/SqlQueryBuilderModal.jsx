@@ -42,7 +42,8 @@ function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt
 
   return (
     <div className="diagram-modal-backdrop" onClick={onClose} style={{ zIndex: 3000 }}>
-      <div className="diagram-modal-content" style={{ width: '1100px', height: '750px', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
+      {/* 캔버스 및 작업 영역 확장을 위해 모달 규격을 1100px -> 1400px, 높이를 750px -> 800px로 확대합니다. */}
+      <div className="diagram-modal-content" style={{ width: '1400px', height: '800px', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
         
         <div className="diagram-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid #d0d7de', backgroundColor: '#f6f8fa' }}>
           <div className="header-title-section" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
