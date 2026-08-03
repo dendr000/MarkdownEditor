@@ -33,6 +33,8 @@ import GlobalSearchModal from './toolbar/GlobalSearchModal';
 import MockDataModal from './toolbar/MockDataModal';
 import { DatabaseGroup } from './toolbar/ToolbarGroups';
 import './Editor.css';
+import './EditorToolbar.css';
+import './EditorCodeMode.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   // [신규] 전역 검색 모달 개폐 상태

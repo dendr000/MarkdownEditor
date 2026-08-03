@@ -1,9 +1,9 @@
-/* src/components/editor/EditorCodeMode.css v1.0 */
+/* src/components/editor/EditorCodeMode.css v1.1 */
 /*
  * 파일 위치: src/components/editor/EditorCodeMode.css
  * 파일 설명: 에디터의 코드 모드(구문 강조 오버레이, 줄 번호, 색상 픽커, SQL 린트) 전용 스타일 분리본입니다.
- * (v1.0 중요 수정사항): 텍스트 영역과 색상 오버레이 간의 스크롤 및 드래그 픽셀 어긋남(잔상 버그)을 완벽히 방지하기 위해 
- * line-height를 소수점 배율이 아닌 22px 고정값으로 강제 동기화했습니다.
+ * (v1.1 수정사항): 분리 과정에서 누락되었던 white-space: pre 속성을 전역 및 code 태그에 복구하여 
+ * 오버레이 렌더링 시 줄바꿈이 무시되고 한 줄로 출력되던 현상을 해결했습니다.
  * 연결 위치: src/components/editor/Editor.jsx 및 CodeOverlay.jsx 내부 요소들과 연결됩니다.
  */
 
@@ -18,6 +18,11 @@
   word-spacing: 0px !important;
   tab-size: 4 !important;
   box-sizing: border-box !important;
+  
+  /* 줄바꿈 및 공백 붕괴 방지를 위해 전역 동기화 (복구됨) */
+  white-space: pre !important; 
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
 }
 
 textarea.editor-textarea.code-mode {
@@ -26,12 +31,19 @@ textarea.editor-textarea.code-mode {
   margin-left: 48px !important;
   width: calc(100% - 48px) !important;
   background-color: transparent !important;
-  color: transparent !important; /* 텍스트를 투명하게 만들어 뒤의 오버레이 렌더링이 투과되어 보이도록 설정 */
+  
+  /* 렌더링 엔진 충돌(Ghosting) 방지를 위해 text-fill-color를 활용한 완벽한 투명화 적용 */
+  color: transparent !important; 
+  -webkit-text-fill-color: transparent !important; 
+  
+  /* 커서 색상은 유지 */
   caret-color: var(--text-main, #24292f) !important;
+  
+  /* 오버레이와의 가로(Width) 픽셀 오차 방지를 위해 폰트 스무딩 통일 */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  
   padding: 24px !important;
-  white-space: pre !important; 
-  word-wrap: normal !important;
-  overflow-wrap: normal !important;
   overflow-x: auto !important; 
   overflow-y: auto !important;
   border: none !important;
@@ -55,7 +67,6 @@ textarea.editor-textarea.code-mode::selection {
   overflow: hidden;
   user-select: none;
   z-index: 2;
-  white-space: pre !important;
 }
 
 .code-overlay-container {
@@ -66,6 +77,10 @@ textarea.editor-textarea.code-mode::selection {
   pointer-events: none;
   z-index: 1;
   color: var(--text-main, #24292f);
+  
+  /* textarea와 동일하게 폰트 스무딩을 강제하여 글자 너비(Width)를 완벽 일치시킴 */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
 }
 
 /* 브라우저의 기본 code 태그 스타일을 초기화하고 상단 규격에 동기화 */
@@ -78,6 +93,11 @@ textarea.editor-textarea.code-mode::selection {
   background-color: transparent !important;
   padding: 0 !important;
   margin: 0 !important;
+  
+  /* 핵심 누락 부분 복구 */
+  white-space: pre !important; 
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
 }
 
 /* =========================================
@@ -89,7 +109,7 @@ textarea.editor-textarea.code-mode::selection {
   padding: 24px;
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
   font-size: 14px;
-  line-height: 22px; /* 텍스트 에어리어와 위치를 동기화하기 위해 22px 지정 */
+  line-height: 22px; 
   white-space: pre; 
   overflow: hidden;
   pointer-events: none; 
@@ -141,7 +161,7 @@ textarea.editor-textarea.code-mode::selection {
   position: absolute;
   left: 24px;
   right: 24px;
-  height: 22px; /* 하이라이팅 밑줄도 동기화 픽셀로 변경 */
+  height: 22px; 
   pointer-events: none;
   background-color: rgba(207, 34, 46, 0.05);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='M0 3 Q 1.5 0 3 3 T 6 3' fill='none' stroke='%23cf222e' stroke-width='1.5'/%3E%3C/svg%3E");

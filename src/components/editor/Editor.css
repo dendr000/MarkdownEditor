@@ -5,8 +5,6 @@
  * (v4.0 수정사항): 파일 비대화 방지 및 유지보수를 위해 툴바와 코드 모드 전용 스타일을 외부 분리하여 임포트합니다.
  * 연결 위치: src/components/editor/Editor.jsx 파일과 바인딩됩니다.
  */
-@import './EditorToolbar.css';
-@import './EditorCodeMode.css';
 
 .editor-container {
   display: flex;
