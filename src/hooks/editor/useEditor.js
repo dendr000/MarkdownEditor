@@ -18,6 +18,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
   const [isCommitGuideOpen, setIsCommitGuideOpen] = useState(false);
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
+  const [isMockModalOpen, setIsMockModalOpen] = useState(false); // [신규] 더미 데이터 생성기
   
   const [replaceSelectionRange, setReplaceSelectionRange] = useState({ start: 0, end: 0 });
   const [selectedTableText, setSelectedTableText] = useState('');
@@ -193,6 +194,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       isMathModalOpen,
       isCommitGuideOpen,
       isFindReplaceOpen,
+      isMockModalOpen,
       replaceSelectionRange,
       selectedTableText,
       openDropdown
@@ -207,6 +209,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       setIsMathModalOpen,
       setIsCommitGuideOpen,
       setIsFindReplaceOpen,
+      setIsMockModalOpen,
       setOpenDropdown,
       handleFormat,
       prepareModalState,

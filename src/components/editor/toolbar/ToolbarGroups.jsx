@@ -9,7 +9,7 @@ import {
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
   Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
   Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash,
-  Sigma // 수식 버튼용 아이콘 추가
+  Sigma, Database // 수식 버튼 및 DB 버튼 아이콘 추가
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 
@@ -141,3 +141,10 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown, onOpe
     </div>
   );
 };
+
+// [신규] 데이터베이스 특화 도구 모음 그룹
+export const DatabaseGroup = ({ onOpenMockModal }) => (
+  <div className="toolbar-group">
+    <button onClick={() => onOpenMockModal()} title="SQL 더미 데이터 / 프로시저 생성기"><Database size={18} /></button>
+  </div>
+);

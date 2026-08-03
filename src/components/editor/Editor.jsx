@@ -30,6 +30,8 @@ import { useColorPicker } from '../../hooks/editor/useColorPicker';
 import CodeOverlay from './CodeOverlay';
 import ColorPickerOverlay from './ColorPickerOverlay';
 import GlobalSearchModal from './toolbar/GlobalSearchModal';
+import MockDataModal from './toolbar/MockDataModal';
+import { DatabaseGroup } from './toolbar/ToolbarGroups';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
@@ -101,6 +103,9 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           <div className="toolbar-divider" />
           <GithubGroup handleFormat={actions.handleFormat} openDropdown={state.openDropdown} setOpenDropdown={actions.setOpenDropdown} onOpenDetailsModal={() => { actions.prepareModalState('Details'); actions.setIsDetailsModalOpen(true); }} />
           <div className="toolbar-divider" />
+          {/* [신규] DB 툴링 버튼 마운트 */}
+          <DatabaseGroup onOpenMockModal={() => actions.setIsMockModalOpen(true)} />
+          <div className="toolbar-divider" />
           <div className="toolbar-group">
             <button onClick={() => setIsGlobalSearchOpen(true)} title="전역 검색 및 치환"><Search size={18} /></button>
             <button onClick={() => actions.setIsTemplateModalOpen(true)} title="템플릿 보관함"><Library size={18} /></button>
@@ -170,6 +175,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       
       {/* [신규] 전역 검색 모달 마운트 */}
       <GlobalSearchModal isOpen={isGlobalSearchOpen} onClose={() => setIsGlobalSearchOpen(false)} />
+      {/* [신규] 더미 데이터 생성기 모달 마운트 */}
+      <MockDataModal isOpen={state.isMockModalOpen} onClose={() => actions.setIsMockModalOpen(false)} markdown={markdown} onInsert={actions.handleInsertTable} />
     </div>
   );
 }
