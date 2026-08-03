@@ -6,7 +6,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { X, TableProperties, Network, ShieldCheck } from 'lucide-react';
-import DdlGridPanel from './sqlBuilder/DdlGridPanel'; // 분리된 DDL 메인 패널 임포트
+import DdlGridPanel from './sqlBuilder/DdlGridPanel'; 
+import DmlWorkspacePanel from './sqlBuilder/DmlWorkspacePanel'; // 분리된 DML 메인 패널 임포트
 
 function SqlQueryBuilderModal({ isOpen, onClose }) {
   // 현재 활성화된 쿼리 빌더 모드 상태 (DDL, DML, DCL)
@@ -179,15 +180,9 @@ function SqlQueryBuilderModal({ isOpen, onClose }) {
               <DdlGridPanel />
             )}
 
-            {/* DML 모드 패널 (추후 구현될 다이어그램 워크스페이스 컨테이너) */}
+            {/* DML 모드 패널 (React Flow 기반 시각적 조인 워크스페이스 마운트 완료) */}
             {currentMode === 'DML' && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #d0d7de', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                <div style={{ textAlign: 'center', color: '#57606a' }}>
-                  <Network size={48} style={{ color: '#d0d7de', marginBottom: '16px' }} />
-                  <h3>시각적 조인 워크스페이스 컴포넌트 렌더링 예정</h3>
-                  <p style={{ fontSize: '13px' }}>드래그 앤 드롭을 통한 테이블 연결(JOIN) 및 쿼리 조건(WHERE) 필터 패널이 이곳에 위치합니다.</p>
-                </div>
-              </div>
+              <DmlWorkspacePanel />
             )}
 
             {/* DCL 모드 패널 (추후 구현될 권한 매트릭스 컨테이너) */}
