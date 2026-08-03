@@ -1,4 +1,4 @@
-// src/components/editor/EditorModals.jsx v1.0
+// src/components/editor/EditorModals.jsx v1.1
 /*
  * 파일 위치: src/components/editor/EditorModals.jsx
  * 파일 설명: 메인 에디터에서 호출되는 모든 팝업 및 모달 컴포넌트들을 논리적으로 그룹화하여 렌더링합니다.
@@ -46,7 +46,8 @@ function EditorModals({
         isOpen={isQueryBuilderModalOpen} 
         onClose={() => setIsQueryBuilderModalOpen(false)} 
         initialValue={state.selectedTableText} 
-        onInsert={actions.handleInsertTable}   
+        onInsert={actions.handleInsertTable}
+        fileExt={state.fileExt} // 현재 작업 중인 파일의 확장자 전달
       />
       
       {/* 더미 데이터 생성기 모달 마운트 */}
