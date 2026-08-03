@@ -1,7 +1,7 @@
-/* src/components/editor/Editor.css v3.3 */
+/* src/components/editor/Editor.css */
 /*
  * 파일 설명: 마크다운 에디터의 레이아웃(뼈대)과 툴바, 포털 드롭다운 메뉴의 스타일을 통괄하는 완전한 통합 CSS 파일입니다.
- * (v3.3 수정사항): 하드코딩된 모든 배경 및 텍스트 색상을 전역 CSS 변수(var)로 치환하여 다크 테마에 동기화되도록 수정했습니다.
+ * (v3.4 수정사항): 개발 코드 오버레이(구문 강조 및 줄 번호) 렌더링을 위한 래퍼(Wrapper)와 텍스트 투명도 클래스를 추가했습니다.
  * 연결 위치: src/components/editor/Editor.jsx 파일과 바인딩됩니다.
  */
 
@@ -105,6 +105,17 @@
 .dropdown-item.diff-template { border-left: 4px solid #57606a; }
 .dropdown-item.details-template { border-left: 4px solid var(--border-color, #d0d7de); }
 
+/* =========================================
+   에디터 본문 및 오버레이 워크스페이스 명세
+   ========================================= */
+.editor-workspace-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--explorer-bg, #f6f8fa);
+}
+
 .editor-textarea {
   width: 100%;
   height: 100%;
@@ -123,6 +134,83 @@
 .editor-textarea.drag-active {
   background-color: rgba(9, 105, 218, 0.04) !important; 
   box-shadow: inset 0 0 0 2px #0969da !important; 
+}
+
+.line-numbers-container {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 48px;
+  padding: 24px 8px 24px 0;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted, #8c959f);
+  background-color: var(--explorer-bg, #f6f8fa);
+  border-right: 1px solid var(--border-color, #d0d7de);
+  overflow: hidden;
+  user-select: none;
+  z-index: 2;
+  white-space: pre;
+}
+
+.code-overlay-container {
+  position: absolute;
+  top: 0; left: 48px; right: 0; bottom: 0;
+  padding: 24px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  white-space: pre !important;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  color: var(--text-main, #24292f);
+  box-sizing: border-box;
+}
+
+/* 브라우저의 기본 code 태그 스타일을 초기화하고 textarea와 완벽히 동기화 */
+.code-overlay-container code {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  display: block;
+  min-width: max-content; /* 가로 스크롤 동기화를 위한 폭 확보 */
+  background-color: transparent !important; /* 브라우저 기본 배경색(노란색/회색) 제거 */
+}
+
+/* 개발 코드 파일 전용 에디터(Code Mode) 디자인 - 투명도 및 레이어 교차 */
+textarea.editor-textarea.code-mode {
+  position: relative;
+  z-index: 3;
+  margin-left: 48px !important;
+  width: calc(100% - 48px) !important;
+  background-color: transparent !important;
+  color: transparent !important; /* 텍스트를 투명하게 만들어 뒤의 오버레이가 보이게 함 */
+  caret-color: var(--text-main, #24292f) !important; /* 커서 색상은 유지 */
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 24px !important;
+  white-space: pre !important; 
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  overflow-x: auto !important; 
+  overflow-y: auto !important;
+  border: none !important;
+  outline: none !important;
+  box-sizing: border-box;
+}
+
+textarea.editor-textarea.code-mode::selection {
+  background-color: rgba(9, 105, 218, 0.3);
+  color: transparent;
+}
+
+/* 파일 확장자별 에디터 텍스트 테마 (일반 텍스트 모드 전용) */
+.editor-textarea.ext-md,
+.editor-textarea.ext-txt { 
+  color: var(--text-main, #24292f); 
 }
 
 /* =========================================
@@ -218,28 +306,43 @@
   border-radius: 4px;
 }
 
-/* 파일 확장자별 에디터 텍스트 테마 - 다크 테마에서 가독성 확보를 위해 일부 조정 */
-.editor-textarea.ext-md,
-.editor-textarea.ext-txt { 
-  color: var(--text-main, #24292f); 
+/* =========================================
+   CSS 색상 픽커 오버레이 및 스와치(Swatch) 명세
+   ========================================= */
+.color-picker-overlay-container {
+  position: absolute;
+  top: 0; left: 48px; right: 0; bottom: 0;
+  padding: 24px;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre; /* textarea와 완벽한 정렬을 위해 필수 */
+  overflow: hidden;
+  pointer-events: none; /* 클릭 이벤트를 통과시켜 textarea 텍스트를 선택할 수 있게 함 */
+  z-index: 4;
+  color: transparent; /* 일반 텍스트는 보이지 않게 숨김 */
 }
 
-.editor-textarea.ext-html { color: #58a6ff; }
-.editor-textarea.ext-css { color: #d2a8ff; }
-.editor-textarea.ext-json { color: #3fb950; }
-.editor-textarea.ext-js,
-.editor-textarea.ext-jsx { color: #ff7b72; }
+.color-picker-swatch {
+  position: absolute;
+  left: -18px; /* 텍스트 바로 왼쪽에 밀착 배치 */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+  pointer-events: auto; /* 색상 박스만 클릭할 수 있도록 예외 적용 */
+  overflow: hidden;
+}
 
-/* 개발 코드 파일 전용 에디터(Code Mode) 디자인 */
-textarea.editor-textarea.code-mode {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
-  background-color: var(--explorer-bg, #f6f8fa) !important;
-  color: var(--text-main, #24292f) !important;
-  padding: 24px !important;
-  line-height: 1.6 !important;
-  white-space: pre !important; 
-  word-wrap: normal !important;
-  overflow-wrap: normal !important;
-  overflow-x: auto !important; 
-  overflow-y: auto !important;
+/* 네이티브 색상 픽커 내부 여백 및 테두리 초기화 */
+.color-picker-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker-swatch::-webkit-color-swatch {
+  border: none;
 }

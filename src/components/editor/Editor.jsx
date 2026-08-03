@@ -23,11 +23,20 @@ import { useEditor } from '../../hooks/editor/useEditor';
 import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
 import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
 import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
+import { useCodeFormatter } from '../../hooks/editor/useCodeFormatter';
+import { useColorPicker } from '../../hooks/editor/useColorPicker';
+import CodeOverlay from './CodeOverlay';
+import ColorPickerOverlay from './ColorPickerOverlay';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  console.log("[Editor v13.3] 단일 에디터 렌더링 시작 (자동 타이핑 어시스트 연동 완료)");
+  console.log("[Editor v13.6] 단일 에디터 렌더링 시작 (CSS 색상 픽커 오버레이 연동 완료)");
   const toolbarRef = useRef(null);
+  
+  // 오버레이 컨테이너 스크롤 동기화를 위한 참조
+  const overlayRef = useRef(null);
+  const lineNumRef = useRef(null);
+  const colorPickerRef = useRef(null);
 
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef, selectedFile);
@@ -37,6 +46,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleAutoTyping } = useAutoTyping(markdown, setMarkdown, selectedFile, textareaRef);
+  const { handleFormatCode } = useCodeFormatter(markdown, setMarkdown, selectedFile, textareaRef);
+  const { handleColorChange } = useColorPicker(markdown, setMarkdown, textareaRef);
 
   useEffect(() => {
     const toolbar = toolbarRef.current;
@@ -52,6 +63,24 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
     toolbar.addEventListener('wheel', handleWheel, { passive: false });
     return () => toolbar.removeEventListener('wheel', handleWheel);
   }, []);
+
+  // 마크다운과 텍스트를 제외한 언어만 코드 모드로 취급합니다.
+  const isCodeMode = state.fileExt && !['md', 'txt'].includes(state.fileExt.toLowerCase());
+
+  // textarea와 오버레이 레이어들의 스크롤 위치를 1:1로 동기화합니다.
+  const handleScroll = (e) => {
+    if (overlayRef.current) {
+      overlayRef.current.scrollTop = e.target.scrollTop;
+      overlayRef.current.scrollLeft = e.target.scrollLeft;
+    }
+    if (lineNumRef.current) {
+      lineNumRef.current.scrollTop = e.target.scrollTop;
+    }
+    if (colorPickerRef.current) {
+      colorPickerRef.current.scrollTop = e.target.scrollTop;
+      colorPickerRef.current.scrollLeft = e.target.scrollLeft;
+    }
+  };
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
@@ -78,35 +107,49 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         </div>
       </div> 
       
-      <textarea
-        ref={textareaRef}
-        className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''}`}
-        value={markdown}
-        onChange={(e) => {
-          setMarkdown(e.target.value);
-          handleAutocompleteChange(e.target.value, e.target.selectionStart);
-        }}
-        onKeyDown={(e) => {
-          // 1. 주석 토글 (Ctrl+/) 처리
-          if (handleToggleComment(e)) return;
-          
-          // 2. 스니펫 전개(Ctrl+Space) 및 자동 치환(Space/Enter) 처리
-          if (handleSnippetAndReplace(e)) return;
-          
-          // 3. 자동 타이핑 어시스트 (태그 닫기, 괄호 자동 쌍 맞추기 등) 처리
-          if (handleAutoTyping(e)) return;
-          
-          // 4. 위 조건들에 해당하지 않을 경우 기존 마크다운 에디터의 키 이벤트를 실행합니다.
-          actions.handleKeyDown(e);
-        }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onPaste={handlePaste}
-        placeholder={selectedFile ? (state.isReadOnly ? "읽기 전용 뷰어 상태이므로 에디터에서 직접 수정할 수 없습니다." : "여기에 마크다운을 작성하세요...") : "좌측 탐색기에서 파일을 선택해 주세요."}
-        spellCheck="false"
-        disabled={!selectedFile || state.isReadOnly}
-      />
+      {/* 텍스트 영역과 오버레이가 완벽히 포개어지는 래퍼 컨테이너 */}
+      <div className="editor-workspace-wrapper">
+        {isCodeMode && (
+          <>
+            <CodeOverlay
+              markdown={markdown}
+              language={state.fileExt}
+              overlayRef={overlayRef}
+              lineNumRef={lineNumRef}
+            />
+            <ColorPickerOverlay
+              markdown={markdown}
+              language={state.fileExt}
+              colorPickerRef={colorPickerRef}
+              onColorChange={handleColorChange}
+            />
+          </>
+        )}
+        <textarea
+          ref={textareaRef}
+          className={`editor-textarea ext-${state.fileExt} ${isDragActive ? 'drag-active' : ''} ${isCodeMode ? 'code-mode' : ''}`}
+          value={markdown}
+          onChange={(e) => {
+            setMarkdown(e.target.value);
+            handleAutocompleteChange(e.target.value, e.target.selectionStart);
+          }}
+          onKeyDown={(e) => {
+            if (handleFormatCode(e)) return;
+            if (handleToggleComment(e)) return;
+            if (handleSnippetAndReplace(e)) return;
+            if (handleAutoTyping(e)) return;
+            actions.handleKeyDown(e);
+          }}
+          onScroll={isCodeMode ? handleScroll : undefined}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onPaste={handlePaste}
+          placeholder={selectedFile ? (state.isReadOnly ? "읽기 전용 뷰어 상태이므로 에디터에서 직접 수정할 수 없습니다." : "여기에 텍스트를 작성하세요...") : "좌측 탐색기에서 파일을 선택해 주세요."}
+          spellCheck="false"
+          disabled={!selectedFile || state.isReadOnly}
+        />
+      </div>
 
       <AutocompletePopup suggestState={suggestState} currentSuggestList={currentSuggestList} onSelect={handleSelectSuggest} />
       <TableModal isOpen={state.isTableModalOpen} onClose={() => actions.setIsTableModalOpen(false)} onInsert={actions.handleInsertTable} initialTableMarkdown={state.selectedTableText} />
