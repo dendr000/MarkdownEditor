@@ -22,14 +22,19 @@ import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
 import { useEditor } from '../../hooks/editor/useEditor';
 import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
 import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
 import { useCodeFormatter } from '../../hooks/editor/useCodeFormatter';
 import { useColorPicker } from '../../hooks/editor/useColorPicker';
 import CodeOverlay from './CodeOverlay';
 import ColorPickerOverlay from './ColorPickerOverlay';
+import GlobalSearchModal from './toolbar/GlobalSearchModal';
 import './Editor.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
+  // [신규] 전역 검색 모달 개폐 상태
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
   console.log("[Editor v13.6] 단일 에디터 렌더링 시작 (CSS 색상 픽커 오버레이 연동 완료)");
   const toolbarRef = useRef(null);
   
@@ -97,6 +102,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           <GithubGroup handleFormat={actions.handleFormat} openDropdown={state.openDropdown} setOpenDropdown={actions.setOpenDropdown} onOpenDetailsModal={() => { actions.prepareModalState('Details'); actions.setIsDetailsModalOpen(true); }} />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
+            <button onClick={() => setIsGlobalSearchOpen(true)} title="전역 검색 및 치환"><Search size={18} /></button>
             <button onClick={() => actions.setIsTemplateModalOpen(true)} title="템플릿 보관함"><Library size={18} /></button>
             <button onClick={() => actions.setIsCommitGuideOpen(true)} title="Git 커밋 가이드"><GitCommit size={18} /></button>
             <button onClick={() => { actions.prepareModalState('MD Table'); actions.setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
@@ -161,6 +167,9 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       <MathModal isOpen={state.isMathModalOpen} onClose={() => actions.setIsMathModalOpen(false)} onInsert={actions.handleInsertTable} />
       <CommitGuideModal isOpen={state.isCommitGuideOpen} onClose={() => actions.setIsCommitGuideOpen(false)} onInsert={actions.handleInsertTable} />
       <FindReplaceModal isOpen={state.isFindReplaceOpen} onClose={() => actions.setIsFindReplaceOpen(false)} onReplaceAll={actions.handleReplaceAll} markdown={markdown} selectionRange={state.replaceSelectionRange} />
+      
+      {/* [신규] 전역 검색 모달 마운트 */}
+      <GlobalSearchModal isOpen={isGlobalSearchOpen} onClose={() => setIsGlobalSearchOpen(false)} />
     </div>
   );
 }

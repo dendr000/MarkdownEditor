@@ -134,3 +134,109 @@ export const updateWorkspaceConfig = async (newPath) => {
   await fs.writeFile(CONFIG_PATH, JSON.stringify(workspaceConfig, null, 2), 'utf8');
   return { path: DATA_DIR, history: workspaceConfig.history };
 };
+
+// [신규] 전역 검색 로직 (Global Search)
+export const searchWorkspaceFiles = async (query, useRegex, matchCase) => {
+  console.log(`[fileController v1.1] 전역 검색 스캔 시작 - 쿼리: ${query}`);
+  const results = [];
+  const regexFlags = matchCase ? 'g' : 'gi';
+  let regex;
+  
+  try {
+    // 정규식 모드가 아닐 경우, 정규식 특수 기호를 안전하게 이스케이프 처리합니다.
+    regex = useRegex ? new RegExp(query, regexFlags) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), regexFlags);
+  } catch (e) {
+    throw new Error('유효하지 않은 정규식입니다.');
+  }
+
+  const scanDir = async (currentDir, relativeDir) => {
+    try {
+      const files = await fs.readdir(currentDir);
+      for (const file of files) {
+        const fullPath = path.join(currentDir, file);
+        const relPath = relativeDir ? `${relativeDir}/${file}` : file;
+        
+        // 숨김 파일 및 node_modules 폴더는 검색에서 제외하여 성능을 확보합니다.
+        if (file.startsWith('.') || file === 'node_modules') continue;
+        
+        const stat = await fs.stat(fullPath);
+        if (stat.isDirectory()) {
+          await scanDir(fullPath, relPath);
+        } else {
+          const ext = path.extname(file).toLowerCase();
+          if (ALLOWED_EXTENSIONS.includes(ext)) {
+            const content = await fs.readFile(fullPath, 'utf8');
+            const lines = content.split('\n');
+            const fileMatches = [];
+            
+            lines.forEach((line, index) => {
+              regex.lastIndex = 0; // 테스트 전 상태 초기화
+              if (regex.test(line)) {
+                fileMatches.push({ lineIndex: index + 1, text: line.trim() });
+              }
+            });
+            
+            if (fileMatches.length > 0) {
+              results.push({ path: relPath, matches: fileMatches });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`[fileController v1.1] 폴더 스캔 중 에러 (경로: ${currentDir}):`, error.message);
+    }
+  };
+
+  await scanDir(DATA_DIR, '');
+  console.log(`[fileController v1.1] 전역 검색 완료 - 매칭된 파일 수: ${results.length}`);
+  return results;
+};
+
+// [신규] 전역 치환 로직 (Global Replace)
+export const replaceWorkspaceFiles = async (query, replaceText, useRegex, matchCase) => {
+  console.log(`[fileController v1.1] 전역 치환 시작 - 쿼리: ${query} -> 치환: ${replaceText}`);
+  const results = [];
+  const regexFlags = matchCase ? 'g' : 'gi';
+  let regex;
+  
+  try {
+    regex = useRegex ? new RegExp(query, regexFlags) : new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), regexFlags);
+  } catch (e) {
+    throw new Error('유효하지 않은 정규식입니다.');
+  }
+
+  const scanDir = async (currentDir, relativeDir) => {
+    try {
+      const files = await fs.readdir(currentDir);
+      for (const file of files) {
+        const fullPath = path.join(currentDir, file);
+        const relPath = relativeDir ? `${relativeDir}/${file}` : file;
+        
+        if (file.startsWith('.') || file === 'node_modules') continue;
+        
+        const stat = await fs.stat(fullPath);
+        if (stat.isDirectory()) {
+          await scanDir(fullPath, relPath);
+        } else {
+          const ext = path.extname(file).toLowerCase();
+          if (ALLOWED_EXTENSIONS.includes(ext)) {
+            const content = await fs.readFile(fullPath, 'utf8');
+            regex.lastIndex = 0;
+            if (regex.test(content)) {
+              regex.lastIndex = 0; // 치환 전 인덱스 초기화
+              const newContent = content.replace(regex, replaceText);
+              await fs.writeFile(fullPath, newContent, 'utf8');
+              results.push(relPath);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`[fileController v1.1] 파일 치환 중 에러 (경로: ${currentDir}):`, error.message);
+    }
+  };
+
+  await scanDir(DATA_DIR, '');
+  console.log(`[fileController v1.1] 전역 치환 완료 - 변경된 파일 수: ${results.length}`);
+  return results;
+};

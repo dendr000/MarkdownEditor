@@ -11,7 +11,9 @@ import {
   workspaceConfig, 
   getSafePath, 
   buildTree, 
-  updateWorkspaceConfig 
+  updateWorkspaceConfig,
+  searchWorkspaceFiles,
+  replaceWorkspaceFiles
 } from '../controllers/fileController.js';
 
 const router = express.Router();
@@ -172,6 +174,32 @@ router.patch('/file', async (req, res) => {
     await fs.rename(oldSafePath, newSafePath);
     res.json({ success: true });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// [신규] 전역 검색 라우터
+router.post('/search', async (req, res) => {
+  const { query, useRegex, matchCase } = req.body;
+  console.log(`[POST /api/search] 전역 검색 요청 수신 - 쿼리: ${query}`);
+  try {
+    const results = await searchWorkspaceFiles(query, useRegex, matchCase);
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error(`[POST /api/search] 검색 에러:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// [신규] 전역 치환 라우터
+router.post('/replace', async (req, res) => {
+  const { query, replaceText, useRegex, matchCase } = req.body;
+  console.log(`[POST /api/replace] 전역 치환 요청 수신 - 쿼리: ${query} -> ${replaceText}`);
+  try {
+    const results = await replaceWorkspaceFiles(query, replaceText, useRegex, matchCase);
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error(`[POST /api/replace] 치환 에러:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

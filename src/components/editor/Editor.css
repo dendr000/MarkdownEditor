@@ -346,3 +346,34 @@ textarea.editor-textarea.code-mode::selection {
 .color-picker-swatch::-webkit-color-swatch {
   border: none;
 }
+
+/* =========================================
+   SQL 문법 오류(Linting) 오버레이 명세
+   ========================================= */
+.sql-lint-error-dot {
+  position: absolute;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: #cf222e;
+  border-radius: 50%;
+  transform: translateY(0.4em);
+  pointer-events: auto; /* 마우스 호버 시 title 속성(툴팁)이 뜨도록 허용 */
+  cursor: help;
+  box-shadow: 0 0 4px rgba(207, 34, 46, 0.5);
+}
+
+.sql-lint-error-line {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  height: 1.6em;
+  pointer-events: none; /* 밑줄이 텍스트 클릭을 방해하지 않도록 무시 */
+  background-color: rgba(207, 34, 46, 0.05); /* 에러가 발생한 줄의 미세한 붉은색 배경 */
+  
+  /* SVG를 활용한 CSS 물결 밑줄(Wavy underline) 렌더링 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='M0 3 Q 1.5 0 3 3 T 6 3' fill='none' stroke='%23cf222e' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: bottom;
+  z-index: 0;
+}

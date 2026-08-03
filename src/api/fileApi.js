@@ -123,7 +123,7 @@ export const fetchWorkspacePath = async () => {
 export const updateWorkspacePath = async (newPath) => {
   if (currentStorageMode === 'BROWSER') throw new Error('가상 DB 모드에서는 워크스페이스 변경을 지원하지 않습니다.');
   
-  console.log(`[fileApi v2.0] 워크스페이스 경로 업데이트 API 호출 - 새로운 경로: ${newPath}`);
+  console.log(`[fileApi v2.1] 워크스페이스 경로 업데이트 API 호출 - 새로운 경로: ${newPath}`);
   const response = await fetch('/api/workspace', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -133,6 +133,40 @@ export const updateWorkspacePath = async (newPath) => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error || '경로 변경에 실패했습니다.');
+  }
+  return await response.json();
+};
+
+export const globalSearch = async (query, useRegex, matchCase) => {
+  console.log(`[fileApi v2.1] 전역 검색 API 호출 - 쿼리: ${query}`);
+  if (currentStorageMode === 'BROWSER') throw new Error('가상 DB 모드(IndexedDB)에서는 전역 검색을 지원하지 않습니다.');
+  
+  const response = await fetch('/api/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, useRegex, matchCase }),
+  });
+  
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || '검색에 실패했습니다.');
+  }
+  return await response.json();
+};
+
+export const globalReplace = async (query, replaceText, useRegex, matchCase) => {
+  console.log(`[fileApi v2.1] 전역 치환 API 호출 - 쿼리: ${query} -> ${replaceText}`);
+  if (currentStorageMode === 'BROWSER') throw new Error('가상 DB 모드(IndexedDB)에서는 전역 치환을 지원하지 않습니다.');
+  
+  const response = await fetch('/api/replace', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, replaceText, useRegex, matchCase }),
+  });
+  
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || '치환에 실패했습니다.');
   }
   return await response.json();
 };

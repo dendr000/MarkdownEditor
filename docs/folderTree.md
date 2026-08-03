@@ -33,10 +33,13 @@ MARKDOWNEDITOR
 │   │   │   │   ├── CommitGuideModal.jsx
 │   │   │   │   ├── DetailsModal.jsx
 │   │   │   │   ├── FindReplaceModal.jsx # 찾기 및 바꾸기 모달
+│   │   │   │   ├── GlobalSearchModal.jsx # 전역 검색 및 일괄 치환 모달
 │   │   │   │   ├── MathModal.jsx
 │   │   │   │   ├── TemplateModal.jsx
 │   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
 │   │   │   ├── AutocompletePopup.jsx # 가상 자동완성 팝업 UI
+│   │   │   ├── CodeOverlay.jsx # 구문 강조(Syntax Highlighting) 및 줄 번호 오버레이
+│   │   │   ├── ColorPickerOverlay.jsx # CSS Hex 색상 픽커 오버레이
 │   │   │   ├── Editor.css
 │   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부 - 단일 구조)
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
@@ -48,6 +51,7 @@ MARKDOWNEDITOR
 │   │   │   └── WorkspaceConfig.jsx # 상단 워크스페이스 경로 및 히스토리 제어바
 │   │   ├── preview
 │   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 렌더러 분리
+│   │   │   ├── DiffViewer.jsx  # 파일 분할 비교 뷰어 (Split Diff Viewer)
 │   │   │   ├── ErdNode.jsx     # ERD 다이어그램 커스텀 노드 렌더러
 │   │   │   ├── GeoJsonBlock.jsx
 │   │   │   ├── LinkRenderer.jsx # 뷰어 내 상대 경로 링크 가로채기 모듈
@@ -77,6 +81,8 @@ MARKDOWNEDITOR
 │   │   ├── editor
 │   │   │   ├── useAutocomplete.js # 예약어 추천 및 팝업 제어 훅
 │   │   │   ├── useAutoTyping.js # 괄호 및 HTML 태그 자동 닫기 등 타이핑 어시스트 훅
+│   │   │   ├── useCodeFormatter.js # 단축키 기반 코드 포매팅 제어 훅
+│   │   │   ├── useColorPicker.js # CSS 색상 픽커 상태 연동 훅
 │   │   │   ├── useCommentToggle.js # 확장자 기반 주석(Ctrl+/) 토글 제어 훅
 │   │   │   ├── useEditor.js    # 에디터 기본 조작 및 단축키 제어 훅
 │   │   │   ├── useImageUpload.js
@@ -88,7 +94,12 @@ MARKDOWNEDITOR
 │   │   └── api.js              # 백엔드 Express 라우터 정의부
 │   ├── utils
 │   │   ├── editor/
-│   │   │   └── codeDictionary.js # 언어별 스니펫, 주석 기호 등 통합 데이터 사전
+│   │   │   ├── codeDictionary.js # 언어별 스니펫, 주석 기호 등 통합 데이터 사전
+│   │   │   ├── codeFormatter.js # 각 언어별 들여쓰기 및 정렬 연산 유틸
+│   │   │   ├── diffUtils.js    # LCS 알고리즘 기반 텍스트 비교 연산 유틸
+│   │   │   ├── sqlDictGenerator.js # SQL 기반 테이블 명세서 마크다운 생성 유틸
+│   │   │   ├── sqlLinter.js    # 정규식 기반 SQL 문법 오류 감지 유틸
+│   │   │   └── syntaxHighlighter.js # 정규식 기반 구문 강조 파서
 │   │   ├── clipboard.js
 │   │   ├── colorPresets.js
 │   │   ├── diagramParser.js

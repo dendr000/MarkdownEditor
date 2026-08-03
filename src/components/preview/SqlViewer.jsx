@@ -4,12 +4,14 @@
  * 연결 위치: src/App.jsx
  */
 import React, { useMemo } from 'react';
-import { Database, Table, Key } from 'lucide-react';
+import { Database, Table, Key, FileText } from 'lucide-react';
 import SqlFlowViewer from './SqlFlowViewer';
 import SqlErdViewer from './SqlErdViewer';
+import { createFileOrFolder, saveFileContent } from '../../api/fileApi';
+import { generateTableDictionary } from '../../utils/editor/sqlDictGenerator';
 
 function SqlViewer({ sql, selectedFile }) {
-  console.log("[SqlViewer v1.4] SQL 구문 분석 및 시각화 렌더링 시작 (파일명 프롭스 추가)");
+  console.log("[SqlViewer v1.5] SQL 구문 분석 및 시각화 렌더링 시작 (테이블 명세서 자동 생성 기능 연동)");
 
   const parsedTables = useMemo(() => {
     if (!sql) return [];
@@ -112,14 +114,53 @@ function SqlViewer({ sql, selectedFile }) {
     return tables;
   }, [sql]);
 
+  // 테이블 명세서를 마크다운으로 생성하여 백엔드 로컬 스토리지에 물리 파일로 저장하는 핸들러
+  const handleGenerateDict = async () => {
+    try {
+      console.log("[SqlViewer v1.5] 테이블 명세서 자동 생성 요청 시작");
+      const mdContent = generateTableDictionary(parsedTables, selectedFile);
+      
+      // 원본 파일명과 경로를 추적하여 같은 폴더 내에 '_dict.md' 접미사를 붙여 생성합니다.
+      const baseName = selectedFile ? selectedFile.split('/').pop().replace(/\.[^/.]+$/, "") : 'schema';
+      const folderPath = selectedFile && selectedFile.includes('/') ? selectedFile.substring(0, selectedFile.lastIndexOf('/')) : '';
+      const targetPath = folderPath ? `${folderPath}/${baseName}_dict.md` : `${baseName}_dict.md`;
+
+      // API를 호출하여 백엔드 파일 시스템에 빈 파일을 생성한 뒤 내용을 덮어씁니다.
+      await createFileOrFolder(targetPath, false);
+      await saveFileContent(targetPath, mdContent);
+      
+      console.log(`[SqlViewer v1.5] 명세서 물리 파일 생성 및 저장 완료: ${targetPath}`);
+      alert(`테이블 명세서가 생성되었습니다.\n경로: ${targetPath}\n\n좌측 탐색기를 새로고침(폴더 닫기/열기)하여 추가된 파일을 확인해 주세요.`);
+    } catch (error) {
+      console.error("[SqlViewer v1.5] 명세서 생성 실패:", error);
+      alert(`명세서 생성 중 오류가 발생했습니다: ${error.message}`);
+    }
+  };
+
   return (
     <div style={{ padding: '24px', backgroundColor: '#f6f8fa', minHeight: '100%', overflowY: 'auto' }}>
       <div
         className="safe-area-header"
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}
       >
-        <Database size={24} color="#0969da" />
-        <h2 style={{ margin: 0, fontSize: '20px', color: '#24292f' }}>SQL 테이블 시각화 뷰어</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Database size={24} color="#0969da" />
+          <h2 style={{ margin: 0, fontSize: '20px', color: '#24292f' }}>SQL 테이블 시각화 뷰어</h2>
+        </div>
+        
+        {/* 파싱된 테이블이 1개 이상 존재할 경우에만 버튼을 활성화합니다. */}
+        {parsedTables.length > 0 && (
+          <button 
+            onClick={handleGenerateDict}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', backgroundColor: '#2da44e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#2c974b'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#2da44e'}
+            title="현재 시각화된 스키마를 바탕으로 마크다운 명세서를 자동 생성합니다."
+          >
+            <FileText size={16} />
+            명세서 자동 생성
+          </button>
+        )}
       </div>
 
       {parsedTables.length === 0 ? (
