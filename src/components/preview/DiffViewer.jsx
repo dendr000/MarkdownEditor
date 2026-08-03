@@ -79,7 +79,7 @@ function DiffViewer({ currentMarkdown, currentFile }) {
   }, [targetContent, currentMarkdown, targetFile]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main, #ffffff)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', flex: 1, backgroundColor: 'var(--bg-main, #ffffff)', overflow: 'hidden' }}>
       
       {/* 뷰어 상단 컨트롤 바 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)' }}>
