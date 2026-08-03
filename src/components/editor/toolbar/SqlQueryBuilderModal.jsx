@@ -57,7 +57,7 @@ function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt
         <div className="diagram-modal-body" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           
           <div style={{ width: '220px', borderRight: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff' }}>
-            <div style={{ padding: '16px', fontSize: '12px', fontWeight: 'bold', color: '#57606a', borderBottom: '1px solid #d0d7de' }}>작업 모드 선택 (STATEMENT TYPE)</div>
+            <div style={{ padding: '16px', fontSize: '12px', fontWeight: 'bold', color: '#57606a', borderBottom: '1px solid #d0d7de' }}>작업 모드 선택</div>
             
             <div style={{ display: 'flex', flexDirection: 'column', padding: '8px' }}>
               <button 

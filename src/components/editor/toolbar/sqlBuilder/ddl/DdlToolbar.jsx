@@ -17,7 +17,7 @@ function DdlToolbar({
   setShowImportArea,
   handleExport
 }) {
-  console.log("[DdlToolbar v1.0] 툴바 컴포넌트 렌더링");
+  console.log("[DdlToolbar v1.1] 툴바 컴포넌트 렌더링");
 
   const handleNameChange = (e) => {
     onTableNameChange(e.target.value);
@@ -25,7 +25,7 @@ function DdlToolbar({
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
         <Table2 size={20} style={{ color: '#57606a' }} />
         <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f', whiteSpace: 'nowrap' }}>테이블 이름:</label>
         <input 
@@ -35,6 +35,12 @@ function DdlToolbar({
           placeholder="table_name"
           style={{ padding: '8px 12px', border: '1px solid #d0d7de', borderRadius: '6px', fontSize: '14px', outline: 'none', width: '200px' }}
         />
+        
+        {/* 기존에 끝에 있던 Naming Convention 버튼을 테이블 이름 텍스트 폼 바로 옆으로 원복시켰습니다. */}
+        <button onClick={toggleNamingConvention} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#0969da' }} title="컬럼명 일괄 자동 변환 적용">
+          <ArrowRightLeft size={14} />
+          {namingConvention === 'snake' ? 'Snake 적용 중' : 'Camel 적용 중'}
+        </button>
       </div>
       
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
@@ -68,13 +74,6 @@ function DdlToolbar({
         </button>
         <button onClick={() => handleExport('Migration')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#e34c26' }} title="원본 스키마와의 변경점(Diff)을 ALTER TABLE 스크립트로 추출">
           <FileDiff size={14} /> Migration
-        </button>
-
-        <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 4px' }} />
-
-        <button onClick={toggleNamingConvention} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#0969da' }} title="컬럼명 일괄 자동 변환 적용">
-          <ArrowRightLeft size={14} />
-          {namingConvention === 'snake' ? 'Snake 적용 중' : 'Camel 적용 중'}
         </button>
       </div>
     </div>
