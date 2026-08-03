@@ -67,31 +67,32 @@ function DmlGridPanel({ onInsert, fileExt }) {
         if (c.alias.trim()) return `${c.name} AS ${c.alias}`;
         return c.name;
       });
-      const selectStr = selectCols.length > 0 ? selectCols.join(', ') : '*';
+      // 단어 중간 끊김 방지 및 쿼리 가독성 향상을 위해 다중 컬럼 시 들여쓰기 개행을 추가합니다.
+      const selectStr = selectCols.length > 0 ? selectCols.join(',\n  ') : '*';
       
       const whereCols = validCols.filter(c => c.operator && c.filterValue.trim() !== '');
-      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join(' AND ');
+      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join('\n  AND ');
 
-      sql = `SELECT ${selectStr}\nFROM ${targetTable}`;
-      if (whereStr) sql += `\nWHERE ${whereStr}`;
+      sql = `SELECT \n  ${selectStr}\nFROM ${targetTable}`;
+      if (whereStr) sql += `\nWHERE \n  ${whereStr}`;
       sql += ';';
     } else if (queryType === 'INSERT') {
-      const insertCols = validCols.filter(c => c.output).map(c => c.name).join(', ');
-      const insertVals = validCols.filter(c => c.output).map(c => c.filterValue || 'NULL').join(', ');
-      sql = `INSERT INTO ${targetTable} (${insertCols})\nVALUES (${insertVals});`;
+      const insertCols = validCols.filter(c => c.output).map(c => c.name).join(',\n  ');
+      const insertVals = validCols.filter(c => c.output).map(c => c.filterValue || 'NULL').join(',\n  ');
+      sql = `INSERT INTO ${targetTable} (\n  ${insertCols}\n)\nVALUES (\n  ${insertVals}\n);`;
     } else if (queryType === 'UPDATE') {
-      const setStr = validCols.filter(c => c.output && c.filterValue).map(c => `${c.name} = ${c.filterValue}`).join(', ');
+      const setStr = validCols.filter(c => c.output && c.filterValue).map(c => `${c.name} = ${c.filterValue}`).join(',\n  ');
       const whereCols = validCols.filter(c => !c.output && c.operator && c.filterValue);
-      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join(' AND ');
+      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join('\n  AND ');
       
-      sql = `UPDATE ${targetTable}\nSET ${setStr || '/* 변경할 값을 필터 값에 입력하세요 */'}`;
-      if (whereStr) sql += `\nWHERE ${whereStr}`;
+      sql = `UPDATE ${targetTable}\nSET \n  ${setStr || '/* 변경할 값을 필터 값에 입력하세요 */'}`;
+      if (whereStr) sql += `\nWHERE \n  ${whereStr}`;
       sql += ';';
     } else if (queryType === 'DELETE') {
       const whereCols = validCols.filter(c => c.operator && c.filterValue.trim() !== '');
-      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join(' AND ');
+      const whereStr = whereCols.map(c => `${c.name} ${c.operator} ${c.filterValue}`).join('\n  AND ');
       sql = `DELETE FROM ${targetTable}`;
-      if (whereStr) sql += `\nWHERE ${whereStr}`;
+      if (whereStr) sql += `\nWHERE \n  ${whereStr}`;
       sql += ';';
     }
     return sql;
@@ -193,7 +194,7 @@ function DmlGridPanel({ onInsert, fileExt }) {
           </button>
         </div>
         <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
-          <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+          <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'normal', overflowWrap: 'anywhere' }}>
             <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ display: 'block', whiteSpace: 'pre-wrap' }} />
           </pre>
         </div>
