@@ -6,13 +6,14 @@
  * 연결 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx 내부에서 마운트됨
  */
 import React, { useState, useEffect, useMemo } from 'react';
-// 백엔드 계층별 아이콘 추가 임포트 (Server, Layers, HardDrive)
-import { Plus, ArrowRightLeft, Table2, Import, Code2, Database, HardDrive, Layers, Server } from 'lucide-react';
+// 마이그레이션 아이콘 추가 임포트 (FileDiff)
+import { Plus, ArrowRightLeft, Table2, Import, Code2, Database, HardDrive, Layers, Server, FileDiff } from 'lucide-react';
 import DdlGridRow from './DdlGridRow';
 import { generateCreateTableSql } from '../../../../utils/editor/sqlGenerator';
 import { highlightCode } from '../../../../utils/editor/syntaxHighlighter';
 import { parseCreateTableSql } from '../../../../utils/editor/sqlReverseParser';
-// 백엔드 생성기 임포트 추가
+// 마이그레이션 스크립트 생성기 임포트 추가
+import { generateMigrationScript } from '../../../../utils/editor/sqlMigrationGenerator';
 import { generateJpaEntity, generateDbml, generateJpaRepository, generateJpaService, generateJpaController } from '../../../../utils/editor/sqlExportUtils';
 import { copyToClipboard } from '../../../../utils/clipboard';
 
@@ -22,10 +23,15 @@ function DdlGridPanel() {
   const [importSqlText, setImportSqlText] = useState('');
   const [namingConvention, setNamingConvention] = useState('snake'); // 'snake' or 'camel'
   
-  // 그리드 초기 상태 설정 (기본적으로 ID 컬럼 하나를 세팅해 둡니다)
-  const [columns, setColumns] = useState([
+  // 그리드 초기 상태 설정
+  const initialColumns = [
     { id: Date.now().toString(), name: 'id', type: 'BIGINT', length: '', pk: true, nn: true, uq: false, ai: true, comment: '고유 식별자' }
-  ]);
+  ];
+  const [columns, setColumns] = useState(initialColumns);
+  
+  // 마이그레이션(ALTER TABLE) Diff 추적을 위한 스냅샷 상태 저장
+  const [originalTableName, setOriginalTableName] = useState('new_table');
+  const [originalColumns, setOriginalColumns] = useState(JSON.parse(JSON.stringify(initialColumns)));
 
   console.log("[DdlGridPanel v1.0] DDL 그리드 패널 렌더링", { tableName, columnCount: columns.length });
 
@@ -95,22 +101,28 @@ function DdlGridPanel() {
     return highlightCode(compiledSql, 'sql');
   }, [compiledSql]);
 
-  // 역설계(Import SQL) 적용 핸들러
+  // 역설계(Import SQL) 적용 핸들러 및 스냅샷 갱신
   const handleApplyImport = () => {
     if (!importSqlText.trim()) return;
     const parsedData = parseCreateTableSql(importSqlText);
     setTableName(parsedData.tableName);
-    // 빈 컬럼 방지: 파싱된 컬럼이 없으면 기본값 1개 유지
-    setColumns(parsedData.columns.length > 0 ? parsedData.columns : columns);
+    setOriginalTableName(parsedData.tableName); // 마이그레이션 기준점 갱신
+    
+    // 빈 컬럼 방지: 파싱된 컬럼이 없으면 기본값 유지
+    const newCols = parsedData.columns.length > 0 ? parsedData.columns : columns;
+    setColumns(newCols);
+    setOriginalColumns(JSON.parse(JSON.stringify(newCols))); // 깊은 복사로 스냅샷 갱신
+    
     setShowImportArea(false);
     setImportSqlText('');
   };
 
-  // 확장 코드(Export) 복사 핸들러 - 백엔드 계층별 분기 처리 추가
+  // 확장 코드(Export) 복사 핸들러 - 마이그레이션 분기 처리 추가
   const handleExport = async (type) => {
-    console.log(`[DdlGridPanel v1.1] ${type} 코드 클립보드 내보내기 실행`);
+    console.log(`[DdlGridPanel v1.2] ${type} 코드 클립보드 내보내기 실행`);
     let text = '';
     switch (type) {
+      case 'Migration': text = generateMigrationScript(originalTableName, tableName, originalColumns, columns); break;
       case 'JPA Entity': text = generateJpaEntity(tableName, columns); break;
       case 'Repository': text = generateJpaRepository(tableName, columns); break;
       case 'Service': text = generateJpaService(tableName); break;
@@ -193,6 +205,13 @@ function DdlGridPanel() {
             title="DBML 다이어그램 명세로 복사"
           >
             <Database size={14} /> DBML
+          </button>
+          <button 
+            onClick={() => handleExport('Migration')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#e34c26' }}
+            title="원본 스키마와의 변경점(Diff)을 ALTER TABLE 스크립트로 추출"
+          >
+            <FileDiff size={14} /> Migration
           </button>
 
           <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 4px' }} />
