@@ -46,17 +46,109 @@ const formatCSS = (code) => {
 };
 
 const formatSQL = (code) => {
-  let formatted = code.replace(/\s+/g, ' '); // 다중 공백 단일화
-  const keywords = ['SELECT', 'FROM', 'WHERE', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE'];
+  console.log("[codeFormatter v1.2] SQL 정밀 포매팅 시작 (문자열 스캐너 및 깊이 추적 로직 도입)");
   
+  // 1. 모든 공백을 단일 공백으로 통일하여 스쿼시(Squash) 상태에서 시작합니다. (파편화된 기존 들여쓰기 완벽 초기화)
+  let flatCode = code.replace(/\s+/g, ' ').trim();
+
+  // 2. 대문자화가 필요한 주요 예약어 목록
+  const keywords = [
+    'CREATE DATABASE', 'IF NOT EXISTS', 'CHARACTER SET', 'COLLATE', 'USE',
+    'CREATE TABLE', 'BIGINT', 'UNSIGNED', 'NOT NULL', 'NULL', 'AUTO_INCREMENT',
+    'COMMENT', 'VARCHAR', 'CHAR', 'INT', 'DEFAULT', 'TINYINT', 'DATETIME',
+    'CURRENT_TIMESTAMP', 'ON UPDATE', 'ON DELETE', 'PRIMARY KEY', 'UNIQUE KEY',
+    'KEY', 'CONSTRAINT', 'FOREIGN KEY', 'REFERENCES', 'SET NULL', 'CASCADE',
+    'RESTRICT', 'ENGINE', 'DEFAULT CHARSET'
+  ];
+
   keywords.forEach(kw => {
-    const regex = new RegExp(`\\b${kw}\\b`, 'gi');
-    formatted = formatted.replace(regex, `\n${kw.toUpperCase()}`);
+    const regex = new RegExp(`\\b${kw.replace(/ /g, '\\s+')}\\b`, 'gi');
+    flatCode = flatCode.replace(regex, kw);
   });
-  
-  // 조건절 들여쓰기
-  formatted = formatted.replace(/\b(AND|OR)\b/gi, '\n  $1');
-  return formatted.trim();
+
+  // 3. 문자열을 한 글자씩 스캔하며 괄호 깊이(Depth)에 따른 줄바꿈 및 들여쓰기 처리
+  let formatted = '';
+  let indentLevel = 0;
+  let inParens = 0;
+  let inString = false;
+  let stringChar = '';
+
+  for (let i = 0; i < flatCode.length; i++) {
+    const char = flatCode[i];
+    const prevChar = flatCode[i - 1] || '';
+
+    // 문자열 리터럴 내부 판별 (내부의 쉼표나 괄호는 구조 분석에서 무시)
+    if ((char === "'" || char === '"') && prevChar !== '\\') {
+      if (!inString) {
+        inString = true;
+        stringChar = char;
+      } else if (char === stringChar) {
+        inString = false;
+      }
+    }
+
+    if (inString) {
+      formatted += char;
+      continue;
+    }
+
+    if (char === '(') {
+      inParens++;
+      formatted += char;
+      // CREATE TABLE 등의 최상위 괄호가 열릴 때
+      if (inParens === 1) {
+        indentLevel++;
+        formatted += '\n' + '  '.repeat(indentLevel);
+        while (flatCode[i + 1] === ' ') i++; // 괄호 다음 공백 제거
+      }
+    } else if (char === ')') {
+      inParens--;
+      // 최상위 괄호가 닫힐 때
+      if (inParens === 0) {
+        indentLevel = Math.max(0, indentLevel - 1);
+        formatted += '\n' + '  '.repeat(indentLevel) + char;
+      } else {
+        formatted += char; // VARCHAR(50) 등 인라인 괄호는 그대로 유지
+      }
+    } else if (char === ',') {
+      formatted += char;
+      // 최상위 컬럼/제약조건 정의 중인 쉼표일 때 줄바꿈 처리
+      if (inParens === 1) {
+        formatted += '\n' + '  '.repeat(indentLevel);
+        while (flatCode[i + 1] === ' ') i++;
+      }
+    } else if (char === ';') {
+      formatted += char + '\n\n'; // SQL 구문 종료 시 문단 분리
+      while (flatCode[i + 1] === ' ') i++;
+    } else {
+      formatted += char;
+    }
+  }
+
+  // 4. 후처리: 특정 제약조건 및 속성들을 정밀하게 들여쓰기 및 분리
+  // 문자열 내부(COMMENT 내용 등)를 건드리지 않기 위해 (?=(?:[^']*'[^']*')*[^']*$) 정규식 룩어헤드(Lookahead) 트릭을 사용합니다.
+  let finalLines = formatted.split('\n');
+  finalLines = finalLines.map(line => {
+    let tLine = line;
+    
+    // 제약조건(CONSTRAINT) 및 키(KEY) 선언부는 가독성을 위해 위에 빈 줄 추가
+    if (tLine.match(/^\s*(CONSTRAINT|PRIMARY KEY|UNIQUE KEY|KEY\s)(?=(?:[^']*'[^']*')*[^']*$)/)) {
+      tLine = '\n' + tLine;
+    }
+    
+    // FOREIGN KEY, REFERENCES, ON DELETE, ON UPDATE 등을 새 줄로 빼고 2단(8칸) 들여쓰기
+    tLine = tLine.replace(/\s+(FOREIGN KEY|REFERENCES|ON DELETE|ON UPDATE)(?=(?:[^']*'[^']*')*[^']*$)/g, '\n        $1');
+
+    // ENGINE, COLLATE, COMMENT 등 테이블/DB 속성을 새 줄로 빼고 1단(4칸) 들여쓰기
+    tLine = tLine.replace(/\)\s*ENGINE=/, ') ENGINE=');
+    tLine = tLine.replace(/\s+(DEFAULT CHARSET|CHARACTER SET|COLLATE|COMMENT=)(?=(?:[^']*'[^']*')*[^']*$)/g, '\n    $1');
+
+    return tLine;
+  });
+
+  console.log("[codeFormatter v1.2] SQL 정밀 포매팅 완료");
+  // 불필요하게 3번 이상 연속된 줄바꿈을 2번으로 축소하여 반환
+  return finalLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 };
 
 const formatCStyle = (code) => {
