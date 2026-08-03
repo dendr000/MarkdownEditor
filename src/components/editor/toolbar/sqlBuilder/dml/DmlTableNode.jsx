@@ -6,19 +6,35 @@
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
 import React from 'react';
-import { Handle, Position } from 'reactflow';
-import { Table2, Key } from 'lucide-react';
+import { Handle, Position, useReactFlow } from 'reactflow';
+import { Table2, Key, X } from 'lucide-react';
 
-function DmlTableNode({ data }) {
-  console.log(`[DmlTableNode v1.1] 커스텀 노드 렌더링 - 테이블명: ${data.tableName}`);
+function DmlTableNode({ id, data }) {
+  console.log(`[DmlTableNode v1.2] 커스텀 노드 렌더링 - 테이블명: ${data.tableName}`);
+  
+  const { setNodes, setEdges } = useReactFlow();
+
+  const handleDeleteNode = () => {
+    setNodes((nds) => nds.filter((n) => n.id !== id));
+    setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
+  };
 
   return (
     <div style={{ width: '200px', backgroundColor: '#ffffff', border: '1px solid #0969da', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>
       
       {/* 테이블 노드 헤더 */}
-      <div style={{ backgroundColor: '#0969da', color: '#ffffff', padding: '8px 12px', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Table2 size={16} />
-        {data.tableName}
+      <div style={{ backgroundColor: '#0969da', color: '#ffffff', padding: '8px 12px', fontSize: '13px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Table2 size={16} />
+          {data.tableName}
+        </div>
+        <button 
+          onClick={handleDeleteNode}
+          style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+          title="캔버스에서 제거"
+        >
+          <X size={14} />
+        </button>
       </div>
 
       {/* 테이블 컬럼 목록 및 연결 Handle */}

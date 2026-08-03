@@ -8,8 +8,13 @@
 import React from 'react';
 import { Plus, Trash2, Filter } from 'lucide-react';
 
-function DmlFilterPanel({ filters, setFilters }) {
-  console.log("[DmlFilterPanel v1.1] DML 필터 패널 렌더링");
+function DmlFilterPanel({ filters, setFilters, availableNodes = [] }) {
+  console.log("[DmlFilterPanel v1.2] DML 필터 패널 렌더링");
+
+  // 캔버스에 올려진 테이블(노드)들을 기반으로 선택 가능한 컬럼 목록(options)을 생성합니다.
+  const columnOptions = availableNodes.flatMap(node => 
+    node.data.columns.map(col => `${node.data.tableName}.${col}`)
+  );
 
   // 배열 상태 업데이트 헬퍼
   const updateArray = (key, index, field, value) => {
@@ -49,7 +54,10 @@ function DmlFilterPanel({ filters, setFilters }) {
             {filters.where.length === 0 && <span style={{ fontSize: '11px', color: '#8c959f' }}>조건이 없습니다.</span>}
             {filters.where.map((item, idx) => (
               <div key={idx} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <input type="text" placeholder="컬럼명" value={item.column} onChange={(e) => updateArray('where', idx, 'column', e.target.value)} style={inputStyle} />
+                <select value={item.column} onChange={(e) => updateArray('where', idx, 'column', e.target.value)} style={{ ...inputStyle, width: '120px' }}>
+                  <option value="">컬럼 선택...</option>
+                  {columnOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
                 <select value={item.operator} onChange={(e) => updateArray('where', idx, 'operator', e.target.value)} style={{ ...inputStyle, flex: 'none', width: '60px' }}>
                   <option value="=">=</option>
                   <option value=">">&gt;</option>
@@ -74,7 +82,10 @@ function DmlFilterPanel({ filters, setFilters }) {
             {filters.groupBy.length === 0 && <span style={{ fontSize: '11px', color: '#8c959f' }}>조건이 없습니다.</span>}
             {filters.groupBy.map((item, idx) => (
               <div key={idx} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <input type="text" placeholder="컬럼명 (예: category_id)" value={item.column} onChange={(e) => updateArray('groupBy', idx, 'column', e.target.value)} style={inputStyle} />
+                <select value={item.column} onChange={(e) => updateArray('groupBy', idx, 'column', e.target.value)} style={{ ...inputStyle, width: '120px' }}>
+                  <option value="">컬럼 선택...</option>
+                  {columnOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
                 <button onClick={() => removeArrayItem('groupBy', idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cf222e', padding: '4px' }}><Trash2 size={14} /></button>
               </div>
             ))}
@@ -91,7 +102,10 @@ function DmlFilterPanel({ filters, setFilters }) {
             {filters.orderBy.length === 0 && <span style={{ fontSize: '11px', color: '#8c959f' }}>조건이 없습니다.</span>}
             {filters.orderBy.map((item, idx) => (
               <div key={idx} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <input type="text" placeholder="컬럼명" value={item.column} onChange={(e) => updateArray('orderBy', idx, 'column', e.target.value)} style={inputStyle} />
+                <select value={item.column} onChange={(e) => updateArray('orderBy', idx, 'column', e.target.value)} style={{ ...inputStyle, width: '120px' }}>
+                  <option value="">컬럼 선택...</option>
+                  {columnOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
                 <select value={item.direction} onChange={(e) => updateArray('orderBy', idx, 'direction', e.target.value)} style={{ ...inputStyle, flex: 'none', width: '70px' }}>
                   <option value="ASC">ASC</option>
                   <option value="DESC">DESC</option>

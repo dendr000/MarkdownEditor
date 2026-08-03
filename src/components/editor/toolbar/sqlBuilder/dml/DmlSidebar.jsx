@@ -6,10 +6,10 @@
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
 import React, { useState } from 'react';
-import { Database, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Database, GripVertical, Plus, Trash2, Edit2, Check } from 'lucide-react';
 
 function DmlSidebar() {
-  console.log("[DmlSidebar v1.2] DML 사이드바 렌더링 시작");
+  console.log("[DmlSidebar v1.3] DML 사이드바 렌더링 시작");
 
   const [tables, setTables] = useState([
     { name: 'users', columns: ['id', 'username', 'email', 'address', 'created_at'] },
@@ -18,6 +18,7 @@ function DmlSidebar() {
   ]);
   const [newTableName, setNewTableName] = useState('');
   const [newTableColumns, setNewTableColumns] = useState('');
+  const [editIndex, setEditIndex] = useState(null); // 수정 모드 인덱스 상태
 
   const onDragStart = (event, tableData) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify(tableData));
@@ -27,15 +28,35 @@ function DmlSidebar() {
   const handleAddTable = () => {
     if (!newTableName.trim() || !newTableColumns.trim()) return;
     const columns = newTableColumns.split(',').map(c => c.trim()).filter(c => c);
-    setTables([...tables, { name: newTableName.trim(), columns }]);
+    
+    if (editIndex !== null) {
+      const updatedTables = [...tables];
+      updatedTables[editIndex] = { name: newTableName.trim(), columns };
+      setTables(updatedTables);
+      setEditIndex(null);
+    } else {
+      setTables([...tables, { name: newTableName.trim(), columns }]);
+    }
+    
     setNewTableName('');
     setNewTableColumns('');
+  };
+
+  const handleEditClick = (index) => {
+    setNewTableName(tables[index].name);
+    setNewTableColumns(tables[index].columns.join(', '));
+    setEditIndex(index);
   };
 
   const handleRemoveTable = (index) => {
     const updatedTables = [...tables];
     updatedTables.splice(index, 1);
     setTables(updatedTables);
+    if (editIndex === index) {
+      setEditIndex(null);
+      setNewTableName('');
+      setNewTableColumns('');
+    }
   };
 
   return (
@@ -63,9 +84,9 @@ function DmlSidebar() {
         />
         <button 
           onClick={handleAddTable}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '6px', backgroundColor: '#0969da', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '6px', backgroundColor: editIndex !== null ? '#2da44e' : '#0969da', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
         >
-          <Plus size={14} /> 테이블 추가
+          {editIndex !== null ? <><Check size={14} /> 테이블 수정 완료</> : <><Plus size={14} /> 테이블 추가</>}
         </button>
       </div>
 
@@ -85,13 +106,22 @@ function DmlSidebar() {
               <GripVertical size={14} style={{ color: '#8c959f', flexShrink: 0 }} />
               <span style={{ fontSize: '13px', fontWeight: '600', color: '#24292f', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{table.name}</span>
             </div>
-            <button 
-              onClick={() => handleRemoveTable(idx)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cf222e', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-              title="테이블 삭제"
-            >
-              <Trash2 size={14} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button 
+                onClick={() => handleEditClick(idx)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0969da', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                title="테이블 수정"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button 
+                onClick={() => handleRemoveTable(idx)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cf222e', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                title="테이블 삭제"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -127,7 +127,7 @@ function DmlWorkspaceContent({ onInsert }) {
           </ReactFlow>
         </div>
 
-        <DmlFilterPanel filters={filters} setFilters={setFilters} />
+        <DmlFilterPanel filters={filters} setFilters={setFilters} availableNodes={nodes} />
       </div>
 
       {/* 하단 패널 분할 컨테이너 (좌측: SQL 뷰어, 우측: 인덱스 추천기) */}
