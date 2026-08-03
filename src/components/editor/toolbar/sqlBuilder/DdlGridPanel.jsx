@@ -6,12 +6,14 @@
  * 연결 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx 내부에서 마운트됨
  */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, ArrowRightLeft, Table2, Import, Code2, Database } from 'lucide-react';
+// 백엔드 계층별 아이콘 추가 임포트 (Server, Layers, HardDrive)
+import { Plus, ArrowRightLeft, Table2, Import, Code2, Database, HardDrive, Layers, Server } from 'lucide-react';
 import DdlGridRow from './DdlGridRow';
 import { generateCreateTableSql } from '../../../../utils/editor/sqlGenerator';
 import { highlightCode } from '../../../../utils/editor/syntaxHighlighter';
 import { parseCreateTableSql } from '../../../../utils/editor/sqlReverseParser';
-import { generateJpaEntity, generateDbml } from '../../../../utils/editor/sqlExportUtils';
+// 백엔드 생성기 임포트 추가
+import { generateJpaEntity, generateDbml, generateJpaRepository, generateJpaService, generateJpaController } from '../../../../utils/editor/sqlExportUtils';
 import { copyToClipboard } from '../../../../utils/clipboard';
 
 function DdlGridPanel() {
@@ -104,11 +106,19 @@ function DdlGridPanel() {
     setImportSqlText('');
   };
 
-  // 확장 코드(Export) 복사 핸들러
+  // 확장 코드(Export) 복사 핸들러 - 백엔드 계층별 분기 처리 추가
   const handleExport = async (type) => {
-    const text = type === 'JPA' 
-      ? generateJpaEntity(tableName, columns) 
-      : generateDbml(tableName, columns);
+    console.log(`[DdlGridPanel v1.1] ${type} 코드 클립보드 내보내기 실행`);
+    let text = '';
+    switch (type) {
+      case 'JPA Entity': text = generateJpaEntity(tableName, columns); break;
+      case 'Repository': text = generateJpaRepository(tableName, columns); break;
+      case 'Service': text = generateJpaService(tableName); break;
+      case 'Controller': text = generateJpaController(tableName); break;
+      case 'DBML': text = generateDbml(tableName, columns); break;
+      default: return;
+    }
+    
     const success = await copyToClipboard(text);
     if (success) alert(`${type} 코드가 클립보드에 복사되었습니다.`);
   };
@@ -143,20 +153,46 @@ function DdlGridPanel() {
             <Import size={14} /> SQL 파싱
           </button>
           
+          <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 2px' }} />
+
+          {/* 백엔드 코드 제너레이터 버튼 그룹 */}
           <button 
-            onClick={() => handleExport('JPA')}
+            onClick={() => handleExport('JPA Entity')}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#2da44e' }}
-            title="Java JPA Entity 코드로 복사"
+            title="Java JPA Entity 코드 복사"
           >
-            <Code2 size={14} /> JPA 복사
+            <Code2 size={14} /> Entity
           </button>
+          <button 
+            onClick={() => handleExport('Repository')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#0969da' }}
+            title="Spring Data JPA Repository 인터페이스 복사"
+          >
+            <HardDrive size={14} /> Repo
+          </button>
+          <button 
+            onClick={() => handleExport('Service')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#bf3989' }}
+            title="비즈니스 로직(Service) 클래스 복사"
+          >
+            <Layers size={14} /> Service
+          </button>
+          <button 
+            onClick={() => handleExport('Controller')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#cf222e' }}
+            title="REST API 엔드포인트(Controller) 클래스 복사"
+          >
+            <Server size={14} /> API
+          </button>
+
+          <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 2px' }} />
           
           <button 
             onClick={() => handleExport('DBML')}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#8250df' }}
             title="DBML 다이어그램 명세로 복사"
           >
-            <Database size={14} /> DBML 복사
+            <Database size={14} /> DBML
           </button>
 
           <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 4px' }} />
