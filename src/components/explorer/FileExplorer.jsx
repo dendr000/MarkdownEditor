@@ -82,20 +82,20 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     <>
       <button 
         onClick={() => { 
-          console.log(`[FileExplorer v6.1] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
+          console.log(`[FileExplorer v6.2] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
           setIsExplorerOpen(!isExplorerOpen); 
         }} 
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
         style={{ 
           position: 'absolute', left: 0, top: 0, width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 10001, transition: 'background-color 0.2s ease'
+          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 3901, transition: 'background-color 0.2s ease'
         }}
       >
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
         <div style={{ position: 'absolute', top: 0, right: '-16px', width: '16px', height: '16px', backgroundColor: 'transparent', borderTopLeftRadius: '16px', boxShadow: '-8px -8px 0 8px #24292f', pointerEvents: 'none' }} />
       </button>
 
-      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 10000, flexShrink: 0 }}>
+      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 3900, flexShrink: 0 }}>
         
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
@@ -128,7 +128,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
           {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: 'var(--text-muted, #8c959f)', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
         </div>
         
-        <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: 'ew-resize', zIndex: 10000 }} title="폭 조절" />
+        <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: 'ew-resize', zIndex: 3900 }} title="폭 조절" />
       </div>
     </>
   );
