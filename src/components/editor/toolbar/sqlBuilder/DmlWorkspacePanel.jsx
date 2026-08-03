@@ -7,12 +7,14 @@
  */
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import ReactFlow, { addEdge, applyNodeChanges, applyEdgeChanges, Background, Controls, ReactFlowProvider } from 'reactflow';
+import { Lightbulb } from 'lucide-react'; // 스마트 추천 아이콘 임포트
 import 'reactflow/dist/style.css'; // React Flow 필수 코어 스타일
 import DmlSidebar from './DmlSidebar';
 import DmlTableNode from './DmlTableNode';
 import DmlFilterPanel from './DmlFilterPanel';
 import { generateSelectQuery } from '../../../../utils/editor/sqlDmlGenerator';
 import { highlightCode } from '../../../../utils/editor/syntaxHighlighter';
+import { recommendIndexes } from '../../../../utils/editor/sqlIndexRecommender'; // 인덱스 추천기 임포트
 
 // 커스텀 노드 타입 매핑
 const nodeTypes = {
@@ -97,6 +99,11 @@ function DmlWorkspaceContent() {
     return highlightCode(compiledSql, 'sql');
   }, [compiledSql]);
 
+  // 실시간 인덱스 추천 분석 실행
+  const indexRecommendations = useMemo(() => {
+    return recommendIndexes(nodes, edges, filters);
+  }, [nodes, edges, filters]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
       
@@ -126,18 +133,46 @@ function DmlWorkspaceContent() {
         <DmlFilterPanel filters={filters} setFilters={setFilters} />
       </div>
 
-      {/* 하단 실시간 SQL 컴파일 뷰어 패널 */}
-      <div style={{ height: '180px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>DML 쿼리 컴파일 뷰어 (Live Preview)</span>
+      {/* 하단 패널 분할 컨테이너 (좌측: SQL 뷰어, 우측: 인덱스 추천기) */}
+      <div style={{ display: 'flex', gap: '16px', height: '180px', minWidth: 0, flexShrink: 0 }}>
+        
+        {/* 좌측 실시간 SQL 컴파일 뷰어 패널 */}
+        <div style={{ flex: 2, backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>DML 쿼리 컴파일 뷰어 (Live Preview)</span>
+          </div>
+          <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
+            <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6' }}>
+              <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ whiteSpace: 'pre' }} />
+            </pre>
+          </div>
         </div>
-        <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-          <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6' }}>
-            <code dangerouslySetInnerHTML={{ __html: highlightedSql }} />
-          </pre>
+
+        {/* 우측 스마트 인덱스 추천 패널 */}
+        <div style={{ flex: 1, backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '8px 16px', backgroundColor: '#fcfcfc', borderBottom: '1px solid #d0d7de', fontSize: '12px', fontWeight: 'bold', color: '#24292f', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Lightbulb size={16} color="#d4a72c" />
+            <span>스마트 인덱스 추천 (Auto Indexing)</span>
+          </div>
+          <div style={{ flex: 1, padding: '12px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {indexRecommendations.length === 0 ? (
+              <div style={{ fontSize: '12px', color: '#8c959f', textAlign: 'center', marginTop: '20px' }}>
+                추천할 인덱스가 없습니다.<br/>조인(JOIN)이나 조건절을 추가해 보세요.
+              </div>
+            ) : (
+              indexRecommendations.map((rec, idx) => (
+                <div key={idx} style={{ padding: '8px', backgroundColor: '#f6f8fa', border: '1px dashed #d0d7de', borderRadius: '6px', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#0969da' }}>💡 {rec.reason}</span>
+                  <code style={{ color: '#24292f', backgroundColor: '#ffffff', padding: '4px', borderRadius: '4px', border: '1px solid #e1e4e8', fontFamily: 'ui-monospace, monospace' }}>
+                    {rec.script}
+                  </code>
+                </div>
+              ))
+            )}
+          </div>
         </div>
+        
       </div>
-      
     </div>
   );
 }
