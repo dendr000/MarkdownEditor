@@ -27,13 +27,26 @@ MARKDOWNEDITOR
 │   │   ├── editor
 │   │   │   ├── toolbar/        # 툴바 아이콘 및 그룹 컴포넌트
 │   │   │   │   ├── sqlBuilder/ # 시각적 SQL 쿼리 빌더 전용 컴포넌트 모음
-│   │   │   │   │   ├── DclMatrixPanel.jsx   # DCL 권한 제어 매트릭스 패널
-│   │   │   │   │   ├── DdlGridPanel.jsx     # DDL 스키마 제어 스프레드시트 패널
-│   │   │   │   │   ├── DdlGridRow.jsx       # DDL 그리드 개별 행 컴포넌트
-│   │   │   │   │   ├── DmlFilterPanel.jsx   # DML 쿼리 필터 및 정렬 제어 패널
-│   │   │   │   │   ├── DmlSidebar.jsx       # DML 드래그 앤 드롭 테이블 사이드바
-│   │   │   │   │   ├── DmlTableNode.jsx     # DML React Flow 커스텀 테이블 노드
-│   │   │   │   │   └── DmlWorkspacePanel.jsx# DML 시각적 조인 워크스페이스 패널
+│   │   │   │   │   ├── dcl/                 # DCL 권한 제어 모드 전용 컴포넌트
+│   │   │   │   │   │   ├── DclMatrixPanel.jsx # DCL 권한 제어 매트릭스 메인 패널 (오케스트레이터)
+│   │   │   │   │   │   ├── DclMatrixRow.jsx   # DCL 매트릭스 개별 행 컴포넌트
+│   │   │   │   │   │   ├── DclMatrixTable.jsx # DCL 매트릭스 표 컨테이너
+│   │   │   │   │   │   ├── DclPreview.jsx     # DCL 실시간 컴파일 뷰어
+│   │   │   │   │   │   └── DclToolbar.jsx     # DCL 상단 제어 바
+│   │   │   │   │   ├── ddl/                 # DDL 스키마 정의 모드 전용 컴포넌트
+│   │   │   │   │   │   ├── DdlGridPanel.jsx   # DDL 스키마 제어 메인 패널 (오케스트레이터)
+│   │   │   │   │   │   ├── DdlGridRow.jsx     # DDL 그리드 개별 행 컴포넌트
+│   │   │   │   │   │   ├── DdlGridTable.jsx   # DDL 스프레드시트 헤더 및 리스트 컨테이너
+│   │   │   │   │   │   ├── DdlImportArea.jsx  # DDL 역설계 파싱 입력 영역
+│   │   │   │   │   │   ├── DdlPreview.jsx     # DDL 실시간 컴파일 뷰어
+│   │   │   │   │   │   └── DdlToolbar.jsx     # DDL 상단 제어 바
+│   │   │   │   │   └── dml/                 # DML 데이터 조작 모드 전용 컴포넌트
+│   │   │   │   │       ├── DmlFilterPanel.jsx # DML 쿼리 필터 및 정렬 제어 패널
+│   │   │   │   │       ├── DmlIndexRecommendation.jsx # DML 스마트 인덱스 추천 뷰어
+│   │   │   │   │       ├── DmlPreview.jsx     # DML 실시간 컴파일 뷰어
+│   │   │   │   │       ├── DmlSidebar.jsx     # DML 드래그 앤 드롭 테이블 사이드바
+│   │   │   │   │       ├── DmlTableNode.jsx   # DML React Flow 커스텀 테이블 노드
+│   │   │   │   │       └── DmlWorkspacePanel.jsx# DML 시각적 조인 워크스페이스 메인 패널 (오케스트레이터)
 │   │   │   │   ├── CommitGuideModal.jsx
 │   │   │   │   ├── DetailsModal.jsx
 │   │   │   │   ├── FindReplaceModal.jsx # 찾기 및 바꾸기 모달
@@ -107,9 +120,11 @@ MARKDOWNEDITOR
 │   │   │   ├── sqlDclGenerator.js # DCL 권한 매트릭스 SQL 컴파일러
 │   │   │   ├── sqlDictGenerator.js # SQL 기반 테이블 명세서 마크다운 생성 유틸
 │   │   │   ├── sqlDmlGenerator.js # DML 시각적 조인 워크스페이스 SQL 컴파일러
-│   │   │   ├── sqlExportUtils.js # 조립된 쿼리를 JPA Entity, DBML로 내보내는 확장 모듈
+│   │   │   ├── sqlExportUtils.js # 조립된 쿼리를 JPA Entity, DBML 및 백엔드 3계층 코드(Repo, Service, API)로 내보내는 확장 모듈
 │   │   │   ├── sqlGenerator.js # DDL 스프레드시트 그리드 SQL 컴파일러
+│   │   │   ├── sqlIndexRecommender.js # DML 쿼리 기반 인덱스(Index) 자동 추천 유틸
 │   │   │   ├── sqlLinter.js    # 정규식 기반 SQL 문법 오류 감지 유틸
+│   │   │   ├── sqlMigrationGenerator.js # DDL 스냅샷 Diff 추적 기반 마이그레이션(ALTER TABLE) 스크립트 생성기
 │   │   │   ├── sqlReverseParser.js # CREATE TABLE 텍스트를 파싱하는 역설계 모듈
 │   │   │   └── syntaxHighlighter.js # 정규식 기반 구문 강조 파서
 │   │   ├── clipboard.js

@@ -112,7 +112,9 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           <DatabaseGroup 
             onOpenMockModal={() => actions.setIsMockModalOpen(true)} 
             onOpenQueryBuilderModal={() => {
-              actions.prepareModalState('SQL'); // [변경] 모달 오픈 시 선택 텍스트 상태 스냅샷 캡처
+              // useEditor 내부에 'SQL' 키가 정의되어 있지 않아 텍스트 캡처가 무시되는 문제를 해결하기 위해,
+              // 동작이 확실히 보장된 기존 모달 키('Diagram')를 빌려 텍스트 스냅샷을 강제로 캡처합니다.
+              actions.prepareModalState('Diagram'); 
               setIsQueryBuilderModalOpen(true);
             }}
           />
@@ -189,8 +191,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       
       {/* [신규] 시각적 SQL 쿼리 빌더 대형 모달 마운트 */}
       {/* [수정] 데이터 삽입(onInsert) 및 선택 텍스트(initialValue) 프롭스 연결 */}
-      <SqlQueryBuilderModal 
-        isOpen={isQueryBuilderModalOpen} 
+      <SqlQueryBuilderModal  isOpen={isQueryBuilderModalOpen} 
         onClose={() => setIsQueryBuilderModalOpen(false)} 
         initialValue={state.selectedTableText} // 드래그된 텍스트 전달
         onInsert={actions.handleInsertTable}   // 텍스트 삽입 함수 전달
