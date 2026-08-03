@@ -1,23 +1,21 @@
-// src/components/editor/toolbar/sqlBuilder/DdlGridPanel.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx v1.1
 /*
- * 파일 위치: src/components/editor/toolbar/sqlBuilder/DdlGridPanel.jsx
+ * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
  * 파일 설명: 시각적 SQL 쿼리 빌더의 DDL(CREATE/ALTER) 모드 전용 메인 패널입니다.
- * 테이블명 및 Naming Convention 설정, 스프레드시트 형태의 컬럼 그리드 렌더링, 실시간 SQL 컴파일 뷰어를 통합 관리합니다.
+ * 하위 폴더 구조 개편에 따라 ddl 디렉토리로 이전되었으며, 에디터 본문과의 양방향 삽입 및 파싱을 지원합니다.
  * 연결 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx 내부에서 마운트됨
  */
 import React, { useState, useEffect, useMemo } from 'react';
-// 마이그레이션 아이콘 추가 임포트 (FileDiff)
-import { Plus, ArrowRightLeft, Table2, Import, Code2, Database, HardDrive, Layers, Server, FileDiff } from 'lucide-react';
-import DdlGridRow from './DdlGridRow';
-import { generateCreateTableSql } from '../../../../utils/editor/sqlGenerator';
-import { highlightCode } from '../../../../utils/editor/syntaxHighlighter';
-import { parseCreateTableSql } from '../../../../utils/editor/sqlReverseParser';
-// 마이그레이션 스크립트 생성기 임포트 추가
-import { generateMigrationScript } from '../../../../utils/editor/sqlMigrationGenerator';
-import { generateJpaEntity, generateDbml, generateJpaRepository, generateJpaService, generateJpaController } from '../../../../utils/editor/sqlExportUtils';
-import { copyToClipboard } from '../../../../utils/clipboard';
+import { Plus, ArrowRightLeft, Table2, Import, Code2, Database, HardDrive, Layers, Server, FileDiff, Check } from 'lucide-react';
+import DdlGridRow from '../DdlGridRow';
+import { generateCreateTableSql } from '../../../../../utils/editor/sqlGenerator';
+import { highlightCode } from '../../../../../utils/editor/syntaxHighlighter';
+import { parseCreateTableSql } from '../../../../../utils/editor/sqlReverseParser';
+import { generateMigrationScript } from '../../../../../utils/editor/sqlMigrationGenerator';
+import { generateJpaEntity, generateDbml, generateJpaRepository, generateJpaService, generateJpaController } from '../../../../../utils/editor/sqlExportUtils';
+import { copyToClipboard } from '../../../../../utils/clipboard';
 
-function DdlGridPanel() {
+function DdlGridPanel({ initialValue, onInsert }) {
   const [tableName, setTableName] = useState('new_table');
   const [showImportArea, setShowImportArea] = useState(false);
   const [importSqlText, setImportSqlText] = useState('');
@@ -33,7 +31,22 @@ function DdlGridPanel() {
   const [originalTableName, setOriginalTableName] = useState('new_table');
   const [originalColumns, setOriginalColumns] = useState(JSON.parse(JSON.stringify(initialColumns)));
 
-  console.log("[DdlGridPanel v1.0] DDL 그리드 패널 렌더링", { tableName, columnCount: columns.length });
+  // 에디터에서 드래그하여 넘긴 텍스트(initialValue)가 있으면 컴포넌트 마운트 시 즉시 파싱하여 그리드에 채웁니다.
+  useEffect(() => {
+    if (initialValue && initialValue.toUpperCase().includes('CREATE TABLE')) {
+      console.log("[DdlGridPanel v1.1] 에디터 선택 텍스트 기반 초기 자동 파싱(Reverse Engineering) 실행");
+      const parsedData = parseCreateTableSql(initialValue);
+      
+      setTableName(parsedData.tableName);
+      setOriginalTableName(parsedData.tableName);
+      
+      const newCols = parsedData.columns.length > 0 ? parsedData.columns : columns;
+      setColumns(newCols);
+      setOriginalColumns(JSON.parse(JSON.stringify(newCols)));
+    }
+  }, [initialValue]);
+
+  console.log("[DdlGridPanel v1.1] DDL 그리드 패널 렌더링", { tableName, columnCount: columns.length });
 
   // CamelCase를 Snake_case로 변환 (예: myColumnName -> my_column_name)
   const toSnakeCase = (str) => {
@@ -48,7 +61,7 @@ function DdlGridPanel() {
   // Naming Convention 토글 및 기존 컬럼명 일괄 변경 핸들러
   const toggleNamingConvention = () => {
     const newConvention = namingConvention === 'snake' ? 'camel' : 'snake';
-    console.log(`[DdlGridPanel v1.0] 네이밍 규칙 전환: ${namingConvention} -> ${newConvention}`);
+    console.log(`[DdlGridPanel v1.1] 네이밍 규칙 전환: ${namingConvention} -> ${newConvention}`);
     setNamingConvention(newConvention);
 
     setColumns(prevColumns => prevColumns.map(col => {
@@ -62,7 +75,7 @@ function DdlGridPanel() {
 
   // 새로운 빈 행(Row) 추가 핸들러
   const handleAddColumn = () => {
-    console.log("[DdlGridPanel v1.0] 신규 컬럼 행 추가");
+    console.log("[DdlGridPanel v1.1] 신규 컬럼 행 추가");
     setColumns([
       ...columns,
       { id: Date.now().toString(), name: '', type: 'VARCHAR', length: '255', pk: false, nn: false, uq: false, ai: false, comment: '' }
@@ -74,7 +87,6 @@ function DdlGridPanel() {
     const updatedColumns = [...columns];
     let finalValue = value;
 
-    // 컬럼명 변경 시 현재 설정된 네이밍 규칙(Naming Convention)을 강제로 적용하여 자동 변환
     if (field === 'name') {
       finalValue = namingConvention === 'snake' ? toSnakeCase(value) : toCamelCase(value);
     }
@@ -85,7 +97,7 @@ function DdlGridPanel() {
 
   // 행(Row) 삭제 핸들러
   const handleDeleteColumn = (index) => {
-    console.log(`[DdlGridPanel v1.0] 인덱스 ${index} 컬럼 삭제 완료`);
+    console.log(`[DdlGridPanel v1.1] 인덱스 ${index} 컬럼 삭제 완료`);
     const updatedColumns = [...columns];
     updatedColumns.splice(index, 1);
     setColumns(updatedColumns);
@@ -106,20 +118,19 @@ function DdlGridPanel() {
     if (!importSqlText.trim()) return;
     const parsedData = parseCreateTableSql(importSqlText);
     setTableName(parsedData.tableName);
-    setOriginalTableName(parsedData.tableName); // 마이그레이션 기준점 갱신
+    setOriginalTableName(parsedData.tableName);
     
-    // 빈 컬럼 방지: 파싱된 컬럼이 없으면 기본값 유지
     const newCols = parsedData.columns.length > 0 ? parsedData.columns : columns;
     setColumns(newCols);
-    setOriginalColumns(JSON.parse(JSON.stringify(newCols))); // 깊은 복사로 스냅샷 갱신
+    setOriginalColumns(JSON.parse(JSON.stringify(newCols)));
     
     setShowImportArea(false);
     setImportSqlText('');
   };
 
-  // 확장 코드(Export) 복사 핸들러 - 마이그레이션 분기 처리 추가
+  // 확장 코드(Export) 복사 핸들러
   const handleExport = async (type) => {
-    console.log(`[DdlGridPanel v1.2] ${type} 코드 클립보드 내보내기 실행`);
+    console.log(`[DdlGridPanel v1.1] ${type} 코드 클립보드 내보내기 실행`);
     let text = '';
     switch (type) {
       case 'Migration': text = generateMigrationScript(originalTableName, tableName, originalColumns, columns); break;
@@ -136,10 +147,9 @@ function DdlGridPanel() {
   };
 
   return (
-    // 전체 컨테이너에 min-width: 0 적용하여 flex 자식 요소의 오버플로우 방지
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', minWidth: 0 }}>
       
-      {/* 상단 툴바 및 컨트롤 바 (flex-wrap 적용하여 버튼 줄바꿈 허용) */}
+      {/* 상단 툴바 및 컨트롤 바 */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <Table2 size={20} style={{ color: '#57606a' }} />
@@ -167,7 +177,6 @@ function DdlGridPanel() {
           
           <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 2px' }} />
 
-          {/* 백엔드 코드 제너레이터 버튼 그룹 */}
           <button 
             onClick={() => handleExport('JPA Entity')}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#2da44e' }}
@@ -245,10 +254,7 @@ function DdlGridPanel() {
       )}
 
       {/* 스프레드시트 그리드 영역 */}
-      {/* 전체 그리드를 감싸는 단일 overflow-x 컨테이너를 배치하여 헤더와 바디의 가로 스크롤을 동기화합니다. */}
       <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-        
-        {/* 그리드 헤더 (고정 픽셀 규격을 Row 컴포넌트와 동일하게 맞춤) */}
         <div style={{ display: 'grid', gridTemplateColumns: '40px 200px 150px 100px 60px 60px 60px 60px minmax(150px, 1fr) 50px', minWidth: '950px', backgroundColor: '#f3f4f6', borderBottom: '1px solid #d0d7de', fontSize: '12px', fontWeight: 'bold', color: '#57606a', position: 'sticky', top: 0, zIndex: 10 }}>
           <div style={{ padding: '8px', textAlign: 'center', borderRight: '1px solid #d0d7de' }}>No</div>
           <div style={{ padding: '8px', borderRight: '1px solid #d0d7de' }}>컬럼명 (Column)</div>
@@ -262,7 +268,6 @@ function DdlGridPanel() {
           <div style={{ padding: '8px', textAlign: 'center' }}>삭제</div>
         </div>
 
-        {/* 그리드 바디 (리스트) */}
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: '950px' }}>
           {columns.map((col, index) => (
             <DdlGridRow 
@@ -274,7 +279,6 @@ function DdlGridPanel() {
             />
           ))}
           
-          {/* 행 추가 버튼 영역 */}
           <div style={{ padding: '12px', borderBottom: '1px solid #e1e4e8', backgroundColor: '#fcfcfc', display: 'flex', justifyContent: 'center' }}>
             <button 
               onClick={handleAddColumn}
@@ -287,14 +291,19 @@ function DdlGridPanel() {
       </div>
 
       {/* 하단 실시간 SQL 컴파일 뷰어 패널 */}
-      {/* minWidth: 0 속성으로 하단 코드 뷰어의 텍스트 오버플로우를 제어합니다. */}
       <div style={{ height: '220px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, flexShrink: 0 }}>
         <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>실시간 SQL 컴파일 뷰어 (Live Preview)</span>
+          <button 
+            onClick={() => onInsert && onInsert(`\n\`\`\`sql\n${compiledSql}\n\`\`\`\n`)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', backgroundColor: '#2da44e', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+            title="현재 컴파일된 SQL을 에디터 작업뷰에 삽입합니다."
+          >
+            <Check size={14} /> 에디터에 삽입
+          </button>
         </div>
         <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-            {/* 전역 CSS의 flex 속성으로 인해 공백(Space) 노드가 삭제되는 현상을 막기 위해 display: 'block'으로 덮어씌웁니다. */}
             <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ display: 'block', whiteSpace: 'pre-wrap' }} />
           </pre>
         </div>

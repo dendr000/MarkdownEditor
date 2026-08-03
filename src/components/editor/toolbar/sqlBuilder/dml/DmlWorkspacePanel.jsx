@@ -7,7 +7,7 @@
  */
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import ReactFlow, { addEdge, applyNodeChanges, applyEdgeChanges, Background, Controls, ReactFlowProvider } from 'reactflow';
-import { Lightbulb } from 'lucide-react'; // 스마트 추천 아이콘 임포트
+import { Lightbulb, Check } from 'lucide-react'; // 삽입 버튼용 아이콘 추가 임포트
 import 'reactflow/dist/style.css'; // React Flow 필수 코어 스타일
 import DmlSidebar from './DmlSidebar';
 import DmlTableNode from './DmlTableNode';
@@ -21,7 +21,7 @@ const nodeTypes = {
   tableNode: DmlTableNode
 };
 
-function DmlWorkspaceContent() {
+function DmlWorkspaceContent({ onInsert }) {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -140,6 +140,12 @@ function DmlWorkspaceContent() {
         <div style={{ flex: 2, backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>DML 쿼리 컴파일 뷰어 (Live Preview)</span>
+            <button 
+              onClick={() => onInsert && onInsert(`\n\`\`\`sql\n${compiledSql}\n\`\`\`\n`)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', backgroundColor: '#2da44e', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+            >
+              <Check size={14} /> 에디터에 삽입
+            </button>
           </div>
           <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
             <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
@@ -178,10 +184,10 @@ function DmlWorkspaceContent() {
 }
 
 // React Flow Context 공급자를 최상단 래퍼로 적용
-function DmlWorkspacePanel() {
+function DmlWorkspacePanel({ onInsert }) {
   return (
     <ReactFlowProvider>
-      <DmlWorkspaceContent />
+      <DmlWorkspaceContent onInsert={onInsert} />
     </ReactFlowProvider>
   );
 }
