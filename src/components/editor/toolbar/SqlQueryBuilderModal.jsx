@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, TableProperties, Network, ShieldCheck } from 'lucide-react';
 import DdlGridPanel from './sqlBuilder/ddl/DdlGridPanel'; 
-import DmlWorkspacePanel from './sqlBuilder/dml/DmlWorkspacePanel'; 
+import DmlGridPanel from './sqlBuilder/dml/DmlGridPanel'; 
 import DclMatrixPanel from './sqlBuilder/dcl/DclMatrixPanel'; 
 
 function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt }) {
@@ -120,7 +120,7 @@ function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt
             )}
 
             {currentMode === 'DML' && (
-              <DmlWorkspacePanel 
+              <DmlGridPanel 
                 onInsert={(rawSql) => { 
                   if (!onInsert) return;
                   const isMarkdown = !fileExt || ['md', 'txt', 'mdx'].includes(fileExt.toLowerCase());
@@ -128,6 +128,7 @@ function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt
                   onInsert(finalCode); 
                   onClose(); 
                 }} 
+                fileExt={fileExt}
               />
             )}
 
