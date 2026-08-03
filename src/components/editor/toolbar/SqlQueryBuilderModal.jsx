@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { X, TableProperties, Network, ShieldCheck } from 'lucide-react';
+import DdlGridPanel from './sqlBuilder/DdlGridPanel'; // 분리된 DDL 메인 패널 임포트
 
 function SqlQueryBuilderModal({ isOpen, onClose }) {
   // 현재 활성화된 쿼리 빌더 모드 상태 (DDL, DML, DCL)
@@ -173,15 +174,9 @@ function SqlQueryBuilderModal({ isOpen, onClose }) {
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* DDL 모드 패널 (추후 구현될 스프레드시트 컨테이너) */}
+            {/* DDL 모드 패널 (스프레드시트 컨테이너 마운트 완료) */}
             {currentMode === 'DDL' && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #d0d7de', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                <div style={{ textAlign: 'center', color: '#57606a' }}>
-                  <TableProperties size={48} style={{ color: '#d0d7de', marginBottom: '16px' }} />
-                  <h3>테이블 및 컬럼 제어용 스프레드시트 컴포넌트 렌더링 예정</h3>
-                  <p style={{ fontSize: '13px' }}>CREATE TABLE 및 제약 조건을 편집할 수 있는 그리드 UI가 이곳에 위치합니다.</p>
-                </div>
-              </div>
+              <DdlGridPanel />
             )}
 
             {/* DML 모드 패널 (추후 구현될 다이어그램 워크스페이스 컨테이너) */}
