@@ -18,6 +18,11 @@ function DiffViewer({ currentMarkdown, currentFile }) {
 
   // 워크스페이스 내의 모든 파일 목록을 재귀적으로 추출합니다.
   const extractFiles = (node, path = '') => {
+    // 의존성 폴더(node_modules) 및 빌드 결과물 등 비교에 불필요한 폴더는 추출에서 제외합니다.
+    if (node.name === 'node_modules' || node.name === 'dist' || node.name === 'build') {
+      return [];
+    }
+
     let files = [];
     if (node.isFolder) {
       node.children.forEach(child => {
