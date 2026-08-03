@@ -4,9 +4,8 @@
  * (v3.0 수정사항): 임의로 추가된 다크 테마 및 줄 번호 기능을 완전히 제거하고 기본 테마(oneLight)로 복구했습니다.
  */
 import React, { useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { copyToClipboard } from '../../utils/clipboard';
+import { highlightCode } from '../../utils/editor/syntaxHighlighter';
 import MermaidBlock from './MermaidBlock';
 import GeoJsonBlock from './GeoJsonBlock';
 import StlBlock from './StlBlock';
@@ -70,15 +69,12 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
             </code>
           </pre>
         ) : (
-          <SyntaxHighlighter
-            style={oneLight}
-            language={lang}
-            PreTag="div"
-            customStyle={{ backgroundColor: 'transparent', margin: 0, padding: '16px', borderRadius: '6px' }}
-            {...props}
-          >
-            {String(children).replace(/\n$/, '')}
-          </SyntaxHighlighter>
+          <pre className={`language-${lang}`} style={{ backgroundColor: 'transparent', margin: 0, padding: '16px', borderRadius: '6px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace', fontSize: '14px', lineHeight: '1.45' }}>
+            <code 
+              className={`language-${lang}`}
+              dangerouslySetInnerHTML={{ __html: highlightCode(String(children).replace(/\n$/, ''), lang) }}
+            />
+          </pre>
         )}
       </div>
     );
