@@ -36,10 +36,14 @@
 .preview-content.markdown-body p,
 .preview-content.markdown-body li,
 .preview-content.markdown-body a,
-.preview-content.markdown-body span,
 .preview-content.markdown-body blockquote,
 .preview-content.markdown-body table {
   color: var(--text-main, #24292f) !important;
+}
+
+/* 코드 블록 내부의 구문 강조 색상을 보호하기 위한 예외 처리 */
+.preview-content.markdown-body code span {
+  color: inherit;
 }
 
 .preview-content.markdown-body *::selection {
