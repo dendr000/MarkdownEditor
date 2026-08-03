@@ -111,7 +111,10 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           {/* DB 툴링 버튼 마운트 (더미 데이터 생성기 및 쿼리 빌더) */}
           <DatabaseGroup 
             onOpenMockModal={() => actions.setIsMockModalOpen(true)} 
-            onOpenQueryBuilderModal={() => setIsQueryBuilderModalOpen(true)}
+            onOpenQueryBuilderModal={() => {
+              actions.prepareModalState('SQL'); // [변경] 모달 오픈 시 선택 텍스트 상태 스냅샷 캡처
+              setIsQueryBuilderModalOpen(true);
+            }}
           />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
@@ -185,7 +188,13 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       <GlobalSearchModal isOpen={isGlobalSearchOpen} onClose={() => setIsGlobalSearchOpen(false)} />
       
       {/* [신규] 시각적 SQL 쿼리 빌더 대형 모달 마운트 */}
-      <SqlQueryBuilderModal isOpen={isQueryBuilderModalOpen} onClose={() => setIsQueryBuilderModalOpen(false)} />
+      {/* [수정] 데이터 삽입(onInsert) 및 선택 텍스트(initialValue) 프롭스 연결 */}
+      <SqlQueryBuilderModal 
+        isOpen={isQueryBuilderModalOpen} 
+        onClose={() => setIsQueryBuilderModalOpen(false)} 
+        initialValue={state.selectedTableText} // 드래그된 텍스트 전달
+        onInsert={actions.handleInsertTable}   // 텍스트 삽입 함수 전달
+      />
       
       {/* 더미 데이터 생성기 모달 마운트 */}
       <MockDataModal isOpen={state.isMockModalOpen} onClose={() => actions.setIsMockModalOpen(false)} markdown={markdown} onInsert={actions.handleInsertTable} />
