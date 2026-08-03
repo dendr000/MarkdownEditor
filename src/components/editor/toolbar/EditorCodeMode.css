@@ -1,0 +1,151 @@
+/* src/components/editor/EditorCodeMode.css v1.0 */
+/*
+ * 파일 위치: src/components/editor/EditorCodeMode.css
+ * 파일 설명: 에디터의 코드 모드(구문 강조 오버레이, 줄 번호, 색상 픽커, SQL 린트) 전용 스타일 분리본입니다.
+ * (v1.0 중요 수정사항): 텍스트 영역과 색상 오버레이 간의 스크롤 및 드래그 픽셀 어긋남(잔상 버그)을 완벽히 방지하기 위해 
+ * line-height를 소수점 배율이 아닌 22px 고정값으로 강제 동기화했습니다.
+ * 연결 위치: src/components/editor/Editor.jsx 및 CodeOverlay.jsx 내부 요소들과 연결됩니다.
+ */
+
+/* 에디터와 오버레이의 픽셀 오차를 완벽하게 제거하기 위한 절대 동기화 코어 규격 */
+.editor-textarea.code-mode,
+.code-overlay-container,
+.line-numbers-container {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  font-size: 14px !important;
+  line-height: 22px !important; /* 소수점 배율 렌더링 오차 방지를 위해 고정 픽셀 강제 적용 */
+  letter-spacing: 0px !important;
+  word-spacing: 0px !important;
+  tab-size: 4 !important;
+  box-sizing: border-box !important;
+}
+
+textarea.editor-textarea.code-mode {
+  position: relative;
+  z-index: 3;
+  margin-left: 48px !important;
+  width: calc(100% - 48px) !important;
+  background-color: transparent !important;
+  color: transparent !important; /* 텍스트를 투명하게 만들어 뒤의 오버레이 렌더링이 투과되어 보이도록 설정 */
+  caret-color: var(--text-main, #24292f) !important;
+  padding: 24px !important;
+  white-space: pre !important; 
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  overflow-x: auto !important; 
+  overflow-y: auto !important;
+  border: none !important;
+  outline: none !important;
+}
+
+textarea.editor-textarea.code-mode::selection {
+  background-color: rgba(9, 105, 218, 0.3);
+  color: transparent;
+}
+
+.line-numbers-container {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 48px;
+  padding: 24px 8px 24px 0 !important;
+  text-align: right;
+  color: var(--text-muted, #8c959f);
+  background-color: var(--explorer-bg, #f6f8fa);
+  border-right: 1px solid var(--border-color, #d0d7de);
+  overflow: hidden;
+  user-select: none;
+  z-index: 2;
+  white-space: pre !important;
+}
+
+.code-overlay-container {
+  position: absolute;
+  top: 0; left: 48px; right: 0; bottom: 0;
+  padding: 24px !important;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  color: var(--text-main, #24292f);
+}
+
+/* 브라우저의 기본 code 태그 스타일을 초기화하고 상단 규격에 동기화 */
+.code-overlay-container code {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  display: block;
+  min-width: max-content;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* =========================================
+   CSS 색상 픽커 오버레이 및 스와치(Swatch) 명세
+   ========================================= */
+.color-picker-overlay-container {
+  position: absolute;
+  top: 0; left: 48px; right: 0; bottom: 0;
+  padding: 24px;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 14px;
+  line-height: 22px; /* 텍스트 에어리어와 위치를 동기화하기 위해 22px 지정 */
+  white-space: pre; 
+  overflow: hidden;
+  pointer-events: none; 
+  z-index: 4;
+  color: transparent; 
+  box-sizing: border-box;
+}
+
+.color-picker-swatch {
+  position: absolute;
+  left: -18px; 
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+  pointer-events: auto; 
+  overflow: hidden;
+}
+
+.color-picker-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker-swatch::-webkit-color-swatch {
+  border: none;
+}
+
+/* =========================================
+   SQL 문법 오류(Linting) 오버레이 명세
+   ========================================= */
+.sql-lint-error-dot {
+  position: absolute;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: #cf222e;
+  border-radius: 50%;
+  transform: translateY(0.4em);
+  pointer-events: auto;
+  cursor: help;
+  box-shadow: 0 0 4px rgba(207, 34, 46, 0.5);
+}
+
+.sql-lint-error-line {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  height: 22px; /* 하이라이팅 밑줄도 동기화 픽셀로 변경 */
+  pointer-events: none;
+  background-color: rgba(207, 34, 46, 0.05);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='M0 3 Q 1.5 0 3 3 T 6 3' fill='none' stroke='%23cf222e' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: bottom;
+  z-index: 0;
+}

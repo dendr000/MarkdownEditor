@@ -37,7 +37,7 @@ function CodeOverlay({ markdown, language, overlayRef, lineNumRef }) {
           <div
             key={`lint-dot-${idx}`}
             className="sql-lint-error-dot"
-            style={{ top: `calc(24px + ${err.lineIndex} * 1.6em)` }}
+            style={{ top: `calc(24px + ${err.lineIndex} * 22px)` }}
             title={err.message}
           />
         ))}
@@ -48,7 +48,7 @@ function CodeOverlay({ markdown, language, overlayRef, lineNumRef }) {
           <div
             key={`lint-line-${idx}`}
             className="sql-lint-error-line"
-            style={{ top: `calc(24px + ${err.lineIndex} * 1.6em)` }}
+            style={{ top: `calc(24px + ${err.lineIndex} * 22px)` }}
           />
         ))}
         <code dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
