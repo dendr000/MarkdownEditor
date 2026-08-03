@@ -44,7 +44,8 @@ function DdlGridRow({ index, column, onChange, onDelete }) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '40px 200px 150px 100px 60px 60px 60px 60px 1fr 50px', backgroundColor: '#ffffff' }}>
+    // 최소 너비를 지정하여 좁은 화면에서도 셀이 찌그러지지 않고 스크롤을 유도합니다.
+    <div style={{ display: 'grid', gridTemplateColumns: '40px 200px 150px 100px 60px 60px 60px 60px minmax(150px, 1fr) 50px', minWidth: '950px', backgroundColor: '#ffffff' }}>
       {/* 인덱스 번호 */}
       <div style={{ ...cellStyle, justifyContent: 'center', backgroundColor: '#f6f8fa', color: '#57606a', fontWeight: 'bold' }}>
         {index + 1}

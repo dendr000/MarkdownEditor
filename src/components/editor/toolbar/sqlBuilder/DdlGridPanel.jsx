@@ -114,13 +114,14 @@ function DdlGridPanel() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
+    // 전체 컨테이너에 min-width: 0 적용하여 flex 자식 요소의 오버플로우 방지
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', minWidth: 0 }}>
       
-      {/* 상단 툴바 및 컨트롤 바 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* 상단 툴바 및 컨트롤 바 (flex-wrap 적용하여 버튼 줄바꿈 허용) */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <Table2 size={20} style={{ color: '#57606a' }} />
-          <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f' }}>테이블 이름:</label>
+          <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f', whiteSpace: 'nowrap' }}>테이블 이름:</label>
           <input 
             type="text" 
             value={tableName}
@@ -129,11 +130,11 @@ function DdlGridPanel() {
               setTableName(namingConvention === 'snake' ? toSnakeCase(val) : toCamelCase(val));
             }}
             placeholder="table_name"
-            style={{ padding: '8px 12px', border: '1px solid #d0d7de', borderRadius: '6px', fontSize: '14px', outline: 'none', width: '250px' }}
+            style={{ padding: '8px 12px', border: '1px solid #d0d7de', borderRadius: '6px', fontSize: '14px', outline: 'none', width: '200px' }}
           />
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
           <button 
             onClick={() => setShowImportArea(!showImportArea)}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#24292f' }}
@@ -189,10 +190,11 @@ function DdlGridPanel() {
       )}
 
       {/* 스프레드시트 그리드 영역 */}
-      <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      {/* 전체 그리드를 감싸는 단일 overflow-x 컨테이너를 배치하여 헤더와 바디의 가로 스크롤을 동기화합니다. */}
+      <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
         
-        {/* 그리드 헤더 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '40px 200px 150px 100px 60px 60px 60px 60px 1fr 50px', backgroundColor: '#f3f4f6', borderBottom: '1px solid #d0d7de', fontSize: '12px', fontWeight: 'bold', color: '#57606a' }}>
+        {/* 그리드 헤더 (고정 픽셀 규격을 Row 컴포넌트와 동일하게 맞춤) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '40px 200px 150px 100px 60px 60px 60px 60px minmax(150px, 1fr) 50px', minWidth: '950px', backgroundColor: '#f3f4f6', borderBottom: '1px solid #d0d7de', fontSize: '12px', fontWeight: 'bold', color: '#57606a', position: 'sticky', top: 0, zIndex: 10 }}>
           <div style={{ padding: '8px', textAlign: 'center', borderRight: '1px solid #d0d7de' }}>No</div>
           <div style={{ padding: '8px', borderRight: '1px solid #d0d7de' }}>컬럼명 (Column)</div>
           <div style={{ padding: '8px', borderRight: '1px solid #d0d7de' }}>타입 (Type)</div>
@@ -206,7 +208,7 @@ function DdlGridPanel() {
         </div>
 
         {/* 그리드 바디 (리스트) */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '950px' }}>
           {columns.map((col, index) => (
             <DdlGridRow 
               key={col.id} 
@@ -230,13 +232,14 @@ function DdlGridPanel() {
       </div>
 
       {/* 하단 실시간 SQL 컴파일 뷰어 패널 */}
-      <div style={{ height: '220px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* minWidth: 0 속성으로 하단 코드 뷰어의 텍스트 오버플로우를 제어합니다. */}
+      <div style={{ height: '220px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, flexShrink: 0 }}>
         <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>실시간 SQL 컴파일 뷰어 (Live Preview)</span>
         </div>
-        <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6' }}>
-            <code dangerouslySetInnerHTML={{ __html: highlightedSql }} />
+            <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ whiteSpace: 'pre' }} />
           </pre>
         </div>
       </div>

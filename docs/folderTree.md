@@ -1,8 +1,4 @@
-<!-- 
-  위치: docs/folderTree.md
-  기능 요약: Markdown Editor 프로젝트의 전체 디렉토리 및 파일 구조, 각 파일의 핵심 역할을 정리한 명세서입니다. 
--->
-
+<!-- docs/folderTree.md -->
 # 프로젝트 폴더 구조 (Markdown Editor)
 
 ```text
@@ -30,17 +26,28 @@ MARKDOWNEDITOR
 │   │   │   └── DiagramModal.jsx # Mermaid 다이어그램 모달
 │   │   ├── editor
 │   │   │   ├── toolbar/        # 툴바 아이콘 및 그룹 컴포넌트
+│   │   │   │   ├── sqlBuilder/ # 시각적 SQL 쿼리 빌더 전용 컴포넌트 모음
+│   │   │   │   │   ├── DclMatrixPanel.jsx   # DCL 권한 제어 매트릭스 패널
+│   │   │   │   │   ├── DdlGridPanel.jsx     # DDL 스키마 제어 스프레드시트 패널
+│   │   │   │   │   ├── DdlGridRow.jsx       # DDL 그리드 개별 행 컴포넌트
+│   │   │   │   │   ├── DmlFilterPanel.jsx   # DML 쿼리 필터 및 정렬 제어 패널
+│   │   │   │   │   ├── DmlSidebar.jsx       # DML 드래그 앤 드롭 테이블 사이드바
+│   │   │   │   │   ├── DmlTableNode.jsx     # DML React Flow 커스텀 테이블 노드
+│   │   │   │   │   └── DmlWorkspacePanel.jsx# DML 시각적 조인 워크스페이스 패널
 │   │   │   │   ├── CommitGuideModal.jsx
 │   │   │   │   ├── DetailsModal.jsx
 │   │   │   │   ├── FindReplaceModal.jsx # 찾기 및 바꾸기 모달
 │   │   │   │   ├── GlobalSearchModal.jsx # 전역 검색 및 일괄 치환 모달
 │   │   │   │   ├── MathModal.jsx
+│   │   │   │   ├── SqlQueryBuilderModal.jsx # 시각적 SQL 쿼리 빌더 대형 모달
 │   │   │   │   ├── TemplateModal.jsx
 │   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
 │   │   │   ├── AutocompletePopup.jsx # 가상 자동완성 팝업 UI
 │   │   │   ├── CodeOverlay.jsx # 구문 강조(Syntax Highlighting) 및 줄 번호 오버레이
 │   │   │   ├── ColorPickerOverlay.jsx # CSS Hex 색상 픽커 오버레이
 │   │   │   ├── Editor.css
+│   │   │   ├── EditorCodeMode.css # 코드 모드 전용 스타일 분리본
+│   │   │   ├── EditorToolbar.css # 툴바 및 팝업 전용 스타일 분리본
 │   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부 - 단일 구조)
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
 │   │   ├── explorer
@@ -97,8 +104,13 @@ MARKDOWNEDITOR
 │   │   │   ├── codeDictionary.js # 언어별 스니펫, 주석 기호 등 통합 데이터 사전
 │   │   │   ├── codeFormatter.js # 각 언어별 들여쓰기 및 정렬 연산 유틸
 │   │   │   ├── diffUtils.js    # LCS 알고리즘 기반 텍스트 비교 연산 유틸
+│   │   │   ├── sqlDclGenerator.js # DCL 권한 매트릭스 SQL 컴파일러
 │   │   │   ├── sqlDictGenerator.js # SQL 기반 테이블 명세서 마크다운 생성 유틸
+│   │   │   ├── sqlDmlGenerator.js # DML 시각적 조인 워크스페이스 SQL 컴파일러
+│   │   │   ├── sqlExportUtils.js # 조립된 쿼리를 JPA Entity, DBML로 내보내는 확장 모듈
+│   │   │   ├── sqlGenerator.js # DDL 스프레드시트 그리드 SQL 컴파일러
 │   │   │   ├── sqlLinter.js    # 정규식 기반 SQL 문법 오류 감지 유틸
+│   │   │   ├── sqlReverseParser.js # CREATE TABLE 텍스트를 파싱하는 역설계 모듈
 │   │   │   └── syntaxHighlighter.js # 정규식 기반 구문 강조 파서
 │   │   ├── clipboard.js
 │   │   ├── colorPresets.js
@@ -115,6 +127,7 @@ MARKDOWNEDITOR
 │   ├── main.jsx
 │   ├── server.js               # 백엔드 서버 진입점(Entry Point)
 │   └── workspace-config.json   # 워크스페이스 히스토리 DB 저장소
+├── .env
 ├── .gitignore
 ├── index.html
 ├── package-lock.json
