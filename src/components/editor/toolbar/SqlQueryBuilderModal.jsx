@@ -7,7 +7,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, TableProperties, Network, ShieldCheck } from 'lucide-react';
 import DdlGridPanel from './sqlBuilder/DdlGridPanel'; 
-import DmlWorkspacePanel from './sqlBuilder/DmlWorkspacePanel'; // 분리된 DML 메인 패널 임포트
+import DmlWorkspacePanel from './sqlBuilder/DmlWorkspacePanel'; 
+import DclMatrixPanel from './sqlBuilder/DclMatrixPanel'; // 분리된 DCL 메인 패널 임포트
 
 function SqlQueryBuilderModal({ isOpen, onClose }) {
   // 현재 활성화된 쿼리 빌더 모드 상태 (DDL, DML, DCL)
@@ -185,15 +186,9 @@ function SqlQueryBuilderModal({ isOpen, onClose }) {
               <DmlWorkspacePanel />
             )}
 
-            {/* DCL 모드 패널 (추후 구현될 권한 매트릭스 컨테이너) */}
+            {/* DCL 모드 패널 (권한 제어용 GRANT/REVOKE 매트릭스 마운트 완료) */}
             {currentMode === 'DCL' && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #d0d7de', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                <div style={{ textAlign: 'center', color: '#57606a' }}>
-                  <ShieldCheck size={48} style={{ color: '#d0d7de', marginBottom: '16px' }} />
-                  <h3>GRANT / REVOKE 매트릭스 UI 컴포넌트 렌더링 예정</h3>
-                  <p style={{ fontSize: '13px' }}>사용자 계정별 데이터베이스 및 테이블 접근 권한을 제어하는 표가 이곳에 위치합니다.</p>
-                </div>
-              </div>
+              <DclMatrixPanel />
             )}
           </div>
 
