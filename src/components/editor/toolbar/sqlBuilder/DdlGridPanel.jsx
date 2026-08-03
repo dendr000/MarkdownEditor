@@ -6,13 +6,18 @@
  * 연결 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx 내부에서 마운트됨
  */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, ArrowRightLeft, Table2 } from 'lucide-react';
+import { Plus, ArrowRightLeft, Table2, Import, Code2, Database } from 'lucide-react';
 import DdlGridRow from './DdlGridRow';
 import { generateCreateTableSql } from '../../../../utils/editor/sqlGenerator';
 import { highlightCode } from '../../../../utils/editor/syntaxHighlighter';
+import { parseCreateTableSql } from '../../../../utils/editor/sqlReverseParser';
+import { generateJpaEntity, generateDbml } from '../../../../utils/editor/sqlExportUtils';
+import { copyToClipboard } from '../../../../utils/clipboard';
 
 function DdlGridPanel() {
   const [tableName, setTableName] = useState('new_table');
+  const [showImportArea, setShowImportArea] = useState(false);
+  const [importSqlText, setImportSqlText] = useState('');
   const [namingConvention, setNamingConvention] = useState('snake'); // 'snake' or 'camel'
   
   // 그리드 초기 상태 설정 (기본적으로 ID 컬럼 하나를 세팅해 둡니다)
@@ -88,11 +93,31 @@ function DdlGridPanel() {
     return highlightCode(compiledSql, 'sql');
   }, [compiledSql]);
 
+  // 역설계(Import SQL) 적용 핸들러
+  const handleApplyImport = () => {
+    if (!importSqlText.trim()) return;
+    const parsedData = parseCreateTableSql(importSqlText);
+    setTableName(parsedData.tableName);
+    // 빈 컬럼 방지: 파싱된 컬럼이 없으면 기본값 1개 유지
+    setColumns(parsedData.columns.length > 0 ? parsedData.columns : columns);
+    setShowImportArea(false);
+    setImportSqlText('');
+  };
+
+  // 확장 코드(Export) 복사 핸들러
+  const handleExport = async (type) => {
+    const text = type === 'JPA' 
+      ? generateJpaEntity(tableName, columns) 
+      : generateDbml(tableName, columns);
+    const success = await copyToClipboard(text);
+    if (success) alert(`${type} 코드가 클립보드에 복사되었습니다.`);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>
       
-      {/* 상단 컨트롤 바 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
+      {/* 상단 툴바 및 컨트롤 바 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Table2 size={20} style={{ color: '#57606a' }} />
           <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#24292f' }}>테이블 이름:</label>
@@ -108,15 +133,60 @@ function DdlGridPanel() {
           />
         </div>
         
-        <button 
-          onClick={toggleNamingConvention}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#24292f' }}
-          title="컬럼명 일괄 자동 변환 적용"
-        >
-          <ArrowRightLeft size={16} style={{ color: '#0969da' }} />
-          {namingConvention === 'snake' ? 'Snake_case 적용 중' : 'CamelCase 적용 중'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button 
+            onClick={() => setShowImportArea(!showImportArea)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#24292f' }}
+            title="기존 SQL 구문으로 그리드 복원하기"
+          >
+            <Import size={14} /> SQL 파싱
+          </button>
+          
+          <button 
+            onClick={() => handleExport('JPA')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#2da44e' }}
+            title="Java JPA Entity 코드로 복사"
+          >
+            <Code2 size={14} /> JPA 복사
+          </button>
+          
+          <button 
+            onClick={() => handleExport('DBML')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#8250df' }}
+            title="DBML 다이어그램 명세로 복사"
+          >
+            <Database size={14} /> DBML 복사
+          </button>
+
+          <div style={{ width: '1px', height: '20px', backgroundColor: '#d0d7de', margin: '0 4px' }} />
+
+          <button 
+            onClick={toggleNamingConvention}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', backgroundColor: '#f6f8fa', border: '1px solid #d0d7de', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#0969da' }}
+            title="컬럼명 일괄 자동 변환 적용"
+          >
+            <ArrowRightLeft size={14} />
+            {namingConvention === 'snake' ? 'Snake 적용 중' : 'Camel 적용 중'}
+          </button>
+        </div>
       </div>
+
+      {/* SQL Import(리버스 엔지니어링) 확장 입력부 */}
+      {showImportArea && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', backgroundColor: '#f6f8fa', borderRadius: '8px', border: '1px solid #d0d7de' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#57606a' }}>기존 CREATE TABLE 구문을 붙여넣으면 그리드 상태가 자동으로 채워집니다.</div>
+          <textarea 
+            value={importSqlText} 
+            onChange={(e) => setImportSqlText(e.target.value)}
+            placeholder="CREATE TABLE ..."
+            style={{ width: '100%', height: '80px', padding: '8px', borderRadius: '4px', border: '1px solid #d0d7de', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: '12px', resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button onClick={() => setShowImportArea(false)} style={{ padding: '6px 12px', backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>취소</button>
+            <button onClick={handleApplyImport} style={{ padding: '6px 12px', backgroundColor: '#0969da', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>파싱 적용하기</button>
+          </div>
+        </div>
+      )}
 
       {/* 스프레드시트 그리드 영역 */}
       <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
