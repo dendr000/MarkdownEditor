@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/ToolbarGroups.jsx v1.1
+// src/components/editor/toolbar/ToolbarGroups.jsx v1.2
 /*
  * 파일 설명: 툴바의 버튼 그룹들을 정의한 컴포넌트 묶음입니다.
- * (v1.1) FormatGroup에 수식(LaTeX)을 삽입할 수 있는 버튼(Sigma)이 추가되었습니다.
+ * (v1.2 수정사항): DatabaseGroup에 시각적 SQL 쿼리 빌더를 호출할 수 있는 TableProperties 아이콘 버튼을 추가했습니다.
  */
 import { useRef, useEffect } from 'react';
 import { 
@@ -9,7 +9,7 @@ import {
   CheckSquare, Code, Table, FileCode2, Quote, List, ListOrdered, 
   Link, Image as ImageIcon, MessageSquareWarning, FileDiff, Baseline, ListCollapse,
   Terminal, Minus, Keyboard, Underline, Superscript, Subscript, MessageSquareDashed, Bookmark, Slash,
-  Sigma, Database // 수식 버튼 및 DB 버튼 아이콘 추가
+  Sigma, Database, TableProperties // 수식 버튼 및 DB 관련 아이콘 추가
 } from 'lucide-react';
 import PortalDropdown from './PortalDropdown';
 
@@ -143,8 +143,9 @@ export const GithubGroup = ({ handleFormat, openDropdown, setOpenDropdown, onOpe
 };
 
 // [신규] 데이터베이스 특화 도구 모음 그룹
-export const DatabaseGroup = ({ onOpenMockModal }) => (
+export const DatabaseGroup = ({ onOpenMockModal, onOpenQueryBuilderModal }) => (
   <div className="toolbar-group">
     <button onClick={() => onOpenMockModal()} title="SQL 더미 데이터 / 프로시저 생성기"><Database size={18} /></button>
+    <button onClick={() => { console.log("시각적 SQL 쿼리 빌더 호출"); onOpenQueryBuilderModal(); }} title="시각적 SQL 쿼리 빌더"><TableProperties size={18} /></button>
   </div>
 );

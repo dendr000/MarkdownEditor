@@ -31,15 +31,18 @@ import CodeOverlay from './CodeOverlay';
 import ColorPickerOverlay from './ColorPickerOverlay';
 import GlobalSearchModal from './toolbar/GlobalSearchModal';
 import MockDataModal from './toolbar/MockDataModal';
+import SqlQueryBuilderModal from './toolbar/SqlQueryBuilderModal'; // 시각적 SQL 쿼리 빌더 모달 임포트
 import { DatabaseGroup } from './toolbar/ToolbarGroups';
 import './Editor.css';
 import './EditorToolbar.css';
 import './EditorCodeMode.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  // [신규] 전역 검색 모달 개폐 상태
+  // 전역 검색 및 시각적 SQL 쿼리 빌더 모달 개폐 상태
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
-  console.log("[Editor v13.6] 단일 에디터 렌더링 시작 (CSS 색상 픽커 오버레이 연동 완료)");
+  const [isQueryBuilderModalOpen, setIsQueryBuilderModalOpen] = useState(false); // [신규] 쿼리 빌더 모달 상태 추가
+  
+  console.log("[Editor v13.7] 단일 에디터 렌더링 시작 (시각적 SQL 쿼리 빌더 모달 마운트 연동)");
   const toolbarRef = useRef(null);
   
   // 오버레이 컨테이너 스크롤 동기화를 위한 참조
@@ -105,8 +108,11 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
           <div className="toolbar-divider" />
           <GithubGroup handleFormat={actions.handleFormat} openDropdown={state.openDropdown} setOpenDropdown={actions.setOpenDropdown} onOpenDetailsModal={() => { actions.prepareModalState('Details'); actions.setIsDetailsModalOpen(true); }} />
           <div className="toolbar-divider" />
-          {/* [신규] DB 툴링 버튼 마운트 */}
-          <DatabaseGroup onOpenMockModal={() => actions.setIsMockModalOpen(true)} />
+          {/* DB 툴링 버튼 마운트 (더미 데이터 생성기 및 쿼리 빌더) */}
+          <DatabaseGroup 
+            onOpenMockModal={() => actions.setIsMockModalOpen(true)} 
+            onOpenQueryBuilderModal={() => setIsQueryBuilderModalOpen(true)}
+          />
           <div className="toolbar-divider" />
           <div className="toolbar-group">
             <button onClick={() => setIsGlobalSearchOpen(true)} title="전역 검색 및 치환"><Search size={18} /></button>
@@ -175,9 +181,13 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
       <CommitGuideModal isOpen={state.isCommitGuideOpen} onClose={() => actions.setIsCommitGuideOpen(false)} onInsert={actions.handleInsertTable} />
       <FindReplaceModal isOpen={state.isFindReplaceOpen} onClose={() => actions.setIsFindReplaceOpen(false)} onReplaceAll={actions.handleReplaceAll} markdown={markdown} selectionRange={state.replaceSelectionRange} />
       
-      {/* [신규] 전역 검색 모달 마운트 */}
+      {/* 전역 검색 모달 마운트 */}
       <GlobalSearchModal isOpen={isGlobalSearchOpen} onClose={() => setIsGlobalSearchOpen(false)} />
-      {/* [신규] 더미 데이터 생성기 모달 마운트 */}
+      
+      {/* [신규] 시각적 SQL 쿼리 빌더 대형 모달 마운트 */}
+      <SqlQueryBuilderModal isOpen={isQueryBuilderModalOpen} onClose={() => setIsQueryBuilderModalOpen(false)} />
+      
+      {/* 더미 데이터 생성기 모달 마운트 */}
       <MockDataModal isOpen={state.isMockModalOpen} onClose={() => actions.setIsMockModalOpen(false)} markdown={markdown} onInsert={actions.handleInsertTable} />
     </div>
   );
