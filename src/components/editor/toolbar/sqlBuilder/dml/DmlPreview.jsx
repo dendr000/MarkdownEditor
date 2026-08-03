@@ -15,7 +15,12 @@ function DmlPreview({ highlightedSql, compiledSql, onInsert }) {
       <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>DML 쿼리 컴파일 뷰어 (Live Preview)</span>
         <button 
-          onClick={() => onInsert && onInsert(`\n\`\`\`sql\n${compiledSql}\n\`\`\`\n`)}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onInsert) onInsert(`\n\`\`\`sql\n${compiledSql}\n\`\`\`\n`);
+          }}
           style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', backgroundColor: '#2da44e', color: '#ffffff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
         >
           <Check size={14} /> 에디터에 삽입
