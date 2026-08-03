@@ -293,8 +293,9 @@ function DdlGridPanel() {
           <span>실시간 SQL 컴파일 뷰어 (Live Preview)</span>
         </div>
         <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
-          <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6' }}>
-            <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ whiteSpace: 'pre' }} />
+          <pre style={{ margin: 0, padding: 0, backgroundColor: 'transparent', color: '#e6edf3', fontSize: '13px', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {/* 전역 CSS의 flex 속성으로 인해 공백(Space) 노드가 삭제되는 현상을 막기 위해 display: 'block'으로 덮어씌웁니다. */}
+            <code dangerouslySetInnerHTML={{ __html: highlightedSql }} style={{ display: 'block', whiteSpace: 'pre-wrap' }} />
           </pre>
         </div>
       </div>
