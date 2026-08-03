@@ -20,8 +20,9 @@ function TreeNodeItem({
   onAddBelow, 
   onRemove 
 }) {
+  // min-width: max-content를 추가하여 깊이가 깊어져 여백이 늘어나더라도 버튼 그룹이 잘리지 않고 가로 스크롤을 유도합니다.
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: `${node.depth * 20}px`, transition: 'margin 0.2s ease' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: `${node.depth * 20}px`, transition: 'margin 0.2s ease', minWidth: 'max-content', paddingRight: '20px' }}>
       
       {/* 아이콘 및 타입 토글 버튼 - tabIndex={-1} 적용으로 탭 포커스 제외 */}
       <button 

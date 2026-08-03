@@ -134,10 +134,16 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
 
         <div className="diagram-modal-body" style={{ display: 'flex', height: 'calc(100% - 120px)' }}>
           
-          <div className="diagram-editor-panel" style={{ width: '50%', padding: '20px', borderRight: '1px solid #d0d7de', overflowY: 'auto' }}>
-            <div className="panel-title-label" style={{ marginBottom: '16px', fontWeight: 'bold', color: '#57606a', fontSize: '12px' }}>트리 구조 편집</div>
+          {/* 가로 스크롤을 허용하되 스크롤바는 숨기는 인라인 스타일 주입 */}
+          <style>{`
+            .diagram-editor-panel::-webkit-scrollbar { width: 6px; height: 0px; } /* 가로 스크롤바 높이를 0으로 숨김 */
+            .diagram-editor-panel::-webkit-scrollbar-thumb { background-color: var(--border-color, #d0d7de); border-radius: 4px; }
+          `}</style>
+
+          <div className="diagram-editor-panel" style={{ width: '50%', padding: '20px', borderRight: '1px solid #d0d7de', overflowY: 'auto', overflowX: 'auto' }}>
+            <div className="panel-title-label" style={{ marginBottom: '16px', fontWeight: 'bold', color: '#57606a', fontSize: '12px', position: 'sticky', left: 0 }}>트리 구조 편집</div>
             
-            <div className="gui-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="gui-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 'max-content' }}>
               {nodes.map((node, idx) => (
                 <TreeNodeItem 
                   key={node.id}
