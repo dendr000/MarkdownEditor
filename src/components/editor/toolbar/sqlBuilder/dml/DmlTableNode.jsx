@@ -1,16 +1,16 @@
-// src/components/editor/toolbar/sqlBuilder/DmlTableNode.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/dml/DmlTableNode.jsx v1.1
 /*
- * 파일 위치: src/components/editor/toolbar/sqlBuilder/DmlTableNode.jsx
+ * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlTableNode.jsx
  * 파일 설명: React Flow 캔버스에 렌더링되는 커스텀 노드(Node) 컴포넌트입니다.
- * 테이블명과 컬럼 목록을 표시하며, 각 컬럼 행에 조인(Join) 연결을 위한 Handle을 양쪽에 배치합니다.
- * 연결 위치: src/components/editor/toolbar/sqlBuilder/DmlWorkspacePanel.jsx
+ * dml 하위 폴더로 이동 조치되었습니다.
+ * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { Table2, Key } from 'lucide-react';
 
 function DmlTableNode({ data }) {
-  console.log(`[DmlTableNode v1.0] 커스텀 노드 렌더링 - 테이블명: ${data.tableName}`);
+  console.log(`[DmlTableNode v1.1] 커스텀 노드 렌더링 - 테이블명: ${data.tableName}`);
 
   return (
     <div style={{ width: '200px', backgroundColor: '#ffffff', border: '1px solid #0969da', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>

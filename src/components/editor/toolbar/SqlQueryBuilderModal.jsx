@@ -7,8 +7,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, TableProperties, Network, ShieldCheck } from 'lucide-react';
 import DdlGridPanel from './sqlBuilder/ddl/DdlGridPanel'; // ddl 하단 폴더로 경로 변경
-import DmlWorkspacePanel from './sqlBuilder/DmlWorkspacePanel'; 
-import DclMatrixPanel from './sqlBuilder/DclMatrixPanel';
+import DmlWorkspacePanel from './sqlBuilder/dml/DmlWorkspacePanel'; 
+import DclMatrixPanel from './sqlBuilder/dcl/DclMatrixPanel';
 
 function SqlQueryBuilderModal({ isOpen, onClose }) {
   // 현재 활성화된 쿼리 빌더 모드 상태 (DDL, DML, DCL)

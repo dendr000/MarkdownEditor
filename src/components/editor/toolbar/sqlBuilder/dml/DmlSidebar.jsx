@@ -1,14 +1,15 @@
-// src/components/editor/toolbar/sqlBuilder/DmlSidebar.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/dml/DmlSidebar.jsx v1.1
 /*
- * 파일 위치: src/components/editor/toolbar/sqlBuilder/DmlSidebar.jsx
+ * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlSidebar.jsx
  * 파일 설명: DML 워크스페이스 좌측에 위치하여, 캔버스로 드래그 앤 드롭할 수 있는 가상 테이블 목록을 제공합니다.
- * 연결 위치: src/components/editor/toolbar/sqlBuilder/DmlWorkspacePanel.jsx
+ * dml 하위 폴더로 이동 조치되었습니다.
+ * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
 import React from 'react';
 import { Database, GripVertical } from 'lucide-react';
 
-function DdlSidebar() {
-  console.log("[DmlSidebar v1.0] DML 사이드바 렌더링 시작");
+function DmlSidebar() {
+  console.log("[DmlSidebar v1.1] DML 사이드바 렌더링 시작");
 
   // 시각적 테스트를 위한 가상(Dummy) 테이블 및 컬럼 명세
   const dummyTables = [
@@ -19,7 +20,7 @@ function DdlSidebar() {
 
   // 드래그 시작 시 테이블 데이터를 JSON 형태로 DataTransfer에 저장합니다.
   const onDragStart = (event, tableData) => {
-    console.log(`[DmlSidebar v1.0] 드래그 시작 - 대상 테이블: ${tableData.name}`);
+    console.log(`[DmlSidebar v1.1] 드래그 시작 - 대상 테이블: ${tableData.name}`);
     event.dataTransfer.setData('application/reactflow', JSON.stringify(tableData));
     event.dataTransfer.effectAllowed = 'move';
   };
@@ -52,4 +53,4 @@ function DdlSidebar() {
   );
 }
 
-export default DdlSidebar;
+export default DmlSidebar;
