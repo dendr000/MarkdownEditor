@@ -1,0 +1,56 @@
+/* C:\dev\MarkdownEditor\src\components\preview\PreviewBase.css */
+/*
+ * 파일 설명: 실시간 뷰어의 기본 레이아웃, 마크다운 텍스트, 테이블 요소의 스타일을 정의합니다.
+ */
+
+.preview-container {
+  display: flex;
+  flex: 1; 
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-main, #ffffff); 
+  border-right: 1px solid var(--border-color, #d0d7de); 
+  overflow-y: auto;
+}
+
+.preview-content.markdown-body {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100% !important; 
+  min-width: 200px;
+  margin: 0;
+  padding: 32px 40px;
+  text-align: left;
+  background-color: transparent !important; 
+  color: var(--text-main, #24292f) !important; 
+}
+
+.preview-content.markdown-body h1,
+.preview-content.markdown-body h2,
+.preview-content.markdown-body h3,
+.preview-content.markdown-body h4,
+.preview-content.markdown-body h5,
+.preview-content.markdown-body h6,
+.preview-content.markdown-body p,
+.preview-content.markdown-body li,
+.preview-content.markdown-body a,
+.preview-content.markdown-body blockquote,
+.preview-content.markdown-body table {
+  color: var(--text-main, #24292f) !important;
+}
+
+.preview-content.markdown-body *::selection {
+  background-color: var(--selection-bg, #c8e1ff) !important;
+  color: var(--selection-color, #24292f) !important;
+}
+.preview-content.markdown-body *::-moz-selection {
+  background-color: var(--selection-bg, #c8e1ff) !important;
+  color: var(--selection-color, #24292f) !important;
+}
+
+.preview-content.markdown-body table tr {
+  background-color: var(--bg-main, #ffffff) !important; 
+}
+.preview-content.markdown-body table tr:nth-child(2n) {
+  background-color: var(--explorer-bg, #f6f8fa) !important; 
+}

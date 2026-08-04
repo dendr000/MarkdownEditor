@@ -1,0 +1,96 @@
+/* C:\dev\MarkdownEditor\src\components\preview\PreviewCodeBlock.css */
+/*
+ * 파일 설명: 마크다운 내부의 인라인 코드, 코드 블록, 구문 강조, 복사 버튼 및 색상 시각화 스타일을 정의합니다.
+ */
+
+/* 코드 블록 내부의 구문 강조 색상을 보호하기 위한 예외 처리 */
+.preview-content.markdown-body code span {
+  color: inherit;
+}
+
+.preview-content.markdown-body pre,
+.preview-content.markdown-body code {
+  background-color: var(--explorer-bg, #f6f8fa) !important;
+  color: var(--text-main, #24292f) !important;
+  border: 1px solid var(--border-color, #d0d7de) !important;
+  text-shadow: none !important;
+}
+
+.preview-content.markdown-body pre code {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.preview-content.code-file-view {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background-color: var(--explorer-bg, #f6f8fa); 
+}
+
+.preview-content.code-file-view pre,
+.preview-content.code-file-view code {
+  white-space: pre-wrap !important;
+  word-break: break-all;
+}
+
+/* =========================================
+   복사 버튼 및 래퍼 스타일 우선순위 강제 보호
+   ========================================= */
+.code-block-wrapper {
+  position: relative !important;
+  margin-bottom: 16px !important;
+  width: 100% !important;
+}
+
+.code-copy-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  color: var(--text-muted, #57606a) !important;
+  background-color: var(--bg-main, #ffffff) !important;
+  border: 1px solid var(--border-color, #d0d7de) !important;
+  border-radius: 6px !important;
+  opacity: 0 !important; 
+  visibility: hidden !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s, visibility 0.2s, background-color 0.2s !important;
+}
+
+/* 마우스 호버 시 무조건 노출되도록 강제 설정 */
+.code-block-wrapper:hover .code-copy-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.code-copy-btn:hover {
+  background-color: var(--explorer-bg, #f6f8fa) !important;
+  color: var(--text-main, #24292f) !important;
+}
+
+/* 색상 시각화 뷰어 설정 */
+.color-viz-code {
+  background-color: rgba(175, 184, 193, 0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 85%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.color-viz-circle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color, #d0d7de);
+}

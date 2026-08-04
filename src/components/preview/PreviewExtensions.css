@@ -1,0 +1,56 @@
+/* C:\dev\MarkdownEditor\src\components\preview\PreviewExtensions.css */
+/*
+ * 파일 설명: GitHub Alerts(NOTE, TIP 등) 및 Diff 문법 등 마크다운 확장 기능의 스타일을 정의합니다.
+ */
+
+/* GitHub Alerts */
+.gh-alert {
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+  color: inherit;
+}
+
+.gh-alert-title {
+  font-weight: 600;
+  margin-bottom: 4px !important;
+  display: flex;
+  align-items: center;
+}
+
+.gh-alert-title svg.octicon {
+  margin-right: 8px;
+  fill: currentColor;
+}
+
+.gh-alert-note { border-color: #0969da; }
+.gh-alert-note .gh-alert-title { color: #0969da; }
+
+.gh-alert-tip { border-color: #1a7f37; }
+.gh-alert-tip .gh-alert-title { color: #1a7f37; }
+
+.gh-alert-important { border-color: #8250df; }
+.gh-alert-important .gh-alert-title { color: #8250df; }
+
+.gh-alert-warning { border-color: #9a6700; }
+.gh-alert-warning .gh-alert-title { color: #9a6700; }
+
+.gh-alert-caution { border-color: #cf222e; }
+.gh-alert-caution .gh-alert-title { color: #cf222e; }
+
+/* GitHub Diff */
+.diff-add { 
+  display: block; 
+  background-color: rgba(46, 160, 67, 0.15); 
+  color: #3fb950; 
+}
+.diff-remove { 
+  display: block; 
+  background-color: rgba(248, 81, 73, 0.15); 
+  color: #ff7b72; 
+}
+.diff-change { 
+  display: block; 
+  background-color: rgba(210, 153, 34, 0.15); 
+  color: #d29922; 
+}
