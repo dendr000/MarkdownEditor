@@ -1,12 +1,15 @@
-// src/utils/githubMarkdownParser.js v2.0
+// C:\dev\MarkdownEditor\src\utils\githubMarkdownParser.js
 /*
+ * 파일 위치: C:\dev\MarkdownEditor\src\utils\githubMarkdownParser.js
  * 파일 설명: 기본 마크다운 파서가 인식하지 못하는 GitHub 고유 문법(Alerts)을 HTML 구조와 공식 SVG 아이콘으로 사전 변환하는 프리프로세서입니다.
- * (Diff 문법 처리는 파서 충돌을 피하기 위해 Preview.jsx의 React 컴포넌트 로직으로 이관했습니다.)
+ * (v4.0 수정사항): 에디터 환경의 특수 공백(\xA0) 혼입 문제를 해결하기 위해 블록 단위 캡처 정규식 알고리즘으로 전면 교체했습니다.
  */
 
 export const preprocessGitHubFlavored = (text) => {
   if (!text) return '';
-  let parsed = text;
+  
+  // OS별로 다른 줄바꿈 문자를 \n으로 단일화합니다.
+  let parsed = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // GitHub 공식 Octicon SVG 경로 데이터
   const icons = {
@@ -17,24 +20,29 @@ export const preprocessGitHubFlavored = (text) => {
     caution: `<svg class="octicon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>`
   };
 
-  // GitHub Alerts 파싱 (> [!NOTE] 형태를 HTML div 블록으로 변환하고 SVG 삽입)
-  const alertRegex = /^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\n((?:> .*(?:\n|$))*)/gm;
-  parsed = parsed.replace(alertRegex, (match, type, content) => {
-    const cleanContent = content.replace(/^> ?/gm, ''); 
-    const typeLower = type.toLowerCase();
-    const typeTitle = type.charAt(0) + typeLower.slice(1);
-    const svgIcon = icons[typeLower] || '';
-    
-    return `<div class="gh-alert gh-alert-${typeLower}">
-<p class="gh-alert-title">${svgIcon}${typeTitle}</p>\n
-${cleanContent}
-</div>\n\n`;
+  // 특수 공백(\xA0)을 포함하여 Alerts 블록 전체를 안전하게 캡처하는 정규식
+  const alertRegex = /(?:^|\n)([ \t\xA0]*>[ \t\xA0]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][^\n]*(?:\n[ \t\xA0]*>.*)*)/gi;
+
+  parsed = parsed.replace(alertRegex, (match, block, type) => {
+    const currentAlertType = type.toLowerCase();
+    const typeTitle = currentAlertType.charAt(0).toUpperCase() + currentAlertType.slice(1);
+    const svgIcon = icons[currentAlertType] || '';
+
+    // 캡처된 블록 내부의 불필요한 마크다운 기호(>)와 선언문을 제거하여 내용만 추출
+    const cleanContent = block.split('\n').map((line, index) => {
+      if (index === 0) {
+        return line.replace(/^[ \t\xA0]*>[ \t\xA0]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t\xA0]*/i, '');
+      }
+      return line.replace(/^[ \t\xA0]*>[ \t\xA0]?/, '');
+    }).join('\n').trim();
+
+    // 마크다운 파서가 내부 텍스트를 정상적으로 인식할 수 있도록 앞뒤로 빈 줄(\n)을 배치
+    return `\n<div class="gh-alert gh-alert-${currentAlertType}">\n<p class="gh-alert-title">${svgIcon}${typeTitle}</p>\n\n${cleanContent}\n</div>\n\n`;
   });
 
-  // 인라인 색상 코드 파싱 (Hex, RGB, HSL) - 백틱 안의 색상값을 HTML 태그와 색상 원으로 변환
+  // 인라인 색상 코드 파싱 (Hex, RGB, HSL)
   const colorRegex = /`(#(?:[0-9a-fA-F]{3}){1,2}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\))`(?!\S)/g;
   parsed = parsed.replace(colorRegex, (match, colorCode) => {
-    console.log("색상 코드 시각화 파싱 매칭됨:", colorCode);
     return `<code class="color-viz-code"><span class="color-viz-circle" style="background-color: ${colorCode};"></span>${colorCode}</code>`;
   });
 

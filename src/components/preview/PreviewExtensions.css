@@ -11,9 +11,14 @@
   color: inherit;
 }
 
+/* 내부 텍스트(마크다운 p 태그 등)의 마지막 요소 마진을 제거하여 색상바가 길어지는 현상 방지 */
+.gh-alert > *:last-child {
+  margin-bottom: 0 !important;
+}
+
 .gh-alert-title {
   font-weight: 600;
-  margin-bottom: 4px !important;
+  margin-bottom: 8px !important;
   display: flex;
   align-items: center;
 }
@@ -23,20 +28,21 @@
   fill: currentColor;
 }
 
+/* PreviewBase.css의 p 태그 !important 속성을 덮어쓰기 위해 !important 추가 */
 .gh-alert-note { border-color: #0969da; }
-.gh-alert-note .gh-alert-title { color: #0969da; }
+.gh-alert-note .gh-alert-title { color: #0969da !important; }
 
 .gh-alert-tip { border-color: #1a7f37; }
-.gh-alert-tip .gh-alert-title { color: #1a7f37; }
+.gh-alert-tip .gh-alert-title { color: #1a7f37 !important; }
 
 .gh-alert-important { border-color: #8250df; }
-.gh-alert-important .gh-alert-title { color: #8250df; }
+.gh-alert-important .gh-alert-title { color: #8250df !important; }
 
 .gh-alert-warning { border-color: #9a6700; }
-.gh-alert-warning .gh-alert-title { color: #9a6700; }
+.gh-alert-warning .gh-alert-title { color: #9a6700 !important; }
 
 .gh-alert-caution { border-color: #cf222e; }
-.gh-alert-caution .gh-alert-title { color: #cf222e; }
+.gh-alert-caution .gh-alert-title { color: #cf222e !important; }
 
 /* GitHub Diff */
 .diff-add { 

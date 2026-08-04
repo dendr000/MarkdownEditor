@@ -14,12 +14,13 @@ import rehypeRaw from 'rehype-raw';
 import rehypeKatex from 'rehype-katex';
 import CodeBlockRenderer from './preview/CodeBlockRenderer';
 import LinkRenderer from './preview/LinkRenderer';
+import { preprocessGitHubFlavored } from '../utils/githubMarkdownParser';
 import 'katex/dist/katex.min.css';
 import 'github-markdown-css/github-markdown.css';
 import './Preview.css';
 
 function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
-  console.log("[Preview v2.2] 실시간 뷰어 렌더링 시작 (비 마크다운 파일 코드 블록 자동 래핑 적용)");
+  console.log("[Preview v2.3] 실시간 뷰어 렌더링 시작 (GitHub 확장 문법 파이프라인 연결)");
 
   // 파일 확장자 추출
   const ext = selectedFile ? selectedFile.split('.').pop().toLowerCase() : '';
@@ -27,8 +28,11 @@ function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
   // 마크다운이나 일반 텍스트 파일이 아닌 경우 강제로 코드 블록 백틱 적용
   const isCodeFile = selectedFile && !['md', 'txt'].includes(ext);
   
-  // 뷰어에 전달할 최종 텍스트 (원본 markdown 상태는 유지한 채 뷰어 렌더링용으로만 가공)
-  const displayMarkdown = isCodeFile ? `\`\`\`${ext}\n${markdown}\n\`\`\`` : markdown;
+  // 1. 마크다운 파일일 경우 GitHub Alerts 등 확장 문법(HTML)으로 사전 파싱
+  const processedMarkdown = isCodeFile ? markdown : preprocessGitHubFlavored(markdown);
+  
+  // 2. 뷰어에 전달할 최종 텍스트 가공
+  const displayMarkdown = isCodeFile ? `\`\`\`${ext}\n${processedMarkdown}\n\`\`\`` : processedMarkdown;
 
   return (
     <div className="preview-container" ref={previewRef}>
