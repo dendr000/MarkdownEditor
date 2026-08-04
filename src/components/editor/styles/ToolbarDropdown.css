@@ -1,0 +1,41 @@
+/* C:\dev\MarkdownEditor\src\components\editor\styles\ToolbarDropdown.css */
+/*
+ * 파일 위치: src/components/editor/styles/ToolbarDropdown.css
+ * 기능 요약: 툴바에서 호출되는 포탈 드롭다운 메뉴 래퍼와 내부 아이템(GitHub Alerts, 확장 문법 등)의 서식을 정의합니다.
+ */
+
+.dropdown-menu-portal {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  min-width: 160px;
+  background-color: var(--bg-main, #ffffff);
+  border: 1px solid var(--border-color, #d0d7de);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 16px;
+  background-color: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main, #24292f);
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: var(--explorer-bg, #f6f8fa);
+}
+
+/* 드롭다운 내부 카테고리별 좌측 강조선 색상 지정 */
+.dropdown-item.alert-note { border-left: 4px solid #0969da; }
+.dropdown-item.alert-tip { border-left: 4px solid #1a7f37; }
+.dropdown-item.alert-important { border-left: 4px solid #8250df; }
+.dropdown-item.alert-warning { border-left: 4px solid #9a6700; }
+.dropdown-item.alert-caution { border-left: 4px solid #cf222e; }
+.dropdown-item.diff-template { border-left: 4px solid #57606a; }
+.dropdown-item.details-template { border-left: 4px solid var(--border-color, #d0d7de); }
