@@ -72,18 +72,16 @@ export const parseMdToGrid = (mdText) => {
       let strike = false;
 
       // 마크다운 서식 태그 추출 로직 (단순 매핑용)
+      // (v2.1 수정) 마크다운 문법을 보존하기 위해 텍스트 자르기(substring) 로직을 제거합니다.
       if (text.startsWith('**') && text.endsWith('**')) {
         bold = true;
-        text = text.substring(2, text.length - 2).trim();
       }
       if (text.startsWith('~~') && text.endsWith('~~')) {
         strike = true;
-        text = text.substring(2, text.length - 2).trim();
       }
       if ((text.startsWith('*') && text.endsWith('*') && !text.startsWith('**')) ||
           (text.startsWith('_') && text.endsWith('_') && !text.startsWith('__'))) {
         italic = true;
-        text = text.substring(1, text.length - 1).trim();
       }
 
       // 파싱이 끝난 텍스트 내부의 이스케이프된 파이프 기호를 일반 문자로 복구
