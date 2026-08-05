@@ -39,6 +39,22 @@
   color: var(--text-main, #24292f) !important;
 }
 
+/* 외부 CSS(Bootstrap, Reset CSS 등)에 의해 인라인 서식이 무효화되는 현상 방어 */
+.preview-content.markdown-body em,
+.preview-content.markdown-body i {
+  font-style: italic !important;
+}
+
+.preview-content.markdown-body strong,
+.preview-content.markdown-body b {
+  font-weight: bold !important;
+}
+
+.preview-content.markdown-body del,
+.preview-content.markdown-body s {
+  text-decoration: line-through !important;
+}
+
 .preview-content.markdown-body *::selection {
   background-color: var(--selection-bg, #c8e1ff) !important;
   color: var(--selection-color, #24292f) !important;

@@ -21,7 +21,8 @@
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
-  font-synthesis: none;
+  /* 브라우저의 가짜 기울임체(Oblique) 및 볼드체 합성 차단 해제 */
+  /* font-synthesis: none; */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

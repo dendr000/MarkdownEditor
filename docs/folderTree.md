@@ -1,4 +1,4 @@
-<!-- docs/folderTree.md -->
+<!-- C:\dev\MarkdownEditor\docs\folderTree.md -->
 # 프로젝트 폴더 구조 (Markdown Editor)
 
 ```text
@@ -25,23 +25,33 @@ MARKDOWNEDITOR
 │   │   ├── diagram
 │   │   │   └── DiagramModal.jsx # Mermaid 다이어그램 모달
 │   │   ├── editor
+│   │   │   ├── styles/             # 에디터 및 툴바 스타일 분리본
+│   │   │   │   ├── SuggestPopup.css    # 자동완성 팝업 스타일
+│   │   │   │   ├── ToolbarBase.css     # 툴바 기본 레이아웃 스타일
+│   │   │   │   └── ToolbarDropdown.css # 툴바 드롭다운 메뉴 스타일
 │   │   │   ├── toolbar/        # 툴바 아이콘 및 그룹 컴포넌트
+│   │   │   │   ├── groups/             # 분할된 툴바 기능 그룹
+│   │   │   │   │   ├── DatabaseGroup.jsx  # 데이터베이스 특화 도구 모음 그룹
+│   │   │   │   │   ├── GithubGroup.jsx    # GitHub 확장 툴바 그룹
+│   │   │   │   │   └── MarkdownGroups.jsx # 마크다운 기본 툴바 그룹
 │   │   │   │   ├── sqlBuilder/ # 시각적 SQL 쿼리 빌더 전용 컴포넌트 모음
-│   │   │   │   │   ├── dcl/                 # DCL 권한 제어 모드 전용 컴포넌트
+│   │   │   │   │   ├── dcl/                   # DCL 권한 제어 모드 전용 컴포넌트
 │   │   │   │   │   │   ├── DclMatrixPanel.jsx # DCL 권한 제어 매트릭스 메인 패널 (오케스트레이터)
 │   │   │   │   │   │   ├── DclMatrixRow.jsx   # DCL 매트릭스 개별 행 컴포넌트
 │   │   │   │   │   │   ├── DclMatrixTable.jsx # DCL 매트릭스 표 컨테이너
 │   │   │   │   │   │   ├── DclPreview.jsx     # DCL 실시간 컴파일 뷰어
 │   │   │   │   │   │   └── DclToolbar.jsx     # DCL 상단 제어 바
-│   │   │   │   │   ├── ddl/                 # DDL 스키마 정의 모드 전용 컴포넌트
+│   │   │   │   │   ├── ddl/                   # DDL 스키마 정의 모드 전용 컴포넌트
 │   │   │   │   │   │   ├── DdlGridPanel.jsx   # DDL 스키마 제어 메인 패널 (오케스트레이터)
 │   │   │   │   │   │   ├── DdlGridRow.jsx     # DDL 그리드 개별 행 컴포넌트
 │   │   │   │   │   │   ├── DdlGridTable.jsx   # DDL 스프레드시트 헤더 및 리스트 컨테이너
 │   │   │   │   │   │   ├── DdlImportArea.jsx  # DDL 역설계 파싱 입력 영역
 │   │   │   │   │   │   ├── DdlPreview.jsx     # DDL 실시간 컴파일 뷰어
 │   │   │   │   │   │   └── DdlToolbar.jsx     # DDL 상단 제어 바
-│   │   │   │   │   └── dml/                 # DML 데이터 조작 모드 전용 컴포넌트
+│   │   │   │   │   └── dml/                   # DML 데이터 조작 모드 전용 컴포넌트
 │   │   │   │   │       ├── DmlFilterPanel.jsx # DML 쿼리 필터 및 정렬 제어 패널
+│   │   │   │   │       ├── DmlGridPanel.jsx   # DML 그리드 제어 메인 패널 (오케스트레이터)
+│   │   │   │   │       ├── DmlGridRow.jsx     # DML 그리드 개별 행 컴포넌트
 │   │   │   │   │       ├── DmlIndexRecommendation.jsx # DML 스마트 인덱스 추천 뷰어
 │   │   │   │   │       ├── DmlPreview.jsx     # DML 실시간 컴파일 뷰어
 │   │   │   │   │       ├── DmlSidebar.jsx     # DML 드래그 앤 드롭 테이블 사이드바
@@ -52,16 +62,21 @@ MARKDOWNEDITOR
 │   │   │   │   ├── FindReplaceModal.jsx # 찾기 및 바꾸기 모달
 │   │   │   │   ├── GlobalSearchModal.jsx # 전역 검색 및 일괄 치환 모달
 │   │   │   │   ├── MathModal.jsx
+│   │   │   │   ├── PortalDropdown.jsx
 │   │   │   │   ├── SqlQueryBuilderModal.jsx # 시각적 SQL 쿼리 빌더 대형 모달
 │   │   │   │   ├── TemplateModal.jsx
-│   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일
+│   │   │   │   ├── TemplateSelector.jsx
+│   │   │   │   └── ToolbarGroups.jsx # 툴바 아이콘 묶음 분리 파일 (인덱스)
 │   │   │   ├── AutocompletePopup.jsx # 가상 자동완성 팝업 UI
 │   │   │   ├── CodeOverlay.jsx # 구문 강조(Syntax Highlighting) 및 줄 번호 오버레이
 │   │   │   ├── ColorPickerOverlay.jsx # CSS Hex 색상 픽커 오버레이
 │   │   │   ├── Editor.css
 │   │   │   ├── EditorCodeMode.css # 코드 모드 전용 스타일 분리본
-│   │   │   ├── EditorToolbar.css # 툴바 및 팝업 전용 스타일 분리본
+│   │   │   ├── EditorToolbar.css # 툴바 및 팝업 전용 스타일 분리본 (인덱스)
 │   │   │   ├── Editor.jsx      # 메인 에디터 (마크다운 입력부 - 단일 구조)
+│   │   │   ├── EditorModals.jsx
+│   │   │   ├── EditorToolbarArea.jsx
+│   │   │   ├── EditorWorkspace.jsx
 │   │   │   └── OutlineMinimap.jsx # 우측 목차(미니맵) 컴포넌트
 │   │   ├── explorer
 │   │   │   ├── ExplorerTreeNode.jsx # 탐색기 개별 폴더/파일 메인 렌더링 노드
@@ -70,6 +85,9 @@ MARKDOWNEDITOR
 │   │   │   ├── NodeTooltip.jsx # 상대 경로 표시 및 클립보드 복사 툴팁
 │   │   │   └── WorkspaceConfig.jsx # 상단 워크스페이스 경로 및 히스토리 제어바
 │   │   ├── preview
+│   │   │   ├── PreviewBase.css         # 실시간 뷰어 기본 레이아웃 스타일
+│   │   │   ├── PreviewCodeBlock.css    # 코드 블록 및 시각화 스타일
+│   │   │   ├── PreviewExtensions.css   # GitHub 확장 서식 스타일
 │   │   │   ├── CodeBlockRenderer.jsx # 코드 블록 렌더러 분리
 │   │   │   ├── DiffViewer.jsx  # 파일 분할 비교 뷰어 (Split Diff Viewer)
 │   │   │   ├── ErdNode.jsx     # ERD 다이어그램 커스텀 노드 렌더러
@@ -90,7 +108,7 @@ MARKDOWNEDITOR
 │   │   │   └── FolderTreeModal.jsx # 폴더 구조도 마크다운 생성기
 │   │   ├── Header.css
 │   │   ├── Header.jsx          # 상단 헤더 (테마 및 스토리지 스위칭 포함)
-│   │   ├── Preview.css
+│   │   ├── Preview.css         # 실시간 뷰어 레이아웃 및 github-markdown-css 오버라이드 스타일 (인덱스)
 │   │   └── Preview.jsx         # 실시간 뷰어 메인 컴포넌트 (마크다운 파싱)
 │   ├── controllers
 │   │   └── fileController.js   # 백엔드 로컬 시스템 접근 핵심 로직 제어
@@ -116,10 +134,11 @@ MARKDOWNEDITOR
 │   │   ├── editor/
 │   │   │   ├── codeDictionary.js # 언어별 스니펫, 주석 기호 등 통합 데이터 사전
 │   │   │   ├── codeFormatter.js # 각 언어별 들여쓰기 및 정렬 연산 유틸
-│   │   │   ├── diffUtils.js    # LCS 알고리즘 기반 텍스트 비교 연산 유틸
+│   │   │   ├── diffUtils.js    # LCS 알고리즘 기반 텍스트 비교 연산 연산 유틸
 │   │   │   ├── sqlDclGenerator.js # DCL 권한 매트릭스 SQL 컴파일러
 │   │   │   ├── sqlDictGenerator.js # SQL 기반 테이블 명세서 마크다운 생성 유틸
 │   │   │   ├── sqlDmlGenerator.js # DML 시각적 조인 워크스페이스 SQL 컴파일러
+│   │   │   ├── sqlDmlReverseParser.js # DML 역설계 파서 모듈 (조인, 서브쿼리 등 분석)
 │   │   │   ├── sqlExportUtils.js # 조립된 쿼리를 JPA Entity, DBML 및 백엔드 3계층 코드(Repo, Service, API)로 내보내는 확장 모듈
 │   │   │   ├── sqlGenerator.js # DDL 스프레드시트 그리드 SQL 컴파일러
 │   │   │   ├── sqlIndexRecommender.js # DML 쿼리 기반 인덱스(Index) 자동 추천 유틸
@@ -131,7 +150,7 @@ MARKDOWNEDITOR
 │   │   ├── colorPresets.js
 │   │   ├── diagramParser.js
 │   │   ├── editorCore.js       # 에디터 DOM 제어 및 VSC 스타일 들여쓰기 래퍼
-│   │   ├── githubMarkdownParser.js
+│   │   ├── githubMarkdownParser.js # GitHub 고유 문법 파싱 프리프로세서
 │   │   ├── htmlTableParser.js
 │   │   ├── pathUtils.js        # 파일 트리 상대 경로 연산 유틸
 │   │   ├── tableConverter.js
