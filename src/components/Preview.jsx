@@ -22,11 +22,19 @@ import './Preview.css';
 function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
   console.log("[Preview v2.3] 실시간 뷰어 렌더링 시작 (GitHub 확장 문법 파이프라인 연결)");
 
-  // 파일 확장자 추출
-  const ext = selectedFile ? selectedFile.split('.').pop().toLowerCase() : '';
+  // 파일 확장자 추출 (경로 구분자 처리 및 확장자 존재 여부 엄격 확인)
+  let ext = '';
+  let isCodeFile = false;
   
-  // 마크다운이나 일반 텍스트 파일이 아닌 경우 강제로 코드 블록 백틱 적용
-  const isCodeFile = selectedFile && !['md', 'txt'].includes(ext);
+  if (selectedFile) {
+    const fileName = selectedFile.split('/').pop();
+    // 파일명에 마침표(.)가 있는 경우에만 확장자를 추출 (확장자가 없는 폴더 뷰 등은 기본 마크다운으로 취급)
+    if (fileName.includes('.')) {
+      ext = fileName.split('.').pop().toLowerCase();
+      // 마크다운이나 일반 텍스트 파일이 아닌 경우 강제로 코드 블록 백틱 적용 대상
+      isCodeFile = !['md', 'txt'].includes(ext);
+    }
+  }
   
   // 에디터에서 입력된 특수 공백(Non-breaking space, \xA0)을 일반 공백(\x20)으로 정규화하여 표 렌더링 파서 오류 방지
   const sanitizedMarkdown = markdown ? markdown.replace(/\xA0/g, ' ') : '';
