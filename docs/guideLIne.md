@@ -35,10 +35,11 @@ npm install
 ```
 
 ## 로컬 개발 서버 구동
-개발 서버를 실행하여 프로젝트를 확인합니다.
+개발 서버를 실행하여 프로젝트를 확인합니다.  
+또는 [MarkdownEditorStart.bat](../MarkdownEditorStart.bat) 파일을 실행합니다.
 ```bash
 npm run dev
-```
+```  
 
 취약점이 있는 패키지를 안전한 버전으로 자동 업데이트(패치)합니다.
 ```bash
