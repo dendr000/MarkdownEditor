@@ -240,3 +240,37 @@ export const replaceWorkspaceFiles = async (query, replaceText, useRegex, matchC
   console.log(`[fileController v1.1] 전역 치환 완료 - 변경된 파일 수: ${results.length}`);
   return results;
 };
+
+// [신규] 파일/폴더 삭제 로직 (Delete)
+export const deleteTarget = async (targetPath) => {
+  const safePath = getSafePath(targetPath);
+  console.log(`[fileController v1.2] 삭제 로직 실행 - 경로: ${safePath}`);
+  
+  try {
+    const stats = await fs.stat(safePath);
+    if (stats.isDirectory()) {
+      await fs.rm(safePath, { recursive: true, force: true });
+    } else {
+      await fs.unlink(safePath);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error(`[fileController v1.2] 삭제 중 에러 발생:`, error.message);
+    throw new Error('파일 또는 폴더를 삭제할 수 없습니다.');
+  }
+};
+
+// [신규] 파일/폴더 이름 변경 로직 (Rename)
+export const renameTargetFile = async (oldPath, newPath) => {
+  const safeOldPath = getSafePath(oldPath);
+  const safeNewPath = getSafePath(newPath);
+  console.log(`[fileController v1.2] 이름 변경 로직 실행 - 기존: ${safeOldPath} -> 변경: ${safeNewPath}`);
+  
+  try {
+    await fs.rename(safeOldPath, safeNewPath);
+    return { success: true };
+  } catch (error) {
+    console.error(`[fileController v1.2] 이름 변경 중 에러 발생:`, error.message);
+    throw new Error('파일 또는 폴더 이름을 변경할 수 없습니다.');
+  }
+};
