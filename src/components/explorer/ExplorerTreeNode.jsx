@@ -10,8 +10,8 @@ import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/
 import { getRelativePath } from '../../utils/pathUtils';
 import NodeActions from './NodeActions';
 
-function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
-  console.log(`[ExplorerTreeNode v2.1] 노드 렌더링 - 경로: ${node.path}`);
+function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePath, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
+  console.log(`[ExplorerTreeNode v2.2] 노드 렌더링 - 경로: ${node.path}`);
   const [isOpen, setIsOpen] = useState(false);
   const nodeRef = useRef(null);
 
@@ -122,7 +122,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
             onRename={handleRename} 
             onDelete={handleDelete}
             relativePath={relativePath}
-            absolutePath={node.path}
+            absolutePath={workspacePath ? `${workspacePath}/${node.path}`.replace(/\/+/g, '/') : node.path}
           />
         )}
       </div>
@@ -136,6 +136,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, activeToolt
               onSelect={onSelect} 
               onRefresh={onRefresh} 
               selectedFile={selectedFile}
+              workspacePath={workspacePath}
               activeTooltipNode={activeTooltipNode}
               onTooltipOpen={onTooltipOpen}
               onTooltipClose={onTooltipClose}

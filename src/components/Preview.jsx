@@ -28,8 +28,11 @@ function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
   // 마크다운이나 일반 텍스트 파일이 아닌 경우 강제로 코드 블록 백틱 적용
   const isCodeFile = selectedFile && !['md', 'txt'].includes(ext);
   
+  // 에디터에서 입력된 특수 공백(Non-breaking space, \xA0)을 일반 공백(\x20)으로 정규화하여 표 렌더링 파서 오류 방지
+  const sanitizedMarkdown = markdown ? markdown.replace(/\xA0/g, ' ') : '';
+  
   // 1. 마크다운 파일일 경우 GitHub Alerts 등 확장 문법(HTML)으로 사전 파싱
-  const processedMarkdown = isCodeFile ? markdown : preprocessGitHubFlavored(markdown);
+  const processedMarkdown = isCodeFile ? sanitizedMarkdown : preprocessGitHubFlavored(sanitizedMarkdown);
   
   // 2. 뷰어에 전달할 최종 텍스트 가공
   const displayMarkdown = isCodeFile ? `\`\`\`${ext}\n${processedMarkdown}\n\`\`\`` : processedMarkdown;

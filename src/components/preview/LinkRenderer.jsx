@@ -38,7 +38,7 @@ export const resolvePath = (currentFilePath, targetPath) => {
   return currentParts.join('/');
 };
 
-function LinkRenderer({ node, href, children, selectedFile, onSelectFile, ...props }) {
+function LinkRenderer({ node, href, children, currentFile, onSelectFile, ...props }) {
   // 외부 링크(http)이거나 헤딩 앵커(#)인 경우 기본 동작 수행
   if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('mailto:')) {
     return <a href={href} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
@@ -49,7 +49,8 @@ function LinkRenderer({ node, href, children, selectedFile, onSelectFile, ...pro
 
   // 새 탭 열기 등을 지원하기 위해 파라미터가 보이도록 덮어씌움
   if (isInternal) {
-    let baseForResolve = selectedFile || '';
+    // Preview.jsx에서 전달하는 Prop 이름인 currentFile과 매핑
+    let baseForResolve = currentFile || '';
     if (!baseForResolve.split('/').pop().includes('.')) {
       baseForResolve = baseForResolve ? `${baseForResolve}/.virtual` : '.virtual';
     }
@@ -64,12 +65,15 @@ function LinkRenderer({ node, href, children, selectedFile, onSelectFile, ...pro
       }
       
       e.preventDefault();
-      let baseForResolve = selectedFile || '';
+      let baseForResolve = currentFile || '';
       if (!baseForResolve.split('/').pop().includes('.')) {
         baseForResolve = baseForResolve ? `${baseForResolve}/.virtual` : '.virtual';
       }
       const targetPath = resolvePath(baseForResolve, href);
-      console.log(`[LinkRenderer v1.0] 내부 링크 감지 - 타겟 경로 변환: ${href} -> ${targetPath}`);
+      console.log(`[LinkRenderer v1.1] 내부 링크 감지 - 타겟 경로 변환: ${href} -> ${targetPath}`);
+
+      // 상태 업데이트 함수를 명시적으로 호출하여 즉각적인 에디터 파일 전환 수행
+      onSelectFile(targetPath);
 
       const newUrl = `${window.location.pathname}?file=${encodeURIComponent(targetPath)}`;
       window.history.pushState({ path: newUrl }, '', newUrl);

@@ -119,7 +119,8 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
               node={child} 
               onSelect={onSelectFile} 
               onRefresh={loadTree} 
-              selectedFile={selectedFile} 
+              selectedFile={selectedFile}
+              workspacePath={workspacePath} 
               activeTooltipNode={activeTooltipNode} 
               onTooltipOpen={handleTooltipOpen} 
               onTooltipClose={handleTooltipClose} 

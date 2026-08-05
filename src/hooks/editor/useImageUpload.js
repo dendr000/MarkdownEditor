@@ -28,8 +28,9 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
       return;
     }
 
-    if (IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
-      alert("API 키가 누락되었습니다. useImageUpload.js 파일 최상단에 ImgBB API 키를 입력해 주세요.");
+    // Vite 환경변수가 설정되지 않아 undefined가 반환되는 경우를 완벽하게 차단합니다.
+    if (!IMGBB_API_KEY || IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
+      alert("API 키가 누락되었습니다. 프로젝트 최상단의 .env 파일에 VITE_IMAGE_API_KEY를 입력해 주세요.");
       return;
     }
 
@@ -54,11 +55,11 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
     // 2. ImgBB API POST 전송 규격 (FormData 팩토리)
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('key', IMGBB_API_KEY);
+    // ImgBB 공식 권장에 따라 key는 FormData가 아닌 URL 쿼리 파라미터로 명확히 전달합니다.
 
     try {
       console.log("[useImageUpload v2.0] ImgBB 서버로 POST 요청 발송");
-      const response = await fetch('https://api.imgbb.com/1/upload', {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: 'POST',
         body: formData,
       });
