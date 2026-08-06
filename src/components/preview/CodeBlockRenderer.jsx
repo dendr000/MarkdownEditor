@@ -24,8 +24,8 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
     }
   };
 
-  if (!inline && match) {
-    const lang = match[1];
+  if (!inline) {
+    const lang = match ? match[1] : 'text';
     const isDiff = lang === 'diff';
     const isMermaid = lang === 'mermaid';
     const isGeoJson = lang === 'geojson' || lang === 'topojson';
@@ -67,13 +67,21 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
               return <span key={idx} className="diff-normal" style={{ display: 'block' }}>{line || ' '}</span>;
             })}
           </code>
-        ) : (
-          /* 일반 구문 강조 코드도 <pre> 중복 래핑을 제거하고 <code> 태그 단일 구조로 렌더링합니다. */
+        ) : match ? (
+          /* 언어가 지정되어 있는 경우: 구문 강조 로직 파싱 */
           <code 
             className={`language-${lang}`}
             style={{ display: 'block', padding: '16px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace', fontSize: '14px', lineHeight: '1.45' }}
             dangerouslySetInnerHTML={{ __html: highlightCode(String(children).replace(/\n$/, ''), lang) }}
           />
+        ) : (
+          /* 언어가 지정되지 않은 일반 코드 블록인 경우: 원본 텍스트 그대로 출력 */
+          <code 
+            className={`language-${lang}`}
+            style={{ display: 'block', padding: '16px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace', fontSize: '14px', lineHeight: '1.45' }}
+          >
+            {String(children).replace(/\n$/, '')}
+          </code>
         )}
       </div>
     );
