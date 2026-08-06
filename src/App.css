@@ -47,6 +47,11 @@ body {
 .mode-editor .preview-pane { display: none; }
 .mode-split .pane { width: 50%; }
 
+/* 스플릿 모드 시 좌우 패널 중앙에 고정 구분선 추가 (커스텀 뷰어 렌더링 시 선 누락 방지) */
+.mode-split .pane + .pane {
+  border-left: 1px solid var(--border-color, #d0d7de);
+}
+
 /* =========================================
    다크 테마 (눈뽕 방지 모드) CSS 변수 및 전역 선택자
    ========================================= */
