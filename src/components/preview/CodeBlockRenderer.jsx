@@ -58,23 +58,22 @@ function CodeBlockRenderer({ inline, className, children, ...props }) {
           )}
         </button>
         {isDiff ? (
-          <pre className="language-diff" style={{ backgroundColor: '#f6f8fa', padding: '16px', borderRadius: '6px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace', fontSize: '14px', lineHeight: '1.45', margin: 0 }}>
-            <code className="language-diff">
-              {String(children).replace(/\n$/, '').split('\n').map((line, idx) => {
-                if (line.startsWith('+')) return <span key={idx} className="diff-add">{line}</span>;
-                if (line.startsWith('-')) return <span key={idx} className="diff-remove">{line}</span>;
-                if (line.startsWith('!')) return <span key={idx} className="diff-change">{line}</span>;
-                return <span key={idx} className="diff-normal" style={{ display: 'block' }}>{line || ' '}</span>;
-              })}
-            </code>
-          </pre>
+          /* react-markdown이 부모 레벨에서 이미 <pre>를 씌우므로 중복을 피하기 위해 제거하고 <code> 태그에 속성을 직접 부여합니다. */
+          <code className="language-diff" style={{ display: 'block', padding: '16px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace', fontSize: '14px', lineHeight: '1.45' }}>
+            {String(children).replace(/\n$/, '').split('\n').map((line, idx) => {
+              if (line.startsWith('+')) return <span key={idx} className="diff-add">{line}</span>;
+              if (line.startsWith('-')) return <span key={idx} className="diff-remove">{line}</span>;
+              if (line.startsWith('!')) return <span key={idx} className="diff-change">{line}</span>;
+              return <span key={idx} className="diff-normal" style={{ display: 'block' }}>{line || ' '}</span>;
+            })}
+          </code>
         ) : (
-          <pre className={`language-${lang}`} style={{ backgroundColor: 'transparent', margin: 0, padding: '16px', borderRadius: '6px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace', fontSize: '14px', lineHeight: '1.45' }}>
-            <code 
-              className={`language-${lang}`}
-              dangerouslySetInnerHTML={{ __html: highlightCode(String(children).replace(/\n$/, ''), lang) }}
-            />
-          </pre>
+          /* 일반 구문 강조 코드도 <pre> 중복 래핑을 제거하고 <code> 태그 단일 구조로 렌더링합니다. */
+          <code 
+            className={`language-${lang}`}
+            style={{ display: 'block', padding: '16px', overflowX: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace', fontSize: '14px', lineHeight: '1.45' }}
+            dangerouslySetInnerHTML={{ __html: highlightCode(String(children).replace(/\n$/, ''), lang) }}
+          />
         )}
       </div>
     );
