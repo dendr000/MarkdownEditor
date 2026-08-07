@@ -15,14 +15,12 @@ import MathModal from './toolbar/MathModal';
 import CommitGuideModal from './toolbar/CommitGuideModal';
 import FindReplaceModal from './toolbar/FindReplaceModal';
 import AutocompletePopup from './AutocompletePopup';
-import GlobalSearchModal from './toolbar/GlobalSearchModal';
 import MockDataModal from './toolbar/MockDataModal';
 import SqlQueryBuilderModal from './toolbar/SqlQueryBuilderModal';
 
 function EditorModals({ 
   markdown, state, actions,
   suggestState, currentSuggestList, handleSelectSuggest,
-  isGlobalSearchOpen, setIsGlobalSearchOpen,
   isQueryBuilderModalOpen, setIsQueryBuilderModalOpen 
 }) {
   return (
@@ -37,9 +35,6 @@ function EditorModals({
       <MathModal isOpen={state.isMathModalOpen} onClose={() => actions.setIsMathModalOpen(false)} onInsert={actions.handleInsertTable} />
       <CommitGuideModal isOpen={state.isCommitGuideOpen} onClose={() => actions.setIsCommitGuideOpen(false)} onInsert={actions.handleInsertTable} />
       <FindReplaceModal isOpen={state.isFindReplaceOpen} onClose={() => actions.setIsFindReplaceOpen(false)} onReplaceAll={actions.handleReplaceAll} markdown={markdown} selectionRange={state.replaceSelectionRange} />
-      
-      {/* 전역 검색 모달 마운트 */}
-      <GlobalSearchModal isOpen={isGlobalSearchOpen} onClose={() => setIsGlobalSearchOpen(false)} />
       
       {/* 시각적 SQL 쿼리 빌더 대형 모달 마운트 (데이터 삽입 및 역설계 연동) */}
       <SqlQueryBuilderModal 
