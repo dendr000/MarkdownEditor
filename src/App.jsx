@@ -19,9 +19,8 @@ import { getStorageMode, setStorageMode as apiSetStorageMode } from './api/fileA
 import './App.css';
 
 function App() {
-  console.log("[App v10.0] 렌더링 시작 - 탐색기 상태 로컬 스토리지 연동");
+  console.log("[App v10.1] 렌더링 시작 - 배포용 브랜치 (VFS 강제 적용)");
 
-  const [storageMode, setStorageMode] = useState(getStorageMode());
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('md_editor_theme');
     return savedTheme || 'light';
@@ -61,15 +60,6 @@ function App() {
     localStorage.setItem('md_editor_explorer_open', JSON.stringify(isExplorerOpen));
   }, [isExplorerOpen]);
 
-  const handleStorageModeChange = (mode) => {
-    console.log(`[App v10.0] 스토리지 스위칭 감지: ${mode}`);
-    apiSetStorageMode(mode);
-    setStorageMode(mode);
-    setSelectedFile(null);
-    setMarkdown('');
-    window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
-  };
-
   return (
     <div className="app-layout">
       <Header
@@ -84,8 +74,6 @@ function App() {
         isExplorerAutoClose={isExplorerAutoClose}
         setIsExplorerAutoClose={setIsExplorerAutoClose}
         onBreadcrumbClick={(path) => handleSelectFile(path, false)}
-        storageMode={storageMode}
-        onStorageModeChange={handleStorageModeChange}
         theme={theme}
         setTheme={setTheme}
       />
@@ -111,7 +99,7 @@ function App() {
           isExplorerPinned={isExplorerPinned}
           setIsExplorerPinned={setIsExplorerPinned}
           setIsResizing={setIsResizing}
-          storageMode={storageMode}
+          storageMode="BROWSER"
         />
 
         <div

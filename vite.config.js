@@ -25,12 +25,6 @@ export default defineConfig({
   ],
   server: {
     port: 8989,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:3001', 
-        changeOrigin: true,
-      }
-    },
     watch: {
       // chokidar 파일 감시자 레벨에서 루트 폴더의 문서/설정 파일이 변경될 때 감지 자체를 무시
       ignored: [
