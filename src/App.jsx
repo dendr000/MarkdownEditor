@@ -11,7 +11,6 @@ import Editor from './components/editor/Editor';
 import FileExplorer from './components/explorer/FileExplorer';
 import OutlineMinimap from './components/editor/OutlineMinimap';
 import SqlViewer from './components/preview/SqlViewer';
-import DiffViewer from './components/preview/DiffViewer';
 import { useOutline } from './hooks/editor/useOutline';
 import { useFileLoader } from './hooks/app/useFileLoader';
 import { useScrollSync } from './hooks/app/useScrollSync';
@@ -111,37 +110,33 @@ function App() {
             transition: isResizing ? 'none' : 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
-          {viewMode === 'diff' ? (
-            <DiffViewer currentMarkdown={markdown} currentFile={selectedFile} />
-          ) : (
-            <>
-              {viewMode !== 'editor' && (
-                <div className="pane preview-pane">
-                  {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
-                    <SqlViewer sql={markdown} selectedFile={selectedFile} />
-                  ) : (
-                    <Preview
-                      markdown={markdown}
-                      selectedFile={selectedFile}
-                      onSelectFile={(path) => handleSelectFile(path, false)}
-                      previewRef={previewRef}
-                    />
-                  )}
-                </div>
-              )}
-
-              {viewMode !== 'preview' && (
-                <div className="pane editor-pane">
-                  <Editor
+          <>
+            {viewMode !== 'editor' && (
+              <div className="pane preview-pane">
+                {selectedFile && selectedFile.toLowerCase().endsWith('.sql') ? (
+                  <SqlViewer sql={markdown} selectedFile={selectedFile} />
+                ) : (
+                  <Preview
                     markdown={markdown}
-                    setMarkdown={setMarkdown}
                     selectedFile={selectedFile}
-                    textareaRef={textareaRef}
+                    onSelectFile={(path) => handleSelectFile(path, false)}
+                    previewRef={previewRef}
                   />
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </div>
+            )}
+
+            {viewMode !== 'preview' && (
+              <div className="pane editor-pane">
+                <Editor
+                  markdown={markdown}
+                  setMarkdown={setMarkdown}
+                  selectedFile={selectedFile}
+                  textareaRef={textareaRef}
+                />
+              </div>
+            )}
+          </>
         </div>
 
         <OutlineMinimap outline={outlineData} textareaRef={textareaRef} />

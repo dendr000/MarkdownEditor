@@ -6,7 +6,7 @@
  * (v6.0 수정사항): 설정 팝업에 다크 테마(Dark Theme) 토글 기능을 추가하고, 팝업 배경 및 텍스트 색상을 CSS 변수와 연동시켰습니다.
  */
 import React, { useState } from 'react';
-import { PanelLeft, Columns, PanelRight, Settings, Server, Database, GitCompare } from 'lucide-react';
+import { PanelLeft, Columns, PanelRight, Settings, Server, Database } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
@@ -81,10 +81,9 @@ function Header({
       
       <div className="header-center">
         <div className="view-mode-group">
-          <button className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.1] 뷰 모드 변경: preview"); setViewMode('preview'); }} title="실시간 뷰어 단독 보기"><PanelLeft size={16} /></button>
-          <button className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.1] 뷰 모드 변경: split"); setViewMode('split'); }} title="양면 분할 보기"><Columns size={16} /></button>
-          <button className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.1] 뷰 모드 변경: editor"); setViewMode('editor'); }} title="에디터 단독 보기"><PanelRight size={16} /></button>
-          <button className={`view-btn ${viewMode === 'diff' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.1] 뷰 모드 변경: diff"); setViewMode('diff'); }} title="파일 분할 비교 뷰 (Diff)"><GitCompare size={16} /></button>
+          <button className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: preview"); setViewMode('preview'); }} title="실시간 뷰어 단독 보기"><PanelLeft size={16} /></button>
+          <button className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: split"); setViewMode('split'); }} title="양면 분할 보기"><Columns size={16} /></button>
+          <button className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: editor"); setViewMode('editor'); }} title="에디터 단독 보기"><PanelRight size={16} /></button>
         </div>
       </div>
       
