@@ -1,14 +1,13 @@
-// src/components/editor/EditorToolbarArea.jsx v1.0
 /*
  * 파일 위치: src/components/editor/EditorToolbarArea.jsx
  * 파일 설명: 메인 에디터의 상단 툴바 영역을 렌더링하고 가로 스크롤 이벤트를 제어합니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import React, { useRef, useEffect } from 'react';
-import { Table, FileCode2, FolderTree, Workflow, Library, GitCommit, Search } from 'lucide-react';
+import { Table, FileCode2, FolderTree, Workflow, Library, GitCommit } from 'lucide-react';
 import { HeadingGroup, FormatGroup, ListGroup, MediaGroup, GithubGroup, DatabaseGroup } from './toolbar/ToolbarGroups';
 
-function EditorToolbarArea({ state, actions, setIsGlobalSearchOpen, setIsQueryBuilderModalOpen }) {
+function EditorToolbarArea({ state, actions, setIsQueryBuilderModalOpen }) {
   const toolbarRef = useRef(null);
 
   useEffect(() => {
@@ -52,7 +51,6 @@ function EditorToolbarArea({ state, actions, setIsGlobalSearchOpen, setIsQueryBu
         <div className="toolbar-divider" />
         
         <div className="toolbar-group">
-          <button onClick={() => setIsGlobalSearchOpen(true)} title="전역 검색 및 치환"><Search size={18} /></button>
           <button onClick={() => actions.setIsTemplateModalOpen(true)} title="템플릿 보관함"><Library size={18} /></button>
           <button onClick={() => actions.setIsCommitGuideOpen(true)} title="Git 커밋 가이드"><GitCommit size={18} /></button>
           <button onClick={() => { actions.prepareModalState('MD Table'); actions.setIsTableModalOpen(true); }} title="마크다운 표 삽입"><Table size={18} /></button>
