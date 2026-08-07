@@ -42,5 +42,21 @@ export default defineConfig({
         '**/docs/**'
       ]
     }
+  },
+  // v2.4 수정사항: 빌드 시 500kB 초과 경고 해결을 위해 chunkSizeWarningLimit 상향 및 외부 모듈 청크 분할 적용
+  build: {
+    // 경고를 발생시키는 파일 크기 기준을 500kB에서 1000kB로 상향 조정합니다.
+    chunkSizeWarningLimit: 1000, 
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // node_modules 내부의 패키지들을 'vendor'라는 하나의 청크 파일로 분리하여 메인 번들 크기를 줄입니다.
+          if (id.includes('node_modules')) {
+            console.log(`[Vite 빌드 v2.4] 청크 분리 적용 대상 감지: ${id}`);
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })
