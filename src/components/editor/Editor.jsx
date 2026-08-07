@@ -23,11 +23,10 @@ import './EditorToolbar.css';
 import './EditorCodeMode.css';
 
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
-  // 전역 검색 및 시각적 SQL 쿼리 빌더 모달 개폐 상태
-  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
+  // 시각적 SQL 쿼리 빌더 모달 개폐 상태
   const [isQueryBuilderModalOpen, setIsQueryBuilderModalOpen] = useState(false); 
   
-  console.log("[Editor v14.0] 단일 에디터 렌더링 시작 (하위 모듈 기능 분리 적용 완료)");
+  console.log("[Editor v14.1] 단일 에디터 렌더링 시작 (전역 검색 상태 제거 완료)");
   
   // Custom Hooks 선언 (상태 및 에디터 로직)
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
@@ -40,17 +39,16 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { handleColorChange } = useColorPicker(markdown, setMarkdown, textareaRef);
 
   return (
-    <div className="editor-container" style={{ position: 'relative' }}>
-      
-      {/* 1. 상단 툴바 및 아이콘 그룹 렌더링 영역 */}
-      <EditorToolbarArea 
-        state={state} 
-        actions={actions} 
-        setIsGlobalSearchOpen={setIsGlobalSearchOpen} 
-        setIsQueryBuilderModalOpen={setIsQueryBuilderModalOpen} 
-      />
-      
-      {/* 2. 텍스트 입력부(Workspace) 및 오버레이 렌더링 영역 */}
+        <div className="editor-container" style={{ position: 'relative' }}>
+          
+          {/* 1. 상단 툴바 및 아이콘 그룹 렌더링 영역 */}
+          <EditorToolbarArea 
+            state={state} 
+            actions={actions} 
+            setIsQueryBuilderModalOpen={setIsQueryBuilderModalOpen} 
+          />
+          
+          {/* 2. 텍스트 입력부(Workspace) 및 오버레이 렌더링 영역 */}
       <EditorWorkspace 
         markdown={markdown}
         setMarkdown={setMarkdown}
@@ -79,8 +77,6 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         suggestState={suggestState}
         currentSuggestList={currentSuggestList}
         handleSelectSuggest={handleSelectSuggest}
-        isGlobalSearchOpen={isGlobalSearchOpen}
-        setIsGlobalSearchOpen={setIsGlobalSearchOpen}
         isQueryBuilderModalOpen={isQueryBuilderModalOpen}
         setIsQueryBuilderModalOpen={setIsQueryBuilderModalOpen}
       />
