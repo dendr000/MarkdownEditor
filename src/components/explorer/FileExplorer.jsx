@@ -98,17 +98,15 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
       <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 3900, flexShrink: 0 }}>
         
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 ({storageMode === 'SERVER' ? 'DB' : 'VFS'})</span>
+          <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 (VFS)</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button onClick={() => setIsExplorerPinned(!isExplorerPinned)} title="고정 토글" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isExplorerPinned ? '#58a6ff' : '#8c959f' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill={isExplorerPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-.89 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
             </button>
-            <FilePlus size={16} color="#4ac26b" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 파일명"); if (name) createFileOrFolder(name, false).then(loadTree); }} />
-            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 폴더명"); if (name) createFileOrFolder(name, true).then(loadTree); }} />
+            <FilePlus size={16} color="#4ac26b" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 파일명 (확장자 포함 입력. 예: newfile.md, script.sql)"); if (name) createFileOrFolder(name, false).then(loadTree); }} />
+            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = window.prompt("새 폴더명 (확장자 제외)"); if (name) createFileOrFolder(name, true).then(loadTree); }} />
           </div>
         </div>
-        
-        {storageMode === 'SERVER' && <WorkspaceConfig workspacePath={workspacePath} tempWorkspacePath={tempWorkspacePath} setTempWorkspacePath={setTempWorkspacePath} isEditingWorkspace={isEditingWorkspace} setIsEditingWorkspace={setIsEditingWorkspace} handleWorkspaceSubmit={(e) => { e.preventDefault(); submitWorkspacePath(tempWorkspacePath); }} workspaceHistory={workspaceHistory} submitWorkspacePath={submitWorkspacePath} />}
         
         <style>{`.explorer-scroll::-webkit-scrollbar { width: 6px; height: 6px; } .explorer-scroll::-webkit-scrollbar-thumb { background-color: var(--border-color, #d0d7de); border-radius: 4px; } .explorer-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted, #8c959f); }`}</style>
         

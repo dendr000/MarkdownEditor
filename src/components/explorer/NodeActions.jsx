@@ -7,17 +7,16 @@
 import React, { useState } from 'react';
 import { FilePlus, FolderPlus, Trash2, Edit2, Copy, Check } from 'lucide-react';
 
-function NodeActions({ isFolder, onAdd, onRename, onDelete, relativePath, absolutePath }) {
+function NodeActions({ isFolder, onAdd, onRename, onDelete, relativePath }) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = (e) => {
     e.stopPropagation();
-    // SHIFT 클릭 시 절대 경로 복사, 일반 클릭 시 상대 경로 복사 (상대 경로가 없으면 절대 경로 폴백)
-    const textToCopy = e.shiftKey ? absolutePath : (relativePath || absolutePath);
+    const textToCopy = relativePath;
     
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => {
-        console.log(`[NodeActions v1.1] 경로 복사 완료: ${textToCopy}`);
+        console.log(`[NodeActions v1.2] 경로 복사 완료: ${textToCopy}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       });
@@ -48,10 +47,10 @@ function NodeActions({ isFolder, onAdd, onRename, onDelete, relativePath, absolu
         onClick={(e) => { e.stopPropagation(); onRename(); }} 
         title="이름 변경" 
       />
-      {(relativePath || absolutePath) && (
+      {relativePath && (
         <div 
           onClick={handleCopy} 
-          title="클릭: 상대 경로 복사 / SHIFT+클릭: 절대 경로 복사"
+          title="경로 복사"
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
         >
           {isCopied ? (
