@@ -138,14 +138,14 @@ function SqlViewer({ sql, selectedFile }) {
   };
 
   return (
-    <div style={{ padding: '24px', backgroundColor: '#f6f8fa', minHeight: '100%', overflowY: 'auto' }}>
+    <div style={{ padding: '24px', backgroundColor: 'var(--bg-main, #f6f8fa)', minHeight: '100%', overflowY: 'auto' }}>
       <div
         className="safe-area-header"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #d0d7de' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color, #d0d7de)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Database size={24} color="#0969da" />
-          <h2 style={{ margin: 0, fontSize: '20px', color: '#24292f' }}>SQL 테이블 시각화 뷰어</h2>
+          <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--text-main, #24292f)' }}>SQL 테이블 시각화 뷰어</h2>
         </div>
         
         {/* 파싱된 테이블이 1개 이상 존재할 경우에만 버튼을 활성화합니다. */}
@@ -166,11 +166,11 @@ function SqlViewer({ sql, selectedFile }) {
       {parsedTables.length === 0 ? (
         // 정규식을 통해 SELECT, WITH, VIEW 등의 키워드가 있는지 검사하여 데이터 조회/흐름 쿼리인지 판별
         /(SELECT|WITH|VIEW)\s+/i.test(sql) ? (
-          <div style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid var(--border-color, #d0d7de)', borderRadius: '8px', overflow: 'hidden' }}>
             <SqlFlowViewer sql={sql} />
           </div>
         ) : (
-          <div style={{ textAlign: 'center', color: '#57606a', marginTop: '40px' }}>
+          <div style={{ textAlign: 'center', color: 'var(--text-main, #57606a)', marginTop: '40px' }}>
             <p>현재 스크립트에서 <code>CREATE TABLE</code> (표준 SQL) 또는 <code>Table</code> (DBML) 구문을 찾을 수 없거나 분석할 수 없습니다.</p>
             <p style={{ fontSize: '12px', marginTop: '8px' }}>스키마 생성문 외의 쿼리는 좌측 에디터에서 텍스트로 확인해 주세요.</p>
           </div>

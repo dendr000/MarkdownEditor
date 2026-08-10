@@ -116,10 +116,11 @@ function SqlFlowViewer({ sql }) {
         position: { x: xPos[n.col], y: yPos[n.col] },
         data: { label: n.label },
         style: {
-          border: '1px solid #d0d7de',
+          border: '1px solid var(--border-color, #d0d7de)',
           borderRadius: '8px',
           padding: '12px',
-          backgroundColor: n.type === 'input' ? '#f0fdf4' : n.type === 'output' ? '#eff6ff' : '#ffffff',
+          backgroundColor: 'var(--bg-main, #ffffff)',
+          color: 'var(--text-main, #24292f)',
           fontWeight: '600',
           textAlign: 'center',
           boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
@@ -147,7 +148,7 @@ function SqlFlowViewer({ sql }) {
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: '600px', backgroundColor: '#f6f8fa' }}>
+    <div style={{ width: '100%', height: '100%', minHeight: '600px', backgroundColor: 'var(--bg-main, #f6f8fa)' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -156,7 +157,7 @@ function SqlFlowViewer({ sql }) {
         fitView
         attributionPosition="bottom-right"
       >
-        <Background color="#d0d7de" gap={16} />
+        <Background color="var(--border-color, #d0d7de)" gap={16} />
         <Controls />
       </ReactFlow>
     </div>

@@ -200,9 +200,12 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
       return !hasExcludedClass;
     };
     
+    // 다크모드 환경을 고려하여 현재 렌더링된 컴포넌트의 실제 배경색을 계산하여 적용합니다.
+    const currentBgColor = window.getComputedStyle(flowWrapperRef.current).backgroundColor;
+
     // 필터 함수를 적용하여 부가적인 UI 요소 없이 노드와 화살표(관계선)만 깨끗하게 캡처합니다.
     toPng(flowWrapperRef.current, {
-      backgroundColor: '#f6f8fa',
+      backgroundColor: currentBgColor === 'rgba(0, 0, 0, 0)' ? '#f6f8fa' : currentBgColor,
       pixelRatio: 4, 
       filter: filterUiElements
     })
@@ -281,7 +284,7 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
   return (
     <div 
       ref={flowWrapperRef}
-      style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f6f8fa' }}
+      style={{ width: '100%', height: 'calc(100vh - 150px)', border: '1px solid var(--border-color, #d0d7de)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--bg-main, #f6f8fa)' }}
     >
       <ReactFlow
         nodes={nodes}
@@ -293,12 +296,12 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
         fitView
         attributionPosition="bottom-right"
       >
-        <Background color="#d0d7de" gap={16} />
+        <Background color="var(--border-color, #d0d7de)" gap={16} />
         <Controls />
         <MiniMap 
           nodeColor={(node) => '#1d3557'}
           maskColor="rgba(246, 248, 250, 0.7)"
-          style={{ border: '1px solid #d0d7de', borderRadius: '4px', backgroundColor: '#ffffff' }}
+          style={{ border: '1px solid var(--border-color, #d0d7de)', borderRadius: '4px', backgroundColor: 'var(--bg-main, #ffffff)' }}
         />
         <Panel position="top-right" style={{ display: 'flex', gap: '8px' }}>
           {/* 파일 불러오기를 위한 숨겨진 input */}
@@ -314,10 +317,10 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
             title="저장된 좌표 JSON 파일 불러오기"
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', backgroundColor: '#ffffff',
-              border: '1px solid #d0d7de', borderRadius: '6px',
+              padding: '8px 12px', backgroundColor: 'var(--bg-main, #ffffff)',
+              border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px',
               cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-              color: '#24292f', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+              color: 'var(--text-main, #24292f)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
             }}
           >
             <Upload size={16} color="#9a6700" />
@@ -328,22 +331,22 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
             title="현재 위치를 JSON 파일로 저장"
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', backgroundColor: '#ffffff',
-              border: '1px solid #d0d7de', borderRadius: '6px',
+              padding: '8px 12px', backgroundColor: 'var(--bg-main, #ffffff)',
+              border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px',
               cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-              color: '#24292f', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+              color: 'var(--text-main, #24292f)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
             }}
           >
             <FileJson size={16} color="#2da44e" />
             좌표 저장
           </button>
-          <div style={{ width: '1px', backgroundColor: '#d0d7de', margin: '0 4px' }} />
+          <div style={{ width: '1px', backgroundColor: 'var(--border-color, #d0d7de)', margin: '0 4px' }} />
           <button 
             onClick={handleResetPositions}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', backgroundColor: '#ffffff',
-              border: '1px solid #d0d7de', borderRadius: '6px',
+              padding: '8px 12px', backgroundColor: 'var(--bg-main, #ffffff)',
+              border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px',
               cursor: 'pointer', fontSize: '13px', fontWeight: '600',
               color: '#cf222e', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
             }}
@@ -355,10 +358,10 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
             onClick={handleDownloadImage}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '8px 12px', backgroundColor: '#ffffff',
-              border: '1px solid #d0d7de', borderRadius: '6px',
+              padding: '8px 12px', backgroundColor: 'var(--bg-main, #ffffff)',
+              border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px',
               cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-              color: '#24292f', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+              color: 'var(--text-main, #24292f)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
             }}
           >
             <Download size={16} color="#0969da" />
