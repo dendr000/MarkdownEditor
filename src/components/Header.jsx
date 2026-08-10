@@ -6,7 +6,7 @@
  * (v6.0 수정사항): 설정 팝업에 다크 테마(Dark Theme) 토글 기능을 추가하고, 팝업 배경 및 텍스트 색상을 CSS 변수와 연동시켰습니다.
  */
 import React, { useState } from 'react';
-import { PanelLeft, Columns, PanelRight, Settings, Server, Database } from 'lucide-react';
+import { PanelLeft, Columns, PanelRight, Settings } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
@@ -20,7 +20,7 @@ function Header({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleCopy = async () => {
-    console.log("[Header v6.0] 전체 마크다운 복사 이벤트 호출");
+    console.log("[Header v6.3] 전체 마크다운 복사 이벤트 호출");
     const success = await copyToClipboard(markdown);
     if (success) {
       setCopied(true);
