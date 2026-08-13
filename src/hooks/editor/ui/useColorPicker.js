@@ -1,4 +1,4 @@
-// src/hooks/editor/useColorPicker.js v1.0
+// src/hooks/editor/ui/useColorPicker.js v1.0
 /*
  * 파일 위치: src/hooks/editor/useColorPicker.js
  * 파일 설명: CSS/SCSS 파일에서 Hex 색상 코드를 클릭하여 변경할 때, 에디터의 텍스트와 상태를 즉시 업데이트하는 훅입니다.

@@ -5,15 +5,18 @@
  * (v14.0 수정사항): 다크 테마 렌더링 유지 및 코드 복잡도 완화를 위해 ToolbarArea, Workspace, Modals 하위 컴포넌트로 전면 분리 개편됨.
  */
 import React, { useState } from 'react';
-import { useImageUpload } from '../../hooks/editor/useImageUpload';
-import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
-import { useEditor } from '../../hooks/editor/useEditor';
-import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
-import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
-import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
-import { useCodeFormatter } from '../../hooks/editor/useCodeFormatter';
-import { useColorPicker } from '../../hooks/editor/useColorPicker';
-import { useSqlFormatter } from '../../hooks/editor/useSqlFormatter'; // [신규 연결]
+// 1. Core Hooks
+import { useEditor } from '../../hooks/editor/core/useEditor';
+import { useImageUpload } from '../../hooks/editor/core/useImageUpload';
+// 2. Typing & Formatting Hooks
+import { useAutoTyping } from '../../hooks/editor/typing/useAutoTyping';
+import { useSqlFormatter } from '../../hooks/editor/typing/useSqlFormatter';
+import { useCodeFormatter } from '../../hooks/editor/typing/useCodeFormatter';
+import { useCommentToggle } from '../../hooks/editor/typing/useCommentToggle';
+import { useSnippetExpand } from '../../hooks/editor/typing/useSnippetExpand';
+// 3. UI & Overlay Hooks
+import { useAutocomplete } from '../../hooks/editor/ui/useAutocomplete';
+import { useColorPicker } from '../../hooks/editor/ui/useColorPicker';
 
 import EditorToolbarArea from './EditorToolbarArea';
 import EditorWorkspace from './EditorWorkspace';

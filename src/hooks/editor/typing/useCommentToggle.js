@@ -1,11 +1,11 @@
-// src/hooks/editor/useCommentToggle.js v1.0
+// src/hooks/editor/typing/useCommentToggle.js v1.0
 /*
  * 파일 위치: src/hooks/editor/useCommentToggle.js
  * 파일 설명: Ctrl + / 단축키 입력 시 현재 파일의 확장자에 맞는 주석 기호를 삽입하거나 제거하는 커스텀 훅입니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import { useCallback } from 'react';
-import { getLanguage, COMMENT_DICT } from '../../utils/editor/codeDictionary';
+import { getLanguage, COMMENT_DICT } from '../../../utils/editor/codeDictionary';
 
 export function useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef) {
   const handleToggleComment = useCallback((e) => {

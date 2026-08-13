@@ -1,11 +1,11 @@
-// C:\dev\MarkdownEditor\src\hooks\editor\useAutocomplete.js
+// src/hooks/editor/ui/useAutocomplete.js
 /*
  * 파일 위치: src/hooks/editor/useAutocomplete.js
  * 파일 설명: 프로그래밍 언어(SQL, Java 등)의 예약어 자동완성 및 커서 좌표(Mirror Div) 추적을 통합 관리하는 훅입니다.
  * (v4.1 수정사항): Java 어노테이션(@) 감지 정규식 복구 및 사전 연동 최적화 완료.
  */
 import { useState } from 'react';
-import { getLanguage, KEYWORD_DICT } from '../../utils/editor/codeDictionary';
+import { getLanguage, KEYWORD_DICT, SQL_UPPERCASE_KEYWORDS } from '../../../utils/editor/codeDictionary';
 
 const getCaretCoordinates = (element, position) => {
   const div = document.createElement('div');

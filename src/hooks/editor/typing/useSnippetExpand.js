@@ -1,11 +1,11 @@
-// src/hooks/editor/useSnippetExpand.js v1.0
+// src/hooks/editor/typing/useSnippetExpand.js v1.0
 /*
  * 파일 위치: src/hooks/editor/useSnippetExpand.js
  * 파일 설명: Ctrl + Space 입력 시 단축어를 스니펫으로 전개하고, 스페이스/엔터 입력 시 예약어를 치환하는 커스텀 훅입니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import { useCallback } from 'react';
-import { getLanguage, SNIPPET_DICT, REPLACE_DICT } from '../../utils/editor/codeDictionary';
+import { getLanguage, SNIPPET_DICT, REPLACE_DICT } from '../../../utils/editor/codeDictionary';
 
 export function useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef) {
   const handleSnippetAndReplace = useCallback((e) => {

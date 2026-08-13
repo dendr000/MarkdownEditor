@@ -1,12 +1,12 @@
-// src/hooks/editor/useEditor.js v2.0
+// src/hooks/editor/core/useEditor.js v2.0
 /*
  * 파일 위치: src/hooks/editor/useEditor.js
  * 파일 설명: Editor.jsx의 비즈니스 로직(저장, 포맷팅, 키보드 이벤트) 및 모달 상태를 관리하는 커스텀 훅입니다.
  * (v2.0 수정사항): 코드 파일 전용 우회 로직을 모두 제거하고 원래의 마크다운 기반 로직으로 완전 롤백했습니다.
  */
 import { useState, useEffect } from 'react';
-import { saveFileContent } from '../../api/fileApi';
-import { insertTextNatively, processTabIndentation } from '../../utils/editorCore';
+import { saveFileContent } from '../../../api/fileApi';
+import { insertTextNatively, processTabIndentation } from '../../../utils/editorCore';
 
 export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown) => {
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);

@@ -1,4 +1,4 @@
-// src/hooks/editor/useImageUpload.js v2.0
+// src/hooks/editor/core/useImageUpload.js v2.0
 /*
  * 파일 설명: 드래그 앤 드롭 및 클립보드 붙여넣기를 통해 이미지를 입력받고, ImgBB 클라우드 API를 호출하여 외부 호스팅 URL로 변환 및 에디터 본문에 삽입하는 비동기 통신 훅입니다. Base64 렌더링 렉을 원천 차단합니다.
  * 연결 위치: src/components/editor/Editor.jsx

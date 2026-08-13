@@ -1,11 +1,11 @@
-// src/hooks/editor/useAutoTyping.js v1.0
+// src/hooks/editor/typing/useAutoTyping.js v1.0
 /*
  * 파일 위치: src/hooks/editor/useAutoTyping.js
  * 파일 설명: 괄호/따옴표 자동 쌍 맞추기, HTML 태그 자동 닫기 등 키보드 타이핑 어시스트를 제공하는 커스텀 훅입니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import { useCallback } from 'react';
-import { getLanguage } from '../../utils/editor/codeDictionary';
+import { getLanguage } from '../../../utils/editor/codeDictionary';
 
 // 닫는 태그를 생성하지 않는 HTML 단일(빈) 태그 목록입니다.
 const VOID_ELEMENTS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
