@@ -1,4 +1,4 @@
-// C:\dev\MarkdownEditor\src\hooks\editor\useSqlFormatter.js
+// src/hooks/editor/typing/useSqlFormatter.js
 /*
  * 파일 위치: src/hooks/editor/useSqlFormatter.js
  * 파일 설명: SQL 파일(.sql) 편집 시, 예약어를 감지하여 스페이스바나 엔터 입력 시 자동으로 대문자로 치환해 주는 커스텀 훅입니다.
@@ -6,7 +6,7 @@
  * 기능: 단일 단어뿐만 아니라 'PRIMARY KEY', 'NOT NULL'과 같은 최대 3개 조합의 복합 키워드를 인식하여 안전하게 치환합니다.
  */
 import { useCallback } from 'react';
-import { SQL_UPPERCASE_KEYWORDS } from '../../utils/editor/codeDictionary';
+import { SQL_UPPERCASE_KEYWORDS } from '../../../utils/editor/codeDictionary';
 
 export function useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef) {
   const handleSqlFormatKeyDown = useCallback((e) => {

@@ -5,15 +5,14 @@
  * (v14.0 수정사항): 다크 테마 렌더링 유지 및 코드 복잡도 완화를 위해 ToolbarArea, Workspace, Modals 하위 컴포넌트로 전면 분리 개편됨.
  */
 import React, { useState } from 'react';
-import { useImageUpload } from '../../hooks/editor/useImageUpload';
-import { useAutocomplete } from '../../hooks/editor/useAutocomplete';
-import { useEditor } from '../../hooks/editor/useEditor';
-import { useCommentToggle } from '../../hooks/editor/useCommentToggle';
-import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
-import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
-import { useCodeFormatter } from '../../hooks/editor/useCodeFormatter';
-import { useColorPicker } from '../../hooks/editor/useColorPicker';
-import { useSqlFormatter } from '../../hooks/editor/useSqlFormatter'; // [신규 연결]
+// 1. Core Hooks
+import { useEditor } from '../../hooks/editor/core/useEditor';
+import { useImageUpload } from '../../hooks/editor/core/useImageUpload';
+// 2. Typing & Formatting Manager Hook
+import { useTypingManager } from '../../hooks/editor/typing/useTypingManager';
+// 3. UI & Overlay Hooks
+import { useAutocomplete } from '../../hooks/editor/ui/useAutocomplete';
+import { useColorPicker } from '../../hooks/editor/ui/useColorPicker';
 
 import EditorToolbarArea from './EditorToolbarArea';
 import EditorWorkspace from './EditorWorkspace';
@@ -27,18 +26,14 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   // 시각적 SQL 쿼리 빌더 모달 개폐 상태
   const [isQueryBuilderModalOpen, setIsQueryBuilderModalOpen] = useState(false); 
   
-  console.log("[Editor v14.1] 단일 에디터 렌더링 시작 (전역 검색 상태 제거 완료)");
+  console.log("[Editor v14.1] 단일 에디터 렌더링 시작 (타이핑 매니저 통합 완료)");
   
   // Custom Hooks 선언 (상태 및 에디터 로직)
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef, selectedFile);
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
-  const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleAutoTyping } = useAutoTyping(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleFormatCode } = useCodeFormatter(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleColorChange } = useColorPicker(markdown, setMarkdown, textareaRef);
-  const { handleSqlFormatKeyDown } = useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef); // [신규 연결]
+  const { handleTypingEvents } = useTypingManager(markdown, setMarkdown, selectedFile, textareaRef);
 
   return (
         <div className="editor-container" style={{ position: 'relative' }}>
@@ -64,12 +59,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         handleDrop={handleDrop}
         handlePaste={handlePaste}
         handleAutocompleteChange={handleAutocompleteChange}
-        handleFormatCode={handleFormatCode}
-        handleToggleComment={handleToggleComment}
-        handleSnippetAndReplace={handleSnippetAndReplace}
-        handleAutoTyping={handleAutoTyping}
+        handleTypingEvents={handleTypingEvents}
         handleColorChange={handleColorChange}
-        handleSqlFormatKeyDown={handleSqlFormatKeyDown} // [신규 연결]
       />
 
       {/* 3. 에디터 팝업 및 모달 렌더링 영역 */}

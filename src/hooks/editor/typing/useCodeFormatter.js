@@ -1,13 +1,13 @@
-// src/hooks/editor/useCodeFormatter.js
+// src/hooks/editor/typing/useCodeFormatter.js
 /*
  * 파일 위치: src/hooks/editor/useCodeFormatter.js
  * 파일 설명: Shift + Alt + F 단축키를 감지하여 현재 언어에 맞는 코드 포매팅을 실행하는 커스텀 훅입니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import { useCallback } from 'react';
-import { getLanguage } from '../../utils/editor/codeDictionary';
-import { formatCode } from '../../utils/editor/codeFormatter';
-import { insertTextNatively } from '../../utils/editorCore';
+import { getLanguage } from '../../../utils/editor/codeDictionary';
+import { formatCode } from '../../../utils/editor/codeFormatter';
+import { insertTextNatively } from '../../../utils/editorCore';
 
 export function useCodeFormatter(markdown, setMarkdown, selectedFile, textareaRef) {
   const handleFormatCode = useCallback((e) => {
