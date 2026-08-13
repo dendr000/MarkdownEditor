@@ -8,12 +8,8 @@ import React, { useState } from 'react';
 // 1. Core Hooks
 import { useEditor } from '../../hooks/editor/core/useEditor';
 import { useImageUpload } from '../../hooks/editor/core/useImageUpload';
-// 2. Typing & Formatting Hooks
-import { useAutoTyping } from '../../hooks/editor/typing/useAutoTyping';
-import { useSqlFormatter } from '../../hooks/editor/typing/useSqlFormatter';
-import { useCodeFormatter } from '../../hooks/editor/typing/useCodeFormatter';
-import { useCommentToggle } from '../../hooks/editor/typing/useCommentToggle';
-import { useSnippetExpand } from '../../hooks/editor/typing/useSnippetExpand';
+// 2. Typing & Formatting Manager Hook
+import { useTypingManager } from '../../hooks/editor/typing/useTypingManager';
 // 3. UI & Overlay Hooks
 import { useAutocomplete } from '../../hooks/editor/ui/useAutocomplete';
 import { useColorPicker } from '../../hooks/editor/ui/useColorPicker';
@@ -31,18 +27,14 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
   const [isQueryBuilderModalOpen, setIsQueryBuilderModalOpen] = useState(false); 
   
-  console.log("[Editor v14.0] 단일 에디터 렌더링 시작 (하위 모듈 기능 분리 적용 완료)");
+  console.log("[Editor v14.1] 단일 에디터 렌더링 시작 (타이핑 매니저 통합 완료)");
   
   // Custom Hooks 선언 (상태 및 에디터 로직)
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);
   const { suggestState, currentSuggestList, handleSelectSuggest, handleAutocompleteChange, handleAutocompleteKeyDown } = useAutocomplete(markdown, setMarkdown, textareaRef, selectedFile);
   const { state, actions } = useEditor(markdown, setMarkdown, selectedFile, textareaRef, handleAutocompleteKeyDown);
-  const { handleToggleComment } = useCommentToggle(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleSnippetAndReplace } = useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleAutoTyping } = useAutoTyping(markdown, setMarkdown, selectedFile, textareaRef);
-  const { handleFormatCode } = useCodeFormatter(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleColorChange } = useColorPicker(markdown, setMarkdown, textareaRef);
-  const { handleSqlFormatKeyDown } = useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef); // [신규 연결]
+  const { handleTypingEvents } = useTypingManager(markdown, setMarkdown, selectedFile, textareaRef);
 
   return (
     <div className="editor-container" style={{ position: 'relative' }}>
@@ -69,12 +61,8 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         handleDrop={handleDrop}
         handlePaste={handlePaste}
         handleAutocompleteChange={handleAutocompleteChange}
-        handleFormatCode={handleFormatCode}
-        handleToggleComment={handleToggleComment}
-        handleSnippetAndReplace={handleSnippetAndReplace}
-        handleAutoTyping={handleAutoTyping}
+        handleTypingEvents={handleTypingEvents}
         handleColorChange={handleColorChange}
-        handleSqlFormatKeyDown={handleSqlFormatKeyDown} // [신규 연결]
       />
 
       {/* 3. 에디터 팝업 및 모달 렌더링 영역 */}

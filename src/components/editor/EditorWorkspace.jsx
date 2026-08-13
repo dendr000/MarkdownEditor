@@ -11,9 +11,7 @@ import ColorPickerOverlay from './ColorPickerOverlay';
 function EditorWorkspace({ 
   markdown, setMarkdown, selectedFile, textareaRef, state, actions,
   isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste,
-  handleAutocompleteChange, handleFormatCode, handleToggleComment, 
-  handleSnippetAndReplace, handleAutoTyping, handleColorChange,
-  handleSqlFormatKeyDown
+  handleAutocompleteChange, handleTypingEvents, handleColorChange 
 }) {
   const overlayRef = useRef(null);
   const lineNumRef = useRef(null);
@@ -62,11 +60,8 @@ function EditorWorkspace({
           handleAutocompleteChange(e.target.value, e.target.selectionStart);
         }}
         onKeyDown={(e) => {
-          if (handleSqlFormatKeyDown && handleSqlFormatKeyDown(e)) return; // [신규 연결] SQL 단축어 치환을 최우선으로 가로챕니다.
-          if (handleFormatCode(e)) return;
-          if (handleToggleComment(e)) return;
-          if (handleSnippetAndReplace(e)) return;
-          if (handleAutoTyping(e)) return;
+          // 파이프라인 매니저가 이벤트를 가로채서 처리했다면(true 반환), 메인 이벤트(useKeyMap)를 건너뜁니다.
+          if (handleTypingEvents && handleTypingEvents(e)) return;
           actions.handleKeyDown(e);
         }}
         onScroll={isCodeMode ? handleScroll : undefined}
