@@ -1,66 +1,86 @@
-// src/hooks/editor/useAutocomplete.js v2.0
+// C:\dev\MarkdownEditor\src\hooks\editor\useAutocomplete.js
 /*
  * 파일 위치: src/hooks/editor/useAutocomplete.js
- * 파일 설명: 마크다운 가상 자동완성(@, #, :) 및 프로그래밍 언어의 예약어 자동완성을 통합 관리하는 훅입니다.
+ * 파일 설명: 프로그래밍 언어(SQL, Java 등)의 예약어 자동완성 및 커서 좌표(Mirror Div) 추적을 통합 관리하는 훅입니다.
+ * (v3.0 수정사항): 불필요한 마크다운 가상 데이터 제거 및 텍스트 커서 픽셀 좌표 추적 알고리즘 도입
  */
 import { useState } from 'react';
-import { getLanguage, KEYWORD_DICT } from '../../utils/editor/codeDictionary';
+import { getLanguage, KEYWORD_DICT, SQL_UPPERCASE_KEYWORDS } from '../../utils/editor/codeDictionary';
 
-const MOCK_AUTOCOMPLETE_DATA = {
-  '@': [
-    { id: 'octocat', name: 'octocat', desc: 'GitHub 마스코트' },
-    { id: 'torvalds', name: 'torvalds', desc: '리눅스 토발즈' },
-    { id: 'gaearon', name: 'gaearon', desc: '리액트 코어 개발자' },
-    { id: 'dan_abramov', desc: 'React 댄 아브라모프' },
-    { id: 'charlie', name: 'charlie', desc: '프론트엔드 리드 엔지니어' }
-  ],
-  '#': [
-    { id: '101', name: 'UI Bug', desc: '모바일 헤더 메뉴 툴바 영역 겹침 현상 해결' },
-    { id: '102', name: 'Table Export', desc: 'HTML 표 데이터를 CSV 파일로 즉시 출력 기능' },
-    { id: '103', name: 'Auth Issue', desc: '세션 만료 경고 창 백그라운드 스크롤 차단' },
-    { id: '104', name: 'Dark Theme', desc: '전역 CSS 변수 테마 분기 가동 정책' }
-  ],
-  ':': [
-    { id: '1', name: '+1', char: '👍' },
-    { id: '2', name: '-1', char: '👎' },
-    { id: '3', name: 'smile', char: '😄' },
-    { id: '4', name: 'tada', char: '🎉' },
-    { id: '5', name: 'rocket', char: '🚀' },
-    { id: '6', name: 'eyes', char: '👀' },
-    { id: '7', name: 'heart', char: '❤️' }
-  ]
+// [핵심 로직] Textarea 내부의 텍스트 커서(Caret) X, Y 픽셀 좌표를 추출하는 Mirror Div 알고리즘
+const getCaretCoordinates = (element, position) => {
+  const div = document.createElement('div');
+  const style = window.getComputedStyle(element);
+
+  // Textarea와 완벽하게 동일한 글꼴 및 박스 모델 환경을 복제합니다.
+  const properties = [
+    'direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+    'borderStyle', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust',
+    'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent',
+    'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'
+  ];
+
+  properties.forEach(prop => div.style[prop] = style[prop]);
+
+  div.style.position = 'absolute';
+  div.style.top = '0';
+  div.style.left = '-9999px'; // 화면 밖으로 숨김
+  div.style.whiteSpace = 'pre-wrap';
+  div.style.wordWrap = 'break-word';
+
+  // 커서 위치 전까지의 텍스트를 채웁니다.
+  div.textContent = element.value.substring(0, position);
+
+  // 커서 위치를 마킹하기 위한 span 태그 생성
+  const span = document.createElement('span');
+  span.textContent = element.value.substring(position) || '.';
+  div.appendChild(span);
+  document.body.appendChild(div);
+
+  // 스크롤 위치를 보정한 최종 좌표 계산
+  const coordinates = {
+    top: span.offsetTop - element.scrollTop,
+    left: span.offsetLeft - element.scrollLeft
+  };
+
+  document.body.removeChild(div);
+  return coordinates;
 };
 
-// selectedFile 인자를 추가하여 파일 확장자를 식별합니다.
 export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile) => {
   const [suggestState, setSuggestState] = useState({
     isOpen: false,
-    type: 'markdown', // 'markdown' 또는 'code'
-    trigger: '',
     query: '',
     index: 0,
-    cursorPosition: 0
+    cursorPosition: 0,
+    top: 0, // 팝업창 렌더링 Y 좌표
+    left: 0 // 팝업창 렌더링 X 좌표
   });
 
-  // 현재 언어 컨텍스트와 타입에 따라 필터링된 리스트를 반환합니다.
+  // 현재 언어 컨텍스트에 따라 필터링된 자동완성 리스트를 반환합니다.
   const currentSuggestList = (() => {
     if (!suggestState.isOpen) return [];
     
-    if (suggestState.type === 'markdown') {
-      return (MOCK_AUTOCOMPLETE_DATA[suggestState.trigger] || []).filter(item =>
-        (item.name || item.id || '').toLowerCase().includes(suggestState.query.toLowerCase())
-      );
-    } else {
-      const lang = getLanguage(selectedFile);
-      const dict = KEYWORD_DICT[lang] || [];
-      return dict.filter(item =>
-        (item.name || item.id).toLowerCase().includes(suggestState.query.toLowerCase())
-      );
+    const lang = getLanguage(selectedFile);
+    let dict = KEYWORD_DICT[lang] || [];
+
+    // [신규] SQL 모드일 경우 방대한 UPPERCASE 예약어 사전을 동적으로 병합
+    if (lang === 'sql' && SQL_UPPERCASE_KEYWORDS) {
+      const sqlKeywords = Array.from(SQL_UPPERCASE_KEYWORDS).map(kw => ({
+        id: kw, name: kw.toUpperCase(), desc: 'SQL 예약어'
+      }));
+      dict = [...dict, ...sqlKeywords];
     }
+
+    return dict.filter(item =>
+      (item.name || item.id).toLowerCase().includes(suggestState.query.toLowerCase())
+    );
   })();
 
   const handleSelectSuggest = (item) => {
-    console.log("[useAutocomplete v2.0] 자동완성 항목 선택 완료:", item);
+    console.log("[useAutocomplete v3.0] 코드 예약어 선택 완료:", item);
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -68,27 +88,16 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
     const textBeforeCursor = markdown.substring(0, cursor);
     const textAfterCursor = markdown.substring(cursor);
 
-    let insertVal = '';
-    let queryLength = 0;
-
-    // 마크다운과 코드의 치환 텍스트 길이를 다르게 계산합니다.
-    if (suggestState.type === 'markdown') {
-      queryLength = suggestState.trigger.length + suggestState.query.length;
-      if (suggestState.trigger === '@') insertVal = `@${item.name || item.id} `;
-      else if (suggestState.trigger === '#') insertVal = `#${item.id} `;
-      else if (suggestState.trigger === ':') insertVal = `:${item.name}: `;
-    } else {
-      queryLength = suggestState.query.length;
-      insertVal = item.name || item.id;
-    }
-
+    const queryLength = suggestState.query.length;
+    const insertVal = item.name || item.id;
     const lastTriggerIndex = cursor - queryLength;
+
     if (lastTriggerIndex < 0) return;
 
     const newText = markdown.substring(0, lastTriggerIndex) + insertVal + textAfterCursor;
     setMarkdown(newText);
 
-    setSuggestState({ isOpen: false, type: 'markdown', trigger: '', query: '', index: 0, cursorPosition: 0 });
+    setSuggestState({ isOpen: false, query: '', index: 0, cursorPosition: 0, top: 0, left: 0 });
 
     setTimeout(() => {
       textarea.focus();
@@ -101,34 +110,45 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
     const textBeforeCursor = val.substring(0, cursor);
     const lang = getLanguage(selectedFile);
 
-    if (lang === 'markdown') {
-      // 1. 마크다운 트리거 검사
-      const mdMatch = textBeforeCursor.match(/(?:^|\s)([@#:])([a-zA-Z0-9_\-+가-힣]*)$/);
-      if (mdMatch) {
+    // 마크다운(.md)이나 일반 텍스트는 예약어 추천을 띄우지 않습니다.
+    if (lang === 'markdown' || lang === 'text') {
+      setSuggestState(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
+      return;
+    }
+
+    // 개발 언어 키워드 트리거 검사 (공백이나 줄바꿈 뒤 영문 시작)
+    const codeMatch = textBeforeCursor.match(/(?:^|[\s(])([a-zA-Z_][a-zA-Z0-9_]*)$/);
+    
+    // 최소 2글자 이상 입력했을 때만 추천을 시작합니다.
+    if (codeMatch && codeMatch[1].length >= 2) {
+      let dict = KEYWORD_DICT[lang] || [];
+      if (lang === 'sql' && SQL_UPPERCASE_KEYWORDS) {
+        const sqlKeywords = Array.from(SQL_UPPERCASE_KEYWORDS).map(kw => ({
+          id: kw, name: kw.toUpperCase(), desc: 'SQL 예약어'
+        }));
+        dict = [...dict, ...sqlKeywords];
+      }
+
+      const hasMatch = dict.some(item => (item.name || item.id).toLowerCase().includes(codeMatch[1].toLowerCase()));
+      
+      if (hasMatch) {
+        // 커서의 브라우저상 절대 좌표(Viewport) 계산
+        const coords = getCaretCoordinates(textareaRef.current, cursor);
+        const rect = textareaRef.current.getBoundingClientRect();
+
         setSuggestState({
-          isOpen: true, type: 'markdown', trigger: mdMatch[1], query: mdMatch[2], index: 0, cursorPosition: cursor
+          isOpen: true, 
+          query: codeMatch[1], 
+          index: 0, 
+          cursorPosition: cursor,
+          top: rect.top + coords.top + 24, // 커서 바로 아래(약 24px 폰트/줄간격)에 팝업 위치
+          left: rect.left + coords.left
         });
         return;
       }
-    } else {
-      // 2. 개발 언어 키워드 트리거 검사 (공백이나 줄바꿈 뒤에 영문/@ 시작)
-      const codeMatch = textBeforeCursor.match(/(?:^|[\s(])([@a-zA-Z_][a-zA-Z0-9_]*)$/);
-      // 최소 2글자 이상 입력했을 때만 팝업을 엽니다.
-      if (codeMatch && codeMatch[1].length >= 2) {
-        // 사전에 해당 텍스트를 포함하는 키워드가 1개 이상 존재할 때만 팝업을 엽니다.
-        const dict = KEYWORD_DICT[lang] || [];
-        const hasMatch = dict.some(item => (item.name || item.id).toLowerCase().includes(codeMatch[1].toLowerCase()));
-        
-        if (hasMatch) {
-          setSuggestState({
-            isOpen: true, type: 'code', trigger: '', query: codeMatch[1], index: 0, cursorPosition: cursor
-          });
-          return;
-        }
-      }
     }
 
-    // 조건에 맞지 않으면 닫기
+    // 조건에 맞지 않으면 즉시 팝업을 닫습니다.
     setSuggestState(prev => prev.isOpen ? { ...prev, isOpen: false } : prev);
   };
 
@@ -145,7 +165,7 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
       setSuggestState(prev => ({ ...prev, index: prev.index - 1 < 0 ? currentSuggestList.length - 1 : prev.index - 1 }));
       return true;
     }
-    if (e.key === 'Enter' || e.key === 'Tab') { // 코드 작성 편의를 위해 Tab 키 추가
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       if (currentSuggestList[suggestState.index]) {
         handleSelectSuggest(currentSuggestList[suggestState.index]);
