@@ -2,10 +2,10 @@
 /*
  * 파일 위치: src/hooks/editor/useAutocomplete.js
  * 파일 설명: 프로그래밍 언어(SQL, Java 등)의 예약어 자동완성 및 커서 좌표(Mirror Div) 추적을 통합 관리하는 훅입니다.
- * (v3.0 수정사항): 불필요한 마크다운 가상 데이터 제거 및 텍스트 커서 픽셀 좌표 추적 알고리즘 도입
+ * (v4.0 수정사항): Shift 다중 선택 드래그 시 Arrow Key가 먹히지 않던 버그 해결 및 사전 동적 병합 로직 제거(사전 파일로 이관).
  */
 import { useState } from 'react';
-import { getLanguage, KEYWORD_DICT, SQL_UPPERCASE_KEYWORDS } from '../../utils/editor/codeDictionary';
+import { getLanguage, KEYWORD_DICT } from '../../utils/editor/codeDictionary';
 
 // [핵심 로직] Textarea 내부의 텍스트 커서(Caret) X, Y 픽셀 좌표를 추출하는 Mirror Div 알고리즘
 const getCaretCoordinates = (element, position) => {
@@ -55,8 +55,8 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
     query: '',
     index: 0,
     cursorPosition: 0,
-    top: 0, // 팝업창 렌더링 Y 좌표
-    left: 0 // 팝업창 렌더링 X 좌표
+    top: 0, 
+    left: 0 
   });
 
   // 현재 언어 컨텍스트에 따라 필터링된 자동완성 리스트를 반환합니다.
@@ -64,15 +64,7 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
     if (!suggestState.isOpen) return [];
     
     const lang = getLanguage(selectedFile);
-    let dict = KEYWORD_DICT[lang] || [];
-
-    // [신규] SQL 모드일 경우 방대한 UPPERCASE 예약어 사전을 동적으로 병합
-    if (lang === 'sql' && SQL_UPPERCASE_KEYWORDS) {
-      const sqlKeywords = Array.from(SQL_UPPERCASE_KEYWORDS).map(kw => ({
-        id: kw, name: kw.toUpperCase(), desc: 'SQL 예약어'
-      }));
-      dict = [...dict, ...sqlKeywords];
-    }
+    const dict = KEYWORD_DICT[lang] || [];
 
     return dict.filter(item =>
       (item.name || item.id).toLowerCase().includes(suggestState.query.toLowerCase())
@@ -80,7 +72,7 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
   })();
 
   const handleSelectSuggest = (item) => {
-    console.log("[useAutocomplete v3.0] 코드 예약어 선택 완료:", item);
+    console.log("[useAutocomplete v4.0] 코드 예약어 선택 완료:", item);
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -121,14 +113,7 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
     
     // 최소 2글자 이상 입력했을 때만 추천을 시작합니다.
     if (codeMatch && codeMatch[1].length >= 2) {
-      let dict = KEYWORD_DICT[lang] || [];
-      if (lang === 'sql' && SQL_UPPERCASE_KEYWORDS) {
-        const sqlKeywords = Array.from(SQL_UPPERCASE_KEYWORDS).map(kw => ({
-          id: kw, name: kw.toUpperCase(), desc: 'SQL 예약어'
-        }));
-        dict = [...dict, ...sqlKeywords];
-      }
-
+      const dict = KEYWORD_DICT[lang] || [];
       const hasMatch = dict.some(item => (item.name || item.id).toLowerCase().includes(codeMatch[1].toLowerCase()));
       
       if (hasMatch) {
@@ -155,15 +140,22 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
   const handleAutocompleteKeyDown = (e) => {
     if (!suggestState.isOpen) return false;
 
+    // [핵심 수정] 방향키 입력 시 Shift 키가 눌려있다면 텍스트 드래그(선택)를 위해 팝업을 닫고 브라우저 기본 동작을 허용합니다.
     if (e.key === 'ArrowDown') {
+      if (e.shiftKey) { setSuggestState(prev => ({ ...prev, isOpen: false })); return false; }
       e.preventDefault();
       setSuggestState(prev => ({ ...prev, index: prev.index + 1 >= currentSuggestList.length ? 0 : prev.index + 1 }));
       return true;
     }
     if (e.key === 'ArrowUp') {
+      if (e.shiftKey) { setSuggestState(prev => ({ ...prev, isOpen: false })); return false; }
       e.preventDefault();
       setSuggestState(prev => ({ ...prev, index: prev.index - 1 < 0 ? currentSuggestList.length - 1 : prev.index - 1 }));
       return true;
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      setSuggestState(prev => ({ ...prev, isOpen: false })); 
+      return false;
     }
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
