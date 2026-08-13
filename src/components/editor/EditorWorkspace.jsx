@@ -12,7 +12,8 @@ function EditorWorkspace({
   markdown, setMarkdown, selectedFile, textareaRef, state, actions,
   isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste,
   handleAutocompleteChange, handleFormatCode, handleToggleComment, 
-  handleSnippetAndReplace, handleAutoTyping, handleColorChange 
+  handleSnippetAndReplace, handleAutoTyping, handleColorChange,
+  handleSqlFormatKeyDown
 }) {
   const overlayRef = useRef(null);
   const lineNumRef = useRef(null);
@@ -61,6 +62,7 @@ function EditorWorkspace({
           handleAutocompleteChange(e.target.value, e.target.selectionStart);
         }}
         onKeyDown={(e) => {
+          if (handleSqlFormatKeyDown && handleSqlFormatKeyDown(e)) return; // [신규 연결] SQL 단축어 치환을 최우선으로 가로챕니다.
           if (handleFormatCode(e)) return;
           if (handleToggleComment(e)) return;
           if (handleSnippetAndReplace(e)) return;

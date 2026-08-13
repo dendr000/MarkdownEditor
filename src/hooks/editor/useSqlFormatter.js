@@ -1,20 +1,12 @@
-// src/hooks/editor/useSqlFormatter.js v1.0
+// C:\dev\MarkdownEditor\src\hooks\editor\useSqlFormatter.js
 /*
  * 파일 위치: src/hooks/editor/useSqlFormatter.js
  * 파일 설명: SQL 파일(.sql) 편집 시, 예약어를 감지하여 스페이스바나 엔터 입력 시 자동으로 대문자로 치환해 주는 커스텀 훅입니다.
  * 연결 위치: src/components/editor/Editor.jsx
- * 기능: 정규식과 Set 객체를 사용하여 에디터 성능 저하 없이 가볍고 빠른 자동 포매팅을 지원합니다.
+ * 기능: 단일 단어뿐만 아니라 'PRIMARY KEY', 'NOT NULL'과 같은 최대 3개 조합의 복합 키워드를 인식하여 안전하게 치환합니다.
  */
 import { useCallback } from 'react';
-
-// SQL 예약어 목록 (조회 속도 최적화를 위해 Set 사용)
-const SQL_KEYWORDS = new Set([
-  'select', 'from', 'where', 'and', 'or', 'insert', 'into', 'update', 'set', 'delete',
-  'create', 'table', 'view', 'alter', 'drop', 'int', 'varchar', 'bigint', 'datetime',
-  'text', 'boolean', 'not', 'null', 'primary', 'key', 'foreign', 'references', 'default',
-  'as', 'join', 'inner', 'left', 'right', 'outer', 'on', 'group', 'by', 'order', 'having',
-  'limit', 'with', 'case', 'when', 'then', 'else', 'end', 'is', 'in', 'exists', 'like'
-]);
+import { SQL_UPPERCASE_KEYWORDS } from '../../utils/editor/codeDictionary';
 
 export function useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef) {
   const handleSqlFormatKeyDown = useCallback((e) => {
@@ -31,35 +23,59 @@ export function useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef
       const textBefore = textarea.value.substring(0, cursorPos);
       const textAfter = textarea.value.substring(cursorPos);
 
-      // 3. 커서 바로 앞의 영단어 추출
-      const match = textBefore.match(/([a-zA-Z_]+)$/);
+      // 3. 커서 바로 앞의 최대 3개 단어 추출 (공백 포함)
+      // 정규식: 마지막에 위치한 (알파벳/언더스코어 연속) 단어 조합을 최대 3세트까지 캡처
+      const match = textBefore.match(/([a-zA-Z_]+(?:\s+[a-zA-Z_]+){0,2})$/);
 
       if (match) {
-        const lastWord = match[1];
+        const phrase = match[1];
+        const words = phrase.trim().split(/\s+/);
 
-        // 4. 추출한 단어가 SQL 예약어인지 검사
-        if (SQL_KEYWORDS.has(lastWord.toLowerCase())) {
+        let matchedKeyword = null;
+        let matchedLength = 0;
+
+        // 최대 3개 단어부터 1개 단어까지 역순으로 묶어 사전에 매칭되는지 검사
+        for (let i = words.length; i > 0; i--) {
+          const targetWords = words.slice(-i);
+          const targetStr = targetWords.join(' ');
+
+          // 사전에 존재하는 키워드일 경우
+          if (SQL_UPPERCASE_KEYWORDS.has(targetStr.toLowerCase())) {
+            // 사용자가 입력한 원래의 텍스트 간격(다중 스페이스 등)을 그대로 보존하면서 길이를 계산하기 위한 정규식
+            const escapedWords = targetWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            const regexStr = escapedWords.join('\\s+') + '$';
+            const exactMatch = phrase.match(new RegExp(regexStr, 'i'));
+
+            if (exactMatch) {
+              matchedLength = exactMatch[0].length;
+              matchedKeyword = exactMatch[0]; // 원본 텍스트 형태(원래 간격 포함) 유지
+              break; // 가장 긴 단어 조합이 매칭되면 하위 루프 즉시 중단
+            }
+          }
+        }
+
+        if (matchedLength > 0 && matchedKeyword) {
           e.preventDefault(); // 스페이스/엔터 기본 동작 차단
 
-          // 5. 대문자로 치환 및 입력한 키(스페이스/엔터) 덧붙임
-          const newTextBefore = textBefore.substring(0, textBefore.length - lastWord.length) + lastWord.toUpperCase();
+          // 4. 대문자로 치환 및 사용자가 방금 누른 키(스페이스/엔터)를 뒤에 덧붙임
+          const newTextBefore = textBefore.substring(0, textBefore.length - matchedLength) + matchedKeyword.toUpperCase();
           const insertChar = e.key === 'Enter' ? '\n' : ' ';
           const newValue = newTextBefore + insertChar + textAfter;
 
-          // 6. textarea 값 즉시 업데이트 및 커서 위치 재조정 (커서가 튀는 현상 방지)
+          // 5. textarea 값 즉시 업데이트 및 커서 위치 재조정 (커서가 튀는 현상 방지)
           textarea.value = newValue;
           const newCursorPos = newTextBefore.length + insertChar.length;
           textarea.setSelectionRange(newCursorPos, newCursorPos);
 
-          // 7. React 상태 동기화
+          // 6. React 상태 동기화
           setMarkdown(newValue);
-          console.log(`[useSqlFormatter v1.0] SQL 예약어 자동 치환 완료: ${lastWord.toUpperCase()}`);
+          console.log(`[useSqlFormatter v1.1] SQL 예약어 자동 치환 완료: ${matchedKeyword.toUpperCase()}`);
           
-          return true; // 커스텀 포매팅 로직이 처리되었음을 반환
+          return true; // 커스텀 포매팅 로직이 낚아채서 처리했음을 반환
         }
       }
     }
-    return false; // 예약어 치환 조건에 맞지 않으면 false 반환
+    return false;
   }, [selectedFile, setMarkdown, textareaRef]);
 
   return { handleSqlFormatKeyDown };

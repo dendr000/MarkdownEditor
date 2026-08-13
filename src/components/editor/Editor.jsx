@@ -13,6 +13,7 @@ import { useSnippetExpand } from '../../hooks/editor/useSnippetExpand';
 import { useAutoTyping } from '../../hooks/editor/useAutoTyping';
 import { useCodeFormatter } from '../../hooks/editor/useCodeFormatter';
 import { useColorPicker } from '../../hooks/editor/useColorPicker';
+import { useSqlFormatter } from '../../hooks/editor/useSqlFormatter'; // [신규 연결]
 
 import EditorToolbarArea from './EditorToolbarArea';
 import EditorWorkspace from './EditorWorkspace';
@@ -37,6 +38,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   const { handleAutoTyping } = useAutoTyping(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleFormatCode } = useCodeFormatter(markdown, setMarkdown, selectedFile, textareaRef);
   const { handleColorChange } = useColorPicker(markdown, setMarkdown, textareaRef);
+  const { handleSqlFormatKeyDown } = useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef); // [신규 연결]
 
   return (
         <div className="editor-container" style={{ position: 'relative' }}>
@@ -67,6 +69,7 @@ function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
         handleSnippetAndReplace={handleSnippetAndReplace}
         handleAutoTyping={handleAutoTyping}
         handleColorChange={handleColorChange}
+        handleSqlFormatKeyDown={handleSqlFormatKeyDown} // [신규 연결]
       />
 
       {/* 3. 에디터 팝업 및 모달 렌더링 영역 */}
