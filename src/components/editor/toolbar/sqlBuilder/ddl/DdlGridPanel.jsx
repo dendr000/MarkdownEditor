@@ -56,9 +56,9 @@ function DdlGridPanel({ initialValue, onInsert }) {
   const toSnakeCase = (str) => {
     if (!str) return '';
     return str
-      .replace(/([a-z])([A-Z])/g, '$1_$2') // 소문자 뒤 대문자 사이에 _ 삽입 (userId -> user_Id)
-      .toLowerCase() // 전체 소문자화 (user_id)
-      .replace(/_+/g, '_'); // 실수로 입력된 다중 언더스코어(e__mail) 단일화
+      .replace(/([a-z])([A-Z])/g, '$1_$2') 
+      .toLowerCase() 
+      .replace(/_+/g, '_'); 
   };
   
   const toCamelCase = (str) => {
