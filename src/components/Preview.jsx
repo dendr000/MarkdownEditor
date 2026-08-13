@@ -57,7 +57,14 @@ function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
                 <pre {...props} />
               </div>
             ),
-            code: CodeBlockRenderer,
+            code: ({ node, inline, className, children, ...props }) => {
+              // 인라인 코드(백틱 1개)일 경우 하이라이팅 컴포넌트를 타지 않고 기본 태그로 렌더링하여 줄바꿈 방지
+              if (inline) {
+                return <code className={className} {...props}>{children}</code>;
+              }
+              // 여러 줄의 코드 블록(백틱 3개)일 경우에만 구문 강조 컴포넌트 렌더링
+              return <CodeBlockRenderer node={node} inline={inline} className={className} children={children} {...props} />;
+            },
             a: (props) => <LinkRenderer {...props} currentFile={selectedFile} onSelectFile={onSelectFile} />
           }}
         >
