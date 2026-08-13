@@ -17,7 +17,6 @@ export default defineConfig({
       handleHotUpdate({ file }) {
         // 수정된 파일 경로에 'src' 폴더가 포함되어 있지 않다면 (즉, 에디터로 일반 문서를 편집한 것이라면)
         if (!file.includes('/src/') && !file.includes('\\src\\')) {
-          console.log(`[Vite 플러그인] 에디터 편집 감지 - 새로고침(HMR)을 차단합니다: ${file}`);
           return []; // 빈 배열을 반환하여 Vite의 업데이트 파이프라인을 취소시킴
         }
       }
@@ -49,7 +48,6 @@ export default defineConfig({
         manualChunks(id) {
           // node_modules 내부의 패키지들을 'vendor'라는 하나의 청크 파일로 분리하여 메인 번들 크기를 줄입니다.
           if (id.includes('node_modules')) {
-            console.log(`[Vite 빌드 v2.5] 청크 분리 적용 대상 감지: ${id}`);
             return 'vendor';
           }
         }

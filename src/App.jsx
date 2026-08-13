@@ -18,8 +18,6 @@ import { getStorageMode, setStorageMode as apiSetStorageMode } from './api/fileA
 import './App.css';
 
 function App() {
-  console.log("[App v10.1] 렌더링 시작 - 배포용 브랜치 (VFS 강제 적용)");
-
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('md_editor_theme');
     return savedTheme || 'light';

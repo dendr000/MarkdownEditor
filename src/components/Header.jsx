@@ -20,7 +20,6 @@ function Header({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleCopy = async () => {
-    console.log("[Header v6.3] 전체 마크다운 복사 이벤트 호출");
     const success = await copyToClipboard(markdown);
     if (success) {
       setCopied(true);
@@ -50,7 +49,6 @@ function Header({
                 <React.Fragment key={path}>
                   <span 
                     onClick={() => {
-                      console.log(`[Header v6.0] 브레드크럼 클릭 감지: 타겟 경로 = ${path}`);
                       if (onBreadcrumbClick) onBreadcrumbClick(path);
                     }}
                     style={{ 

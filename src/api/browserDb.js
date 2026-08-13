@@ -15,7 +15,6 @@ const openDB = () => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onupgradeneeded = (e) => {
-      console.log("[browserDb v1.0] IndexedDB 구조 초기화 및 오브젝트 스토어 생성");
       const db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'path' });
@@ -29,7 +28,6 @@ const openDB = () => {
 
 // 트리 데이터 빌드 (서버의 buildTree 알고리즘과 동일한 구조 반환)
 export const fetchTreeData = async () => {
-  console.log("[browserDb v1.0] 가상 파일 시스템 트리 구성 시작");
   const db = await openDB();
   
   return new Promise((resolve, reject) => {
@@ -73,7 +71,6 @@ export const fetchTreeData = async () => {
       };
       
       sortChildren(root);
-      console.log("[browserDb v1.0] 가상 파일 시스템 트리 구성 완료");
       resolve(root);
     };
     
@@ -83,7 +80,6 @@ export const fetchTreeData = async () => {
 
 // 파일/폴더 생성
 export const createFileOrFolder = async (path, isFolder) => {
-  console.log(`[browserDb v1.0] 가상 개체 생성 시도 - 경로: ${path}, 폴더여부: ${isFolder}`);
   const db = await openDB();
   
   return new Promise((resolve, reject) => {
@@ -96,7 +92,6 @@ export const createFileOrFolder = async (path, isFolder) => {
     const request = store.put(record);
 
     request.onsuccess = () => {
-      console.log(`[browserDb v1.0] 개체 생성 완료: ${path}`);
       resolve({ success: true, path });
     };
     request.onerror = () => reject(request.error);
@@ -105,7 +100,6 @@ export const createFileOrFolder = async (path, isFolder) => {
 
 // 텍스트 파일 읽기
 export const fetchFileContent = async (path) => {
-  console.log(`[browserDb v1.0] 가상 파일 읽기 요청: ${path}`);
   const db = await openDB();
   
   return new Promise((resolve, reject) => {
@@ -115,7 +109,6 @@ export const fetchFileContent = async (path) => {
 
     request.onsuccess = () => {
       if (request.result) {
-        console.log(`[browserDb v1.0] 파일 읽기 성공: ${path}`);
         resolve(request.result.content || '');
       } else {
         console.error(`[browserDb v1.0] 파일을 찾을 수 없음: ${path}`);
@@ -128,7 +121,6 @@ export const fetchFileContent = async (path) => {
 
 // 파일 덮어쓰기 (저장)
 export const saveFileContent = async (path, content) => {
-  console.log(`[browserDb v1.0] 가상 파일 덮어쓰기 요청: ${path}`);
   const db = await openDB();
   
   return new Promise((resolve, reject) => {
@@ -142,12 +134,10 @@ export const saveFileContent = async (path, content) => {
         record.content = content;
         const putReq = store.put(record);
         putReq.onsuccess = () => {
-          console.log(`[browserDb v1.0] 파일 저장 성공: ${path}`);
           resolve({ success: true });
         };
         putReq.onerror = () => reject(putReq.error);
       } else {
-        reject(new Error('저장할 대상 파일이 존재하지 않습니다.'));
       }
     };
     getReq.onerror = () => reject(getReq.error);
@@ -156,7 +146,6 @@ export const saveFileContent = async (path, content) => {
 
 // 파일/폴더 삭제 (하위 디렉토리 연쇄 삭제 포함)
 export const deleteFileOrFolder = async (path) => {
-  console.log(`[browserDb v1.0] 가상 개체 삭제 요청: ${path}`);
   const db = await openDB();
   
   return new Promise((resolve, reject) => {
@@ -171,7 +160,6 @@ export const deleteFileOrFolder = async (path) => {
       allRecords.forEach(record => {
         if (record.path === path || record.path.startsWith(prefix)) {
           store.delete(record.path);
-          console.log(`[browserDb v1.0] 삭제됨: ${record.path}`);
         }
       });
       resolve({ success: true });
@@ -182,7 +170,6 @@ export const deleteFileOrFolder = async (path) => {
 
 // 파일/폴더 이름 변경 및 경로 갱신
 export const renameTarget = async (oldPath, newPath) => {
-  console.log(`[browserDb v1.0] 가상 개체 이름 변경: ${oldPath} -> ${newPath}`);
   const db = await openDB();
   
   return new Promise((resolve, reject) => {

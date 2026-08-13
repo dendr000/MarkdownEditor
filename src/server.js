@@ -22,7 +22,6 @@ app.use('/api', apiRoutes);
 
 // 프론트엔드에서 전송한 좌표 데이터를 지정된 로컬 폴더에 자동 저장하는 API
 app.post('/api/save-coords', (req, res) => {
-  console.log(`[Server v2.1] ERD 좌표 자동 저장 요청 수신`);
   try {
     const { fileName, coords } = req.body;
     if (!fileName || !coords) {
@@ -35,14 +34,12 @@ app.post('/api/save-coords', (req, res) => {
     // 폴더가 존재하지 않으면 재귀적으로 생성합니다.
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
-      console.log(`[Server v2.1] coordinate 폴더 생성 완료: ${targetDir}`);
     }
 
     const filePath = path.join(targetDir, fileName);
     
     // 지정된 경로에 JSON 파일을 기록합니다.
     fs.writeFileSync(filePath, JSON.stringify(coords, null, 2), 'utf8');
-    console.log(`[Server v2.1] 좌표 파일 자동 저장 완료: ${filePath}`);
 
     return res.status(200).json({ success: true });
   } catch (error) {
