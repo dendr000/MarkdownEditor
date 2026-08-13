@@ -37,6 +37,8 @@ function DdlGridTable({ columns, handleColumnChange, handleDeleteColumn, handleA
             column={col} 
             onChange={handleColumnChange} 
             onDelete={handleDeleteColumn} 
+            onAddColumn={handleAddColumn}
+            isLast={index === columns.length - 1}
           />
         ))}
         

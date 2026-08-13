@@ -8,7 +8,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
-function DdlGridRow({ index, column, onChange, onDelete }) {
+function DdlGridRow({ index, column, onChange, onDelete, onAddColumn, isLast }) {
   // 길이나 정밀도(괄호) 입력이 필요한 데이터 타입 목록 정의
   const needsLength = ['VARCHAR', 'CHAR', 'DECIMAL', 'NUMERIC', 'FLOAT', 'DOUBLE'].includes(column.type);
 
@@ -54,9 +54,26 @@ function DdlGridRow({ index, column, onChange, onDelete }) {
       {/* 컬럼명 입력 */}
       <div style={cellStyle}>
         <input 
+          id={`col-name-input-${index}`}
           type="text" 
           value={column.name} 
           onChange={(e) => handleChange('name', e.target.value)} 
+          onKeyDown={(e) => {
+            // Tab 키를 누르면 오른쪽 속성이 아닌 바로 아래 줄의 컬럼명 입력칸으로 이동합니다.
+            if (e.key === 'Tab' && !e.shiftKey) {
+              e.preventDefault();
+              if (isLast && onAddColumn) {
+                onAddColumn(); // 마지막 줄이면 새 컬럼을 추가합니다.
+                setTimeout(() => {
+                  const nextInput = document.getElementById(`col-name-input-${index + 1}`);
+                  if (nextInput) nextInput.focus();
+                }, 50); // 렌더링 대기 후 0.05초 뒤 포커스
+              } else {
+                const nextInput = document.getElementById(`col-name-input-${index + 1}`);
+                if (nextInput) nextInput.focus();
+              }
+            }
+          }}
           placeholder="컬럼명 (예: user_id)"
           style={inputStyle}
         />

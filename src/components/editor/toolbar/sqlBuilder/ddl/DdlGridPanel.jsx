@@ -51,8 +51,20 @@ function DdlGridPanel({ initialValue, onInsert }) {
   }, [initialValue]);
 
   // 3. 네이밍 규칙 관련 유틸리티 (Orchestrator 내부 종속)
-  const toSnakeCase = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`).replace(/^_/, '');
-  const toCamelCase = (str) => str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+  // 입력 과정에서 글자가 파편화되지 않도록, 오직 '소문자 다음에 오는 대문자' 거나 '이미 명확한 CamelCase' 일 때만 언더스코어로 변환합니다.
+  // 연속된 대문자(예: ID)나 사용자가 직접 타이핑한 언더스코어(_)는 파괴하지 않고 보존합니다.
+  const toSnakeCase = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/([a-z])([A-Z])/g, '$1_$2') // 소문자 뒤 대문자 사이에 _ 삽입 (userId -> user_Id)
+      .toLowerCase() // 전체 소문자화 (user_id)
+      .replace(/_+/g, '_'); // 실수로 입력된 다중 언더스코어(e__mail) 단일화
+  };
+  
+  const toCamelCase = (str) => {
+    if (!str) return '';
+    return str.replace(/_([a-z0-9])/gi, (match, letter) => letter.toUpperCase());
+  };
 
   const handleTableNameChange = (val) => {
     setTableName(namingConvention === 'snake' ? toSnakeCase(val) : toCamelCase(val));
