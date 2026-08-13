@@ -130,7 +130,7 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       
       if (key === 's') {
         e.preventDefault();
-        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v2.0] 수동 저장 완료: ${selectedFile}`));
+        if (selectedFile && !isReadOnly) saveFileContent(selectedFile, markdown).then(() => console.log(`[useEditor v2.1] 수동 저장 완료: ${selectedFile}`));
         return;
       }
       if (e.shiftKey && key === 'f') {
@@ -164,6 +164,15 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       const textarea = textareaRef.current;
       if (!textarea) return;
       const start = textarea.selectionStart;
+      
+      // [핵심 수정] 마크다운(.md) 파일이 아닌 개발 언어(.sql 등)일 경우 줄바꿈(Enter) 시 불필요한 마크다운 공백(Space) 상속을 튕겨냅니다.
+      const isCodeMode = fileExt && !['md', 'txt'].includes(fileExt.toLowerCase());
+      if (isCodeMode) {
+        e.preventDefault();
+        insertTextNatively(textarea, start, start, '\n');
+        return;
+      }
+
       const currentLine = markdown.substring(0, start).split('\n').pop();
       const match = currentLine.match(/^([>-])\s*(.*)/);
 
