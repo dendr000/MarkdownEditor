@@ -1,10 +1,8 @@
-// src/components/Preview.jsx v2.2
+// src/components/Preview.jsx v2.3
 /*
  * 파일 위치: src/components/Preview.jsx
  * 연결 위치: src/App.jsx 내부에서 우측(또는 좌측 분할) 실시간 뷰어 영역에 렌더링됨
- * 기능 요약: 마크다운 텍스트를 HTML로 파싱하여 렌더링하는 실시간 뷰어 컴포넌트입니다.
- * (v2.2 수정사항): 일반 마크다운 파일(.md, .txt)이 아닌 개발 언어 파일(.java, .html 등)일 경우, 
- * 실시간 뷰어에서 자동으로 코드 블록(```)으로 감싸져 구문 강조가 적용되도록 가상 래핑 로직을 추가했습니다.
+ * 기능 요약: 마크다운 텍스트를 HTML로 파싱하여 렌더링하는 실시간 뷰어 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -20,8 +18,6 @@ import 'github-markdown-css/github-markdown.css';
 import './Preview.css';
 
 function Preview({ markdown, selectedFile, onSelectFile, previewRef }) {
-  console.log("[Preview v2.3] 실시간 뷰어 렌더링 시작 (GitHub 확장 문법 파이프라인 연결)");
-
   // 파일 확장자 추출 (경로 구분자 처리 및 확장자 존재 여부 엄격 확인)
   let ext = '';
   let isCodeFile = false;

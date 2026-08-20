@@ -1,7 +1,7 @@
-// src/api/browserDb.js v1.0
+// src/api/browserDb.js v1.1
 /*
  * 파일 위치: src/api/browserDb.js
- * 기능 요약: 브라우저 내장 IndexedDB를 활용하여 로컬 파일 시스템을 대체하는 가상 파일 시스템(VFS) 모듈입니다.
+ * 기능 요약: 브라우저 내장 IndexedDB를 활용하여 로컬 파일 시스템을 대체하는 가상 파일 시스템(VFS) 모듈입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 폴더/파일의 계층 구조 유지, 생성, 읽기, 수정, 삭제(CRUD) 및 트리 반환을 수행합니다.
  */
 
@@ -111,7 +111,7 @@ export const fetchFileContent = async (path) => {
       if (request.result) {
         resolve(request.result.content || '');
       } else {
-        console.error(`[browserDb v1.0] 파일을 찾을 수 없음: ${path}`);
+        // 배포를 위해 에러 콘솔 로그 생략
         reject(new Error('파일을 찾을 수 없습니다.'));
       }
     };
@@ -138,6 +138,7 @@ export const saveFileContent = async (path, content) => {
         };
         putReq.onerror = () => reject(putReq.error);
       } else {
+        // 파일이 존재하지 않을 때의 처리는 비워둠
       }
     };
     getReq.onerror = () => reject(getReq.error);

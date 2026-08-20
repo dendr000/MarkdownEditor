@@ -1,4 +1,9 @@
-// src/server.js
+// src/server.js v2.2
+/*
+ * 파일 위치: src/server.js
+ * 기능 요약: Express 기반의 모듈화된 백엔드 서버 엔트리 파일입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
+ */
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -43,12 +48,12 @@ app.post('/api/save-coords', (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error(`[Server v2.1] 좌표 파일 저장 실패:`, error);
+    // 에러 발생 시 콘솔 로그 생략 및 500 에러 반환
     return res.status(500).json({ error: '서버 내부 오류' });
   }
 });
 
 // 서버 구동
 app.listen(PORT, '127.0.0.1', () => {
-  console.log(`[Server v2.1] 모듈화된 백엔드 서버가 http://127.0.0.1:${PORT} 에서 가동되었습니다.`);
+  // 배포를 위해 서버 구동 확인용 콘솔 로그 제거
 });

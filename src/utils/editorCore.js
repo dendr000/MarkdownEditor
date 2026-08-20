@@ -1,11 +1,17 @@
-// src/utils/editorCore.js v1.0
+// C:\dev\MarkdownEditor\src\utils\editorCore.js
 /*
  * 파일 설명: 에디터(Textarea) 내부의 텍스트 조작, 커서 연산, 들여쓰기(Tab) 제어를 담당하는 코어 유틸리티입니다.
- * Editor.jsx의 파일 비대화를 막기 위해 DOM 조작 로직을 분리했습니다.
+ * (v1.1 수정사항): textarea가 disabled이거나 readOnly 상태일 때 JS API를 통한 강제 텍스트 주입을 원천 차단하는 방어 로직 추가.
  */
 
 // 실행 취소(Ctrl+Z) 스택을 보존하며 텍스트를 삽입하는 네이티브 주입기
 export const insertTextNatively = (textarea, start, end, replacement) => {
+  // [핵심 차단 로직] textarea가 존재하지 않거나, 비활성화(disabled) 또는 읽기 전용(readOnly) 상태면 텍스트 삽입을 원천 차단합니다.
+  if (!textarea || textarea.disabled || textarea.readOnly) {
+    console.warn("[editorCore] 에디터가 비활성화 상태이므로 텍스트 삽입이 차단되었습니다.");
+    return;
+  }
+
   textarea.focus();
   textarea.setSelectionRange(start, end);
   const success = document.execCommand('insertText', false, replacement);
@@ -17,6 +23,8 @@ export const insertTextNatively = (textarea, start, end, replacement) => {
 
 // VSC 스타일의 Tab 들여쓰기 및 Shift+Tab 내어쓰기 알고리즘
 export const processTabIndentation = (textarea, e) => {
+  if (!textarea || textarea.disabled || textarea.readOnly) return;
+  
   e.preventDefault();
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
@@ -24,7 +32,7 @@ export const processTabIndentation = (textarea, e) => {
 
   // 단일 커서 상태에서 일반 Tab 입력 시: 커서 위치에 스페이스 2개 삽입
   if (!e.shiftKey && start === end) {
-    console.log("[editorCore v1.0] 단일 커서 Tab 들여쓰기 실행");
+    console.log("[editorCore v1.1] 단일 커서 Tab 들여쓰기 실행");
     insertTextNatively(textarea, start, end, '  ');
     return;
   }
@@ -39,7 +47,7 @@ export const processTabIndentation = (textarea, e) => {
 
   if (e.shiftKey) {
     // Shift + Tab: 다중 줄 내어쓰기 (최대 2개의 스페이스 공백 제거)
-    console.log("[editorCore v1.0] 다중 줄 내어쓰기(Shift+Tab) 연산 실행");
+    console.log("[editorCore v1.1] 다중 줄 내어쓰기(Shift+Tab) 연산 실행");
     const newLines = lines.map(line => {
       if (line.startsWith('  ')) return line.substring(2);
       if (line.startsWith(' ')) return line.substring(1);
@@ -52,7 +60,7 @@ export const processTabIndentation = (textarea, e) => {
     textarea.setSelectionRange(lineStart, lineStart + replacement.length);
   } else {
     // Tab: 다중 줄 들여쓰기 (스페이스 2개 추가)
-    console.log("[editorCore v1.0] 다중 줄 들여쓰기(Tab) 연산 실행");
+    console.log("[editorCore v1.1] 다중 줄 들여쓰기(Tab) 연산 실행");
     const newLines = lines.map(line => '  ' + line);
     const replacement = newLines.join('\n');
     insertTextNatively(textarea, lineStart, lineEnd, replacement);

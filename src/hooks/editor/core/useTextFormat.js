@@ -5,9 +5,11 @@
  */
 import { insertTextNatively } from '../../../utils/editorCore';
 
-export const useTextFormat = (markdown, textareaRef, setSelectionRange, setSelectedTableText) => {
+export const useTextFormat = (markdown, textareaRef, selectedFile, isReadOnly, setSelectionRange, setSelectedTableText) => {
   const handleFormat = (originalPrefix, suffix = '', isBlock = false) => {
-    if (!textareaRef.current) return;
+    // 툴바 버튼 연타 시 방어 로직
+    if (!textareaRef.current || !selectedFile || isReadOnly) return;
+    
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;

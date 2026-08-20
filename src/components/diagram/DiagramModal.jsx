@@ -1,6 +1,7 @@
-// src/components/diagram/DiagramModal.jsx v11.0
+// src/components/diagram/DiagramModal.jsx v11.1
 /*
- * 파일 설명: 분리된 유틸리티(diagramParser)를 사용하여 파싱 로직을 외주화하고, UI 관리만 담당하는 경량화된 다이어그램 모달 컴포넌트입니다. GeoJSON 및 STL 상태 렌더링 누락 에러가 수정되었습니다.
+ * 파일 위치: src/components/diagram/DiagramModal.jsx
+ * 기능 설명: 분리된 유틸리티(diagramParser)를 사용하여 파싱 로직을 외주화하고, UI 관리만 담당하는 경량화된 다이어그램 모달 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
 import React, { useState, useEffect } from 'react';
@@ -17,7 +18,6 @@ import StlForm from './forms/StlForm';
 import './DiagramModal.css';
 
 function DiagramModal({ isOpen, onClose, onInsert, initialDiagramMarkdown = '' }) {
-  console.log("[DiagramModal v11.0] 모달 마운트 개시");
   const [editMode, setEditMode] = useState('gui');
   const [diagramType, setDiagramType] = useState('mermaid_flow');
   const [rawCode, setRawCode] = useState('');
@@ -108,7 +108,7 @@ function DiagramModal({ isOpen, onClose, onInsert, initialDiagramMarkdown = '' }
       if (diagramType === 'geojson') return <GeoJsonBlock dataString={activeCode} />;
       if (diagramType === 'stl') return <StlBlock stlString={activeCode} />;
     } catch (err) {
-      console.error("[DiagramModal Preview] 렌더링 오류:", err);
+      // 배포 환경을 위해 콘솔 에러 로그 제거
     }
     return null;
   };
@@ -118,7 +118,7 @@ function DiagramModal({ isOpen, onClose, onInsert, initialDiagramMarkdown = '' }
       <div className="diagram-modal-content" onClick={e => e.stopPropagation()}>
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>다이어그램 빌더 v11.0</h3>
+            <h3>다이어그램 빌더 v11.1</h3>
             <div className="mode-toggle-group">
               <button className={`mode-tab-btn ${editMode === 'gui' ? 'active' : ''}`} onClick={() => setEditMode('gui')}><Layout size={14} /> GUI</button>
               <button className={`mode-tab-btn ${editMode === 'raw' ? 'active' : ''}`} onClick={() => setEditMode('raw')}><Edit2 size={14} /> 코드</button>

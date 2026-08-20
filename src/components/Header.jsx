@@ -1,9 +1,8 @@
-// src/components/Header.jsx v6.0
+// src/components/Header.jsx v6.1
 /*
  * 파일 위치: src/components/Header.jsx
  * 연결 위치: src/App.jsx 내부에서 최상단 네비게이션 바로 렌더링됨
- * 기능 요약: 앱 상단의 헤더 컴포넌트로, 뷰 모드 제어, 스크롤 설정 및 테마 스위치 팝업 등을 제공합니다.
- * (v6.0 수정사항): 설정 팝업에 다크 테마(Dark Theme) 토글 기능을 추가하고, 팝업 배경 및 텍스트 색상을 CSS 변수와 연동시켰습니다.
+ * 기능 요약: 앱 상단의 헤더 컴포넌트로, 뷰 모드 제어, 스크롤 설정 및 테마 스위치 팝업 등을 제공합니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import React, { useState } from 'react';
 import { PanelLeft, Columns, PanelRight, Settings } from 'lucide-react';
@@ -79,9 +78,9 @@ function Header({
       
       <div className="header-center">
         <div className="view-mode-group">
-          <button className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: preview"); setViewMode('preview'); }} title="실시간 뷰어 단독 보기"><PanelLeft size={16} /></button>
-          <button className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: split"); setViewMode('split'); }} title="양면 분할 보기"><Columns size={16} /></button>
-          <button className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} onClick={() => { console.log("[Header v6.2] 뷰 모드 변경: editor"); setViewMode('editor'); }} title="에디터 단독 보기"><PanelRight size={16} /></button>
+          <button className={`view-btn ${viewMode === 'preview' ? 'active' : ''}`} onClick={() => { setViewMode('preview'); }} title="실시간 뷰어 단독 보기"><PanelLeft size={16} /></button>
+          <button className={`view-btn ${viewMode === 'split' ? 'active' : ''}`} onClick={() => { setViewMode('split'); }} title="양면 분할 보기"><Columns size={16} /></button>
+          <button className={`view-btn ${viewMode === 'editor' ? 'active' : ''}`} onClick={() => { setViewMode('editor'); }} title="에디터 단독 보기"><PanelRight size={16} /></button>
         </div>
       </div>
       
@@ -90,8 +89,8 @@ function Header({
           {copied ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2da44e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>}
         </button>
 
-        <div style={{ position: 'relative' }} onMouseLeave={() => { if (isSettingsOpen) { console.log("[Header v6.0] 마우스 아웃: 설정 닫힘"); setIsSettingsOpen(false); } }}>
-          <button className={`view-btn ${isSettingsOpen ? 'active' : ''}`} onClick={() => { console.log(`[Header v6.0] 설정 팝업 토글`); setIsSettingsOpen(!isSettingsOpen); }} title="에디터 환경 설정" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Settings size={16} /></button>
+        <div style={{ position: 'relative' }} onMouseLeave={() => { if (isSettingsOpen) { setIsSettingsOpen(false); } }}>
+          <button className={`view-btn ${isSettingsOpen ? 'active' : ''}`} onClick={() => { setIsSettingsOpen(!isSettingsOpen); }} title="에디터 환경 설정" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Settings size={16} /></button>
           
           {isSettingsOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '4px', zIndex: 1000, minWidth: '220px' }}>
@@ -102,19 +101,18 @@ function Header({
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-main, #24292f)', cursor: 'pointer', marginBottom: '12px', whiteSpace: 'nowrap' }}>
                   <input type="checkbox" checked={theme === 'dark'} onChange={(e) => {
                     const newTheme = e.target.checked ? 'dark' : 'light';
-                    console.log(`[Header v6.0] 다크 테마 적용 변경: ${newTheme}`);
                     setTheme(newTheme);
                   }} style={{ cursor: 'pointer' }} />
                   다크 테마 (Dark Mode)
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-main, #24292f)', cursor: 'pointer', marginBottom: '12px', whiteSpace: 'nowrap' }}>
-                  <input type="checkbox" checked={isSyncScroll} onChange={(e) => { console.log(`[Header v6.0] 양면 스크롤 동기화 변경: ${e.target.checked}`); setIsSyncScroll(e.target.checked); }} style={{ cursor: 'pointer' }} />
+                  <input type="checkbox" checked={isSyncScroll} onChange={(e) => { setIsSyncScroll(e.target.checked); }} style={{ cursor: 'pointer' }} />
                   양면 스크롤 동기화
                 </label>
                 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-main, #24292f)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  <input type="checkbox" checked={isExplorerAutoClose} onChange={(e) => { console.log(`[Header v6.0] 외부 클릭 탐색기 닫기 변경: ${e.target.checked}`); setIsExplorerAutoClose(e.target.checked); }} style={{ cursor: 'pointer' }} />
+                  <input type="checkbox" checked={isExplorerAutoClose} onChange={(e) => { setIsExplorerAutoClose(e.target.checked); }} style={{ cursor: 'pointer' }} />
                   외부 클릭 시 탐색기 자동 닫기
                 </label>
               </div>

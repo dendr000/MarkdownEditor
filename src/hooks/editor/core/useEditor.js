@@ -43,7 +43,6 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
     modalState.setIsFindReplaceOpen
   );
 
-  // 외부(Editor.jsx 등)에서 기존 구조를 조금도 수정하지 않고 그대로 쓸 수 있도록 인터페이스를 동일하게 반환합니다.
   return {
     state: {
       fileExt,
@@ -76,7 +75,6 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
       setOpenDropdown: modalState.setOpenDropdown,
       handleFormat,
       prepareModalState,
-      // 삽입 함수는 독립된 selectionRange 상태를 주입하여 래핑(Wrapping) 전달
       handleInsertTable: (output) => handleInsertTable(output, modalState.selectionRange),
       handleReplaceAll,
       handleKeyDown
