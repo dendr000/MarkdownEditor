@@ -1,15 +1,13 @@
-// src/components/editor/toolbar/sqlBuilder/dcl/DclPreview.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/dcl/DclPreview.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclPreview.jsx
- * 파일 설명: 조립된 DCL(GRANT/REVOKE) 쿼리를 구문 강조하여 보여주고 에디터 본문에 즉시 삽입하는 뷰어 패널입니다.
+ * 파일 설명: 조립된 DCL(GRANT/REVOKE) 쿼리를 구문 강조하여 보여주고 에디터 본문에 즉시 삽입하는 뷰어 패널입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixPanel.jsx
  */
 import React from 'react';
 import { Check } from 'lucide-react';
 
 function DclPreview({ highlightedSql, compiledSql, onInsert }) {
-  console.log("[DclPreview v1.1] 하단 실시간 컴파일 뷰어 업데이트");
-
   return (
     <div style={{ height: '220px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

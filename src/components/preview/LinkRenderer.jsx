@@ -1,6 +1,7 @@
-// src/components/preview/LinkRenderer.jsx v1.0
+// src/components/preview/LinkRenderer.jsx v1.2
 /*
- * 파일 설명: 뷰어 내부의 링크(a 태그) 클릭 이벤트를 가로채어 파일 탭 이동을 유도하는 렌더러 컴포넌트입니다.
+ * 파일 위치: src/components/preview/LinkRenderer.jsx
+ * 기능 요약: 뷰어 내부의 링크(a 태그) 클릭 이벤트를 가로채어 파일 탭 이동을 유도하는 렌더러 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * Preview.jsx에서 분리되었습니다.
  * 연결 위치: src/components/Preview.jsx 내부
  */
@@ -11,7 +12,6 @@ export const resolvePath = (currentFilePath, targetPath) => {
   const normalizedCurrent = currentFilePath.replace(/\\/g, '/');
   const normalizedTarget = targetPath.replace(/\\/g, '/');
 
-  console.log(`[resolvePath v1.0] 경로 연산 시작 - 현재 파일: ${normalizedCurrent}, 타겟 경로: ${normalizedTarget}`);
   if (!normalizedTarget) {
     return '';
   }
@@ -70,7 +70,6 @@ function LinkRenderer({ node, href, children, currentFile, onSelectFile, ...prop
         baseForResolve = baseForResolve ? `${baseForResolve}/.virtual` : '.virtual';
       }
       const targetPath = resolvePath(baseForResolve, href);
-      console.log(`[LinkRenderer v1.1] 내부 링크 감지 - 타겟 경로 변환: ${href} -> ${targetPath}`);
 
       // 상태 업데이트 함수를 명시적으로 호출하여 즉각적인 에디터 파일 전환 수행
       onSelectFile(targetPath);

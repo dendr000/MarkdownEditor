@@ -1,15 +1,13 @@
-// src/components/editor/toolbar/sqlBuilder/dml/DmlPreview.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/dml/DmlPreview.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlPreview.jsx
- * 파일 설명: 워크스페이스에서 조립된 DML 쿼리를 실시간으로 렌더링하고, 에디터에 삽입하는 뷰어입니다.
+ * 파일 설명: 워크스페이스에서 조립된 DML 쿼리를 실시간으로 렌더링하고, 에디터에 삽입하는 뷰어입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
 import React from 'react';
 import { Check } from 'lucide-react';
 
 function DmlPreview({ highlightedSql, compiledSql, onInsert }) {
-  console.log("[DmlPreview v1.1] 하단 실시간 DML 컴파일 뷰어 업데이트");
-
   return (
     <div style={{ flex: 2, backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

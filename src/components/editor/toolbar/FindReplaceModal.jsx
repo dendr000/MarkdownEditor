@@ -1,6 +1,7 @@
-// src/components/editor/toolbar/FindReplaceModal.jsx v1.5
+// src/components/editor/toolbar/FindReplaceModal.jsx v1.6
 /*
- * 파일 설명: 텍스트 내 특정 문자열을 찾아 일괄 치환하는 찾아 바꾸기(Find and Replace) 모달입니다.
+ * 파일 위치: src/components/editor/toolbar/FindReplaceModal.jsx
+ * 기능 요약: 텍스트 내 특정 문자열을 찾아 일괄 치환하는 찾아 바꾸기(Find and Replace) 모달입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 줄바꿈 문자인 리터럴 '\n' 입력을 지원합니다.
  * (v1.5 수정사항): 텍스트 드래그 후 모달 호출 시 '선택된 영역에서만 바꾸기' 기능 및 관련 체크박스 UI 추가
  * 연결 위치: src/components/editor/Editor.jsx 내부
@@ -21,13 +22,11 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
   // 모달이 열릴 때마다 상태를 초기화하고 '찾을 내용' 입력창에 포커스를 부여합니다.
   useEffect(() => {
     if (isOpen) {
-      console.log("[FindReplaceModal v1.5] 찾아 바꾸기 모달 활성화");
       setFindText('');
       setReplaceText('');
       
       // 전달받은 드래그 영역이 1글자 이상 존재하면 자동으로 체크박스 활성화
       if (selectionRange && selectionRange.end > selectionRange.start) {
-        console.log(`[FindReplaceModal v1.5] 선택 영역 발견 (${selectionRange.start} ~ ${selectionRange.end}) - '선택 영역에서만 바꾸기' 자동 활성화`);
         setInSelectionOnly(true);
       } else {
         setInSelectionOnly(false);
@@ -35,7 +34,6 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
 
       setTimeout(() => {
         if (inputRef.current) {
-          console.log("[FindReplaceModal v1.5] 찾을 내용 입력창 포커스 완료");
           inputRef.current.focus();
         }
       }, 0);
@@ -48,7 +46,6 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
   const getMatchCount = () => {
     // markdown prop이 정상적으로 전달되지 않았을 경우의 방어 로직
     if (typeof markdown !== 'string') {
-      console.log("[FindReplaceModal v1.5] 오류: 에디터 본문(markdown) 데이터가 모달로 전달되지 않았습니다. Editor.jsx의 props 연결을 확인하세요.");
       return 0;
     }
 
@@ -75,10 +72,8 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
   // 모두 바꾸기 버튼 클릭 이벤트 핸들러
   const handleReplaceAllClick = () => {
     if (!findText) {
-      console.log("[FindReplaceModal v1.5] 찾을 내용이 비어있어 치환 실행을 취소합니다.");
       return;
     }
-    console.log(`[FindReplaceModal v1.5] 모두 바꾸기 요청 - 찾을 내용: '${findText}', 바꿀 내용: '${replaceText}', 선택 영역만: ${inSelectionOnly}`);
     // 부모 에디터로 상태값(inSelectionOnly, selectionRange)을 함께 전달
     onReplaceAll(findText, replaceText, inSelectionOnly, selectionRange);
   };
@@ -88,11 +83,9 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
     e.preventDefault();
     const clipboardText = e.clipboardData.getData('text');
     if (!clipboardText) {
-      console.log("[FindReplaceModal v1.5] 클립보드에 텍스트 데이터가 없습니다.");
       return;
     }
 
-    console.log("[FindReplaceModal v1.5] 클립보드 붙여넣기 감지 - 줄바꿈 문자 변환 실행");
     // 정규식을 사용하여 캐리지 리턴(\r\n), 맥OS 구형 줄바꿈(\r), 기본 줄바꿈(\n)을 모두 찾아 변환
     const convertedText = clipboardText.replace(/\r\n|\r|\n/g, '\\n');
     
@@ -106,7 +99,6 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
     
     // 텍스트 삽입 후 커서를 붙여넣은 텍스트의 끝으로 이동시켜 연속적인 작업이 가능하도록 조정
     setTimeout(() => {
-      console.log("[FindReplaceModal v1.5] 붙여넣기 완료 후 커서 위치 조정");
       input.setSelectionRange(start + convertedText.length, start + convertedText.length);
     }, 0);
   };
@@ -118,10 +110,9 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
         <div className="diagram-modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid #d0d7de', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="header-title-section" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Search size={18} style={{ color: '#57606a' }} />
-            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>찾아 바꾸기 v1.5</h3>
+            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>찾아 바꾸기 v1.6</h3>
           </div>
           <button className="close-x-btn" onClick={() => {
-            console.log("[FindReplaceModal v1.5] 모달 닫기 버튼 클릭");
             onClose();
           }} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#57606a' }}>&times;</button>
         </div>
@@ -168,7 +159,6 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
                 id="inSelectionOnly" 
                 checked={inSelectionOnly}
                 onChange={(e) => {
-                  console.log(`[FindReplaceModal v1.5] 선택 영역에서만 찾기 상태 변경: ${e.target.checked}`);
                   setInSelectionOnly(e.target.checked);
                 }}
                 disabled={!(selectionRange && selectionRange.end > selectionRange.start)}
@@ -209,7 +199,6 @@ function FindReplaceModal({ isOpen, onClose, onReplaceAll, markdown, selectionRa
 
         <div className="diagram-modal-footer" style={{ padding: '16px 20px', borderTop: '1px solid #d0d7de', display: 'flex', justifyContent: 'flex-end', gap: '8px', backgroundColor: '#ffffff' }}>
           <button onClick={() => {
-            console.log("[FindReplaceModal v1.5] 취소/닫기 버튼 클릭");
             onClose();
           }} style={{ padding: '6px 12px', border: '1px solid #d0d7de', borderRadius: '6px', backgroundColor: '#f6f8fa', cursor: 'pointer', fontSize: '13px' }}>닫기</button>
           <button onClick={handleReplaceAllClick} style={{ padding: '6px 12px', border: 'none', borderRadius: '6px', backgroundColor: '#2da44e', color: '#ffffff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}>모두 바꾸기</button>

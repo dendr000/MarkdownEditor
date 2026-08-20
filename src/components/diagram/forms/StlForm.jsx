@@ -1,12 +1,12 @@
-// src/components/diagram/forms/StlForm.jsx v1.0
+// src/components/diagram/forms/StlForm.jsx v1.1
 /*
- * 파일 설명: 3D 모델(STL) 상자(Box) 크기 변수 조절용 GUI 입력 폼 컴포넌트입니다.
+ * 파일 위치: src/components/diagram/forms/StlForm.jsx
+ * 기능 요약: 3D 모델(STL) 상자(Box) 크기 변수 조절용 GUI 입력 폼 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/diagram/DiagramModal.jsx
  */
 import React from 'react';
 
 function StlForm({ boxWidth, setBoxWidth, boxHeight, setBoxHeight, boxDepth, setBoxDepth }) {
-  console.log("StlForm 컴포넌트 렌더링");
   return (
     <div className="gui-form-group">
       <span className="sub-title-label">상자(Box) 크기 매개변수 설정</span>
@@ -19,7 +19,7 @@ function StlForm({ boxWidth, setBoxWidth, boxHeight, setBoxHeight, boxDepth, set
             max="4.0" 
             step="0.1" 
             value={boxWidth} 
-            onChange={(e) => { console.log("STL 가로 폭 조절:", e.target.value); setBoxWidth(parseFloat(e.target.value)); }} 
+            onChange={(e) => { setBoxWidth(parseFloat(e.target.value)); }} 
           />
         </div>
         <div className="stl-range-row" style={{ marginTop: '12px' }}>
@@ -30,7 +30,7 @@ function StlForm({ boxWidth, setBoxWidth, boxHeight, setBoxHeight, boxDepth, set
             max="4.0" 
             step="0.1" 
             value={boxHeight} 
-            onChange={(e) => { console.log("STL 세로 높이 조절:", e.target.value); setBoxHeight(parseFloat(e.target.value)); }} 
+            onChange={(e) => { setBoxHeight(parseFloat(e.target.value)); }} 
           />
         </div>
         <div className="stl-range-row" style={{ marginTop: '12px' }}>
@@ -41,7 +41,7 @@ function StlForm({ boxWidth, setBoxWidth, boxHeight, setBoxHeight, boxDepth, set
             max="4.0" 
             step="0.1" 
             value={boxDepth} 
-            onChange={(e) => { console.log("STL 깊이 조절:", e.target.value); setBoxDepth(parseFloat(e.target.value)); }} 
+            onChange={(e) => { setBoxDepth(parseFloat(e.target.value)); }} 
           />
         </div>
       </div>

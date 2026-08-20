@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixTable.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixTable.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixTable.jsx
- * 파일 설명: 사용자 계정과 권한을 2차원 표(Matrix) 형태로 배치하는 뷰 영역입니다.
+ * 파일 설명: 사용자 계정과 권한을 2차원 표(Matrix) 형태로 배치하는 뷰 영역입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixPanel.jsx
  */
 import React from 'react';
@@ -9,8 +9,6 @@ import { ShieldCheck } from 'lucide-react';
 import DclMatrixRow from './DclMatrixRow';
 
 function DclMatrixTable({ users, matrix, permissions, handleTogglePermission, handleToggleAllForUser, handleRemoveUser }) {
-  console.log("[DclMatrixTable v1.0] 매트릭스 표 렌더링", { userCount: users.length });
-
   return (
     <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       

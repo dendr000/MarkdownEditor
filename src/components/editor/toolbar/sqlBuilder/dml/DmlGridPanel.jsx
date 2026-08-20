@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dml/DmlGridPanel.jsx v2.1
+// src/components/editor/toolbar/sqlBuilder/dml/DmlGridPanel.jsx v2.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlGridPanel.jsx
- * 파일 설명: 직관성이 떨어지던 기존 React Flow 캔버스를 폐기하고, 
+ * 파일 설명: 직관성이 떨어지던 기존 React Flow 캔버스를 폐기하고, (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * DDL과 동일한 스프레드시트(Grid) 형태의 DML(SELECT, INSERT, UPDATE, DELETE) 쿼리 빌더로 전면 개편했습니다.
  * (v2.1 수정사항): DML 쿼리 역설계(SQL 파싱) 기능을 추가 탑재했습니다.
  */
@@ -47,7 +47,6 @@ function DmlGridPanel({ onInsert, fileExt }) {
 
   const handleApplyImport = () => {
     if (!importSqlText.trim()) return;
-    console.log("[DmlGridPanel v2.2] DML 역설계 파싱 적용 시작");
     
     const parsedData = parseDmlSql(importSqlText);
     

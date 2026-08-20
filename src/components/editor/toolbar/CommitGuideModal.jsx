@@ -1,6 +1,7 @@
-// src/components/editor/toolbar/CommitGuideModal.jsx v1.1
+// src/components/editor/toolbar/CommitGuideModal.jsx v1.2
 /*
- * 파일 설명: 깃허브 커밋 메시지 컨벤션을 시각적으로 안내하고, 클릭 시 해당 태그를 에디터에 삽입하거나 복사할 수 있는 가이드 모달입니다.
+ * 파일 위치: src/components/editor/toolbar/CommitGuideModal.jsx
+ * 기능 요약: 깃허브 커밋 메시지 컨벤션을 시각적으로 안내하고, 클릭 시 해당 태그를 에디터에 삽입하거나 복사할 수 있는 가이드 모달입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v1.1 수정사항): 불필요한 안내 텍스트 제거 및 바둑판(Grid) 배열로 UI 레이아웃 변경.
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
@@ -33,17 +34,15 @@ function CommitGuideModal({ isOpen, onClose, onInsert }) {
     e.stopPropagation(); // 부모 엘리먼트의 클릭 이벤트(에디터 삽입) 방지
     const success = await copyToClipboard(typeStr + ': ');
     if (success) {
-      console.log(`[CommitGuideModal v1.1] 클립보드 복사 성공: ${typeStr}`);
       setCopiedType(typeStr);
       setTimeout(() => setCopiedType(null), 1500);
     } else {
-      console.error(`[CommitGuideModal v1.1] 클립보드 복사 실패. 권한 문제 발생`);
+      // 권한 문제 발생 시의 에러 로그 생략
     }
   };
 
   // 컨벤션 항목 클릭 시 에디터에 텍스트를 삽입하는 핸들러
   const handleInsert = (typeStr) => {
-    console.log(`[CommitGuideModal v1.1] 에디터 본문 삽입: ${typeStr}`);
     onInsert(typeStr + ': ');
     onClose();
   };
@@ -56,7 +55,7 @@ function CommitGuideModal({ isOpen, onClose, onInsert }) {
         <div className="diagram-modal-header">
           <div className="header-title-section">
             <GitCommit size={18} style={{ color: '#57606a', marginRight: '8px' }} />
-            <h3>Git 커밋 메시지 컨벤션 가이드 v1.1</h3>
+            <h3>Git 커밋 메시지 컨벤션 가이드 v1.2</h3>
           </div>
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>

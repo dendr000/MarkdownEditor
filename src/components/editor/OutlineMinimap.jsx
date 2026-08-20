@@ -1,6 +1,7 @@
-// src/components/editor/OutlineMinimap.jsx v2.3
+// src/components/editor/OutlineMinimap.jsx v2.4
 /*
- * 파일 설명: 에디터 우측에 고정되어 마우스 호버 시 스르륵 나타나는(Drawer) 목차(TOC) 내비게이션 컴포넌트입니다.
+ * 파일 위치: src/components/editor/OutlineMinimap.jsx
+ * 기능 요약: 에디터 우측에 고정되어 마우스 호버 시 스르륵 나타나는(Drawer) 목차(TOC) 내비게이션 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v2.3 수정사항): 모든 하드코딩된 색상을 제거하고 CSS 변수(var) 체계에 병합하여 다크 테마 전환 시 배경과 텍스트 색상이 동기화되도록 수정했습니다.
  * 연결 위치: src/App.jsx 내부
  */
@@ -10,7 +11,6 @@ function OutlineMinimap({ outline, textareaRef }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleScrollToNode = (charIndex, text) => {
-    console.log(`[OutlineMinimap v2.3] 목차 항목 클릭 - 텍스트: '${text}', charIndex: ${charIndex}`);
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.focus();

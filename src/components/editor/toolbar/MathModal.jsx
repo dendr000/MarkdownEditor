@@ -1,6 +1,7 @@
-// src/components/editor/toolbar/MathModal.jsx v1.0
+// src/components/editor/toolbar/MathModal.jsx v1.1
 /*
- * 파일 설명: LaTeX 문법을 모르는 사용자를 위해 자주 쓰이는 수학 수식 기호들을 버튼(프리셋) 형태로 제공하고, 입력된 수식을 KaTeX 엔진으로 실시간 렌더링하여 보여주는 GUI 모달 컴포넌트입니다.
+ * 파일 위치: src/components/editor/toolbar/MathModal.jsx
+ * 기능 요약: LaTeX 문법을 모르는 사용자를 위해 자주 쓰이는 수학 수식 기호들을 버튼(프리셋) 형태로 제공하고, 입력된 수식을 KaTeX 엔진으로 실시간 렌더링하여 보여주는 GUI 모달 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
 import React, { useState, useRef, useEffect } from 'react';
@@ -29,7 +30,6 @@ function MathModal({ isOpen, onClose, onInsert }) {
 
   useEffect(() => {
     if (isOpen) {
-      console.log("[MathModal v1.0] 수식 작성기 모달 활성화 - 상태 초기화");
       setLatexInput('');
       setTimeout(() => {
         if (inputRef.current) inputRef.current.focus();
@@ -40,7 +40,6 @@ function MathModal({ isOpen, onClose, onInsert }) {
   if (!isOpen) return null;
 
   const handlePresetClick = (snippet) => {
-    console.log(`[MathModal v1.0] 프리셋 기호 삽입: ${snippet}`);
     if (!inputRef.current) return;
     
     const textarea = inputRef.current;
@@ -58,7 +57,6 @@ function MathModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleInsertSubmit = () => {
-    console.log("[MathModal v1.0] 수식 블록 에디터 본문 삽입");
     if (!latexInput.trim()) {
       onClose();
       return;
@@ -74,7 +72,7 @@ function MathModal({ isOpen, onClose, onInsert }) {
         
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>수식 (LaTeX) 작성기 v1.0</h3>
+            <h3>수식 (LaTeX) 작성기 v1.1</h3>
           </div>
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>

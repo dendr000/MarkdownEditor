@@ -1,6 +1,7 @@
-// src/components/editor/toolbar/TemplateModal.jsx v2.0
+// src/components/editor/toolbar/TemplateModal.jsx v2.1
 /*
- * 파일 설명: 로컬 스토리지에 저장된 마크다운 템플릿 목록을 조회하고, 에디터에 삽입하거나 새로운 템플릿을 생성/수정/삭제할 수 있는 종합 관리 모달 UI입니다.
+ * 파일 위치: src/components/editor/toolbar/TemplateModal.jsx
+ * 기능 요약: 로컬 스토리지에 저장된 마크다운 템플릿 목록을 조회하고, 에디터에 삽입하거나 새로운 템플릿을 생성/수정/삭제할 수 있는 종합 관리 모달 UI입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v2.0 수정사항): 미리보기 정렬 버그 패치(textAlign: 'left'), 사용자의 커스텀 템플릿 CRUD 로직 탑재.
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
@@ -23,7 +24,6 @@ function TemplateModal({ isOpen, onClose, onInsert }) {
   // 1. 모달 열릴 때 초기 데이터 로드 및 상태 리셋
   useEffect(() => {
     if (isOpen) {
-      console.log("[TemplateModal v2.0] 모달 활성화 - 로컬 스토리지 DB 스캔");
       resetState();
     }
   }, [isOpen]);
@@ -72,10 +72,8 @@ function TemplateModal({ isOpen, onClose, onInsert }) {
 
     let updated;
     if (isCreating) {
-      console.log("[TemplateModal v2.0] 신규 커스텀 템플릿 저장");
       updated = saveTemplate(editTitle, editContent);
     } else if (isEditing) {
-      console.log("[TemplateModal v2.0] 기존 커스텀 템플릿 수정");
       updated = updateTemplate(templates[selectedIndex].id, editTitle, editContent);
     }
 
@@ -90,7 +88,6 @@ function TemplateModal({ isOpen, onClose, onInsert }) {
   const handleDelete = (e, id) => {
     e.stopPropagation(); // 리스트 클릭 이벤트 방지
     if (window.confirm("이 템플릿을 삭제하시겠습니까? 다시 복구할 수 없습니다.")) {
-      console.log(`[TemplateModal v2.0] 템플릿 삭제 수행 - ID: ${id}`);
       const updated = deleteTemplate(id);
       setTemplates(updated);
       setSelectedIndex(0); // 0번째로 안전하게 강제 이동
@@ -101,7 +98,6 @@ function TemplateModal({ isOpen, onClose, onInsert }) {
   const handleInsertSubmit = () => {
     // 편집 중이거나 생성 중일 때는 삽입 불가
     if (isCreating || isEditing || templates.length === 0) return;
-    console.log("[TemplateModal v2.0] 선택된 템플릿 에디터 본문 삽입");
     const activeTemplate = templates[selectedIndex];
     // 템플릿 내용 앞뒤로 줄바꿈을 추가하여 기존 문단과 겹치지 않게 보호
     onInsert(`\n${activeTemplate.content}\n`);
@@ -117,7 +113,7 @@ function TemplateModal({ isOpen, onClose, onInsert }) {
         
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>템플릿 보관함 v2.0</h3>
+            <h3>템플릿 보관함 v2.1</h3>
           </div>
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>

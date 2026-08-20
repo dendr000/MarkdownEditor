@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dcl/DclToolbar.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/dcl/DclToolbar.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclToolbar.jsx
- * 파일 설명: DCL 권한 제어 패널의 상단 제어 바입니다. 
+ * 파일 설명: DCL 권한 제어 패널의 상단 제어 바입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 대상 객체(Target) 지정 및 새로운 사용자 계정 추가 폼을 렌더링합니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dcl/DclMatrixPanel.jsx
  */
@@ -9,8 +9,6 @@ import React from 'react';
 import { Database, UserPlus } from 'lucide-react';
 
 function DclToolbar({ targetObject, setTargetObject, newUserInput, setNewUserInput, handleAddUser }) {
-  console.log("[DclToolbar v1.0] DCL 툴바 컴포넌트 렌더링");
-
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #d0d7de' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

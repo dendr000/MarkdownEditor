@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dml/DmlTableNode.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/dml/DmlTableNode.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlTableNode.jsx
- * 파일 설명: React Flow 캔버스에 렌더링되는 커스텀 노드(Node) 컴포넌트입니다.
+ * 파일 설명: React Flow 캔버스에 렌더링되는 커스텀 노드(Node) 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * dml 하위 폴더로 이동 조치되었습니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
@@ -10,8 +10,6 @@ import { Handle, Position, useReactFlow } from 'reactflow';
 import { Table2, Key, X } from 'lucide-react';
 
 function DmlTableNode({ id, data }) {
-  console.log(`[DmlTableNode v1.2] 커스텀 노드 렌더링 - 테이블명: ${data.tableName}`);
-  
   const { setNodes, setEdges } = useReactFlow();
 
   const handleDeleteNode = () => {

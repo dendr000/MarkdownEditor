@@ -1,15 +1,13 @@
-// src/components/editor/toolbar/sqlBuilder/ddl/DdlImportArea.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlImportArea.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlImportArea.jsx
- * 파일 설명: 기존 CREATE TABLE 구문을 입력받아 리버스 엔지니어링(역설계) 파싱을 수행하기 위한 확장 입력 텍스트 영역입니다.
+ * 파일 설명: 기존 CREATE TABLE 구문을 입력받아 리버스 엔지니어링(역설계) 파싱을 수행하기 위한 확장 입력 텍스트 영역입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
  */
 import React from 'react';
 
 function DdlImportArea({ showImportArea, setShowImportArea, importSqlText, setImportSqlText, handleApplyImport }) {
   if (!showImportArea) return null;
-
-  console.log("[DdlImportArea v1.0] 역설계 입력 영역 활성화");
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', backgroundColor: '#f6f8fa', borderRadius: '8px', border: '1px solid #d0d7de' }}>

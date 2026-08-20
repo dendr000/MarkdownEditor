@@ -1,6 +1,7 @@
-// src/components/explorer/ExplorerTreeNode.jsx v2.0
+// src/components/explorer/ExplorerTreeNode.jsx v2.3
 /*
- * 파일 설명: 탐색기의 개별 폴더/파일 노드를 렌더링하는 메인 컴포넌트입니다.
+ * 파일 위치: src/components/explorer/ExplorerTreeNode.jsx
+ * 기능 요약: 탐색기의 개별 폴더/파일 노드를 렌더링하는 메인 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v2.0 수정사항): 파일 라인 수 200줄 초과 방지를 위해 유틸리티(상대 경로 연산)와 하위 UI(툴팁, 액션 버튼)를 분리 모듈화했습니다.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
@@ -11,7 +12,6 @@ import { getRelativePath } from '../../utils/pathUtils';
 import NodeActions from './NodeActions';
 
 function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePath, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
-  console.log(`[ExplorerTreeNode v2.2] 노드 렌더링 - 경로: ${node.path}`);
   const [isOpen, setIsOpen] = useState(false);
   const nodeRef = useRef(null);
 
@@ -38,7 +38,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
     if (!name) return;
     const ext = !isFolder && !name.includes('.') ? '.md' : '';
     const newPath = node.path ? `${node.path}/${name}${ext}` : `${name}${ext}`;
-    console.log(`[ExplorerTreeNode v2.0] 신규 생성 요청 - 경로: ${newPath}`);
     await createFileOrFolder(newPath, isFolder);
     setIsOpen(true);
     onRefresh();
@@ -46,7 +45,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
 
   const handleDelete = async () => {
     if (window.confirm(`'${node.name}'을(를) 정말 삭제하시겠습니까?`)) {
-      console.log(`[ExplorerTreeNode v2.0] 삭제 요청 - 경로: ${node.path}`);
       await deleteFileOrFolder(node.path);
       onRefresh();
     }
@@ -57,7 +55,6 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
     if (!newName || newName === node.name) return;
     const basePath = node.path.substring(0, node.path.lastIndexOf('/'));
     const newPath = basePath ? `${basePath}/${newName}` : newName;
-    console.log(`[ExplorerTreeNode v2.0] 이름 변경 요청 - 기존: ${node.path}, 변경: ${newPath}`);
     await renameTarget(node.path, newPath);
     onRefresh();
   };

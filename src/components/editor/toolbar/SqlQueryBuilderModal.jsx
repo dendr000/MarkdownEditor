@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/SqlQueryBuilderModal.jsx v1.3
+// src/components/editor/toolbar/SqlQueryBuilderModal.jsx v1.4
 /*
  * 파일 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx
- * 파일 설명: 시각적 SQL 쿼리 빌더의 최상위 모달 컨트롤러입니다.
+ * 기능 요약: 시각적 SQL 쿼리 빌더의 최상위 모달 컨트롤러입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v1.3 수정사항): 전달받은 fileExt를 바탕으로 마크다운 외부의 순수 코드 파일(.sql, .java 등)에 백틱 래핑을 방지합니다.
  * 연결 위치: src/components/editor/EditorModals.jsx
  */
@@ -17,7 +17,6 @@ function SqlQueryBuilderModal({ isOpen, onClose, initialValue, onInsert, fileExt
 
   useEffect(() => {
     if (isOpen && initialValue) {
-      console.log("[SqlQueryBuilderModal v1.3] 에디터 선택 텍스트 감지, 자동 탭 라우팅 실행");
       const upperText = initialValue.toUpperCase();
       if (upperText.includes('CREATE TABLE') || upperText.includes('ALTER TABLE')) {
         setCurrentMode('DDL');

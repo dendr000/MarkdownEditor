@@ -1,8 +1,8 @@
-// src/components/explorer/NodeActions.jsx v1.0
+// src/components/explorer/NodeActions.jsx v1.3
 /*
  * 파일 위치: src/components/explorer/NodeActions.jsx
  * 연결 위치: src/components/explorer/ExplorerTreeNode.jsx 내부 우측에 렌더링
- * 기능 요약: 탐색기 개별 노드의 파일/폴더 추가, 이름 변경, 삭제 기능을 수행하는 아이콘 버튼 그룹을 렌더링합니다.
+ * 기능 요약: 탐색기 개별 노드의 파일/폴더 추가, 이름 변경, 삭제 기능을 수행하는 아이콘 버튼 그룹을 렌더링합니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import React, { useState } from 'react';
 import { FilePlus, FolderPlus, Trash2, Edit2, Copy, Check } from 'lucide-react';
@@ -16,7 +16,6 @@ function NodeActions({ isFolder, onAdd, onRename, onDelete, relativePath }) {
     
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => {
-        console.log(`[NodeActions v1.2] 경로 복사 완료: ${textToCopy}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       });

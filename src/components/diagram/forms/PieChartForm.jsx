@@ -1,13 +1,13 @@
-// src/components/diagram/forms/PieChartForm.jsx v1.0
+// src/components/diagram/forms/PieChartForm.jsx v1.1
 /*
- * 파일 설명: 원형 차트(Pie Chart) 전용 GUI 입력 폼 컴포넌트입니다.
+ * 파일 위치: src/components/diagram/forms/PieChartForm.jsx
+ * 기능 설명: 원형 차트(Pie Chart) 전용 GUI 입력 폼 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/diagram/DiagramModal.jsx
  */
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
 function PieChartForm({ pieTitle, setPieTitle, pieItems, handleAddPieItem, handleRemovePieItem, handleUpdatePieItem }) {
-  console.log("PieChartForm 컴포넌트 렌더링");
   return (
     <div className="gui-form-group">
       <label className="gui-label">차트 제목</label>
@@ -15,7 +15,7 @@ function PieChartForm({ pieTitle, setPieTitle, pieItems, handleAddPieItem, handl
         type="text" 
         className="gui-input-text" 
         value={pieTitle} 
-        onChange={(e) => { console.log("원형 차트 제목 변경:", e.target.value); setPieTitle(e.target.value); }} 
+        onChange={(e) => { setPieTitle(e.target.value); }} 
       />
       
       <div className="fields-header-row" style={{ marginTop: '16px' }}>

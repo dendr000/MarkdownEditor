@@ -1,6 +1,7 @@
-// src/components/editor/toolbar/DetailsModal.jsx v1.0
+// src/components/editor/toolbar/DetailsModal.jsx v1.1
 /*
- * 파일 설명: 사용자가 제목(Summary)과 숨길 내용(Details)을 쉽게 입력할 수 있도록 돕는 접기/펼치기 GUI 팝업입니다.
+ * 파일 위치: src/components/editor/toolbar/DetailsModal.jsx
+ * 기능 요약: 사용자가 제목(Summary)과 숨길 내용(Details)을 쉽게 입력할 수 있도록 돕는 접기/펼치기 GUI 팝업입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 에디터에서 드래그한 텍스트를 초기 내용으로 받아오는 연동 로직이 포함되어 있습니다.
  * 연결 위치: src/components/editor/Editor.jsx 내부
  */
@@ -12,7 +13,6 @@ function DetailsModal({ isOpen, onClose, onInsert, initialContent = '' }) {
 
   useEffect(() => {
     if (isOpen) {
-      console.log("[DetailsModal v1.0] 팝업 활성화 - 초기 상태 세팅");
       setSummary('클릭하여 펼치기');
       // 에디터 본문에서 드래그한 텍스트가 있다면 본문에 자동 주입합니다.
       setContent(initialContent || '여기에 숨겨진 내용을 작성합니다.');
@@ -22,7 +22,6 @@ function DetailsModal({ isOpen, onClose, onInsert, initialContent = '' }) {
   if (!isOpen) return null;
 
   const handleInsertSubmit = () => {
-    console.log("[DetailsModal v1.0] 접기/펼치기 HTML 렌더링 후 에디터 삽입");
     const formattedBlock = `\n<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>\n`;
     onInsert(formattedBlock);
     onClose();
@@ -33,7 +32,7 @@ function DetailsModal({ isOpen, onClose, onInsert, initialContent = '' }) {
       <div className="diagram-modal-content" style={{ width: '500px', height: 'auto', minHeight: '350px' }} onClick={(e) => e.stopPropagation()}>
         <div className="diagram-modal-header">
           <div className="header-title-section">
-            <h3>접기/펼치기 (Details) 생성기 v1.0</h3>
+            <h3>접기/펼치기 (Details) 생성기 v1.1</h3>
           </div>
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>

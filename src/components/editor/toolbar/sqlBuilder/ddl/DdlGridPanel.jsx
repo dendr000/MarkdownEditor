@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx v2.0
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx v2.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
- * 파일 설명: 시각적 SQL 쿼리 빌더의 DDL(CREATE/ALTER) 모드 전용 메인 패널입니다.
+ * 파일 설명: 시각적 SQL 쿼리 빌더의 DDL(CREATE/ALTER) 모드 전용 메인 패널입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 파일 비대화 방지 및 200줄 이상 규정에 따라 기능별 하위 컴포넌트(Toolbar, ImportArea, GridTable, Preview)로 전면 분리되었으며, 
  * 본 패널은 각 컴포넌트의 상태(State)와 Props 로직을 중앙에서 조율하는 오케스트레이터(Orchestrator) 역할을 수행합니다.
  * 연결 위치: src/components/editor/toolbar/SqlQueryBuilderModal.jsx
@@ -38,7 +38,6 @@ function DdlGridPanel({ initialValue, onInsert }) {
   // 2. 에디터에서 전달받은 역설계(Reverse Engineering) 초기 파싱 연산
   useEffect(() => {
     if (initialValue && initialValue.toUpperCase().includes('CREATE TABLE')) {
-      console.log("[DdlGridPanel v2.0] 역설계 파싱 실행");
       const parsedData = parseCreateTableSql(initialValue);
       
       setTableName(parsedData.tableName);

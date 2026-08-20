@@ -1,6 +1,7 @@
+// src/components/editor/toolbar/groups/MarkdownGroups.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/groups/MarkdownGroups.jsx
- * 기능 요약: 마크다운 에디터의 기본 서식(제목, 텍스트 포맷, 목록, 미디어 삽입)을 담당하는 툴바 버튼 그룹들을 모아둔 컴포넌트입니다.
+ * 기능 요약: 마크다운 에디터의 기본 서식(제목, 텍스트 포맷, 목록, 미디어 삽입)을 담당하는 툴바 버튼 그룹들을 모아둔 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import { 
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough, 
@@ -26,7 +27,7 @@ export const FormatGroup = ({ handleFormat, onOpenMathModal }) => (
     <button onClick={() => handleFormat('<sup>', '</sup>', false)} title="위첨자"><Superscript size={18} /></button>
     <button onClick={() => handleFormat('<sub>', '</sub>', false)} title="아래첨자"><Subscript size={18} /></button>
     <button onClick={() => handleFormat('`', '`')} title="인라인 코드"><Terminal size={18} /></button>
-    <button onClick={() => { console.log("수식 모달 호출"); onOpenMathModal(); }} title="수식 (LaTeX) 작성기"><Sigma size={18} /></button>
+    <button onClick={() => { onOpenMathModal(); }} title="수식 (LaTeX) 작성기"><Sigma size={18} /></button>
   </div>
 );
 

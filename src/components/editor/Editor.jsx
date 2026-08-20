@@ -1,7 +1,7 @@
-// src/components/editor/Editor.jsx v14.0
+// src/components/editor/Editor.jsx v14.1
 /*
  * 파일 위치: src/components/editor/Editor.jsx
- * 기능 요약: 마크다운 텍스트 편집 및 매크로 기능을 제공하는 메인 에디터입니다.
+ * 기능 요약: 마크다운 텍스트 편집 및 매크로 기능을 제공하는 메인 에디터입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v14.0 수정사항): 다크 테마 렌더링 유지 및 코드 복잡도 완화를 위해 ToolbarArea, Workspace, Modals 하위 컴포넌트로 전면 분리 개편됨.
  */
 import React, { useState } from 'react';
@@ -25,8 +25,6 @@ import './EditorCodeMode.css';
 function Editor({ markdown, setMarkdown, selectedFile, textareaRef }) {
   // 시각적 SQL 쿼리 빌더 모달 개폐 상태
   const [isQueryBuilderModalOpen, setIsQueryBuilderModalOpen] = useState(false); 
-  
-  console.log("[Editor v14.1] 단일 에디터 렌더링 시작 (타이핑 매니저 통합 완료)");
   
   // Custom Hooks 선언 (상태 및 에디터 로직)
   const { isDragActive, handleDragOver, handleDragLeave, handleDrop, handlePaste } = useImageUpload(markdown, setMarkdown, textareaRef);

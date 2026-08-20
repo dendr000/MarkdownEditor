@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dml/DmlSidebar.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/dml/DmlSidebar.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlSidebar.jsx
- * 파일 설명: DML 워크스페이스 좌측에 위치하여, 캔버스로 드래그 앤 드롭할 수 있는 가상 테이블 목록을 제공합니다.
+ * 파일 설명: DML 워크스페이스 좌측에 위치하여, 캔버스로 드래그 앤 드롭할 수 있는 가상 테이블 목록을 제공합니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * dml 하위 폴더로 이동 조치되었습니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
@@ -9,8 +9,6 @@ import React, { useState } from 'react';
 import { Database, GripVertical, Plus, Trash2, Edit2, Check } from 'lucide-react';
 
 function DmlSidebar() {
-  console.log("[DmlSidebar v1.3] DML 사이드바 렌더링 시작");
-
   const [tables, setTables] = useState([
     { name: 'users', columns: ['id', 'username', 'email', 'address', 'created_at'] },
     { name: 'orders', columns: ['order_id', 'user_id', 'total_amount', 'status'] },

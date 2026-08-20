@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/dml/DmlFilterPanel.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/dml/DmlFilterPanel.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlFilterPanel.jsx
- * 파일 설명: DML 쿼리의 WHERE, GROUP BY, ORDER BY 조건을 제어하는 우측 사이드 패널입니다.
+ * 파일 설명: DML 쿼리의 WHERE, GROUP BY, ORDER BY 조건을 제어하는 우측 사이드 패널입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * dml 하위 폴더로 이동 조치되었습니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/dml/DmlWorkspacePanel.jsx
  */
@@ -9,8 +9,6 @@ import React from 'react';
 import { Plus, Trash2, Filter } from 'lucide-react';
 
 function DmlFilterPanel({ filters, setFilters, availableNodes = [] }) {
-  console.log("[DmlFilterPanel v1.2] DML 필터 패널 렌더링");
-
   // 캔버스에 올려진 테이블(노드)들을 기반으로 선택 가능한 컬럼 목록(options)을 생성합니다.
   const columnOptions = availableNodes.flatMap(node => 
     node.data.columns.map(col => `${node.data.tableName}.${col}`)

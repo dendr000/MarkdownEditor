@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/ddl/DdlGridTable.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlGridTable.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridTable.jsx
- * 파일 설명: 테이블 컬럼을 정의하는 핵심 스프레드시트 뷰입니다. 가로 스크롤 동기화 헤더 및 
+ * 파일 설명: 테이블 컬럼을 정의하는 핵심 스프레드시트 뷰입니다. 가로 스크롤 동기화 헤더 및 (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 리스트 목록(DdlGridRow)을 렌더링하고 관리합니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
  */
@@ -10,8 +10,6 @@ import { Plus } from 'lucide-react';
 import DdlGridRow from './DdlGridRow';
 
 function DdlGridTable({ columns, handleColumnChange, handleDeleteColumn, handleAddColumn }) {
-  console.log("[DdlGridTable v1.0] 그리드 테이블 리스트 렌더링", { count: columns.length });
-
   return (
     <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #d0d7de', borderRadius: '8px', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
       

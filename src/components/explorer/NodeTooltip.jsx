@@ -1,8 +1,8 @@
-// src/components/explorer/NodeTooltip.jsx v1.0
+// src/components/explorer/NodeTooltip.jsx v1.1
 /*
  * 파일 위치: src/components/explorer/NodeTooltip.jsx
  * 연결 위치: src/components/explorer/ExplorerTreeNode.jsx 내부 노드 하단 팝업 렌더링
- * 기능 요약: 탐색기 항목에 마우스 호버 시 노출되는 상대 경로 표시 및 클립보드 복사 기능을 전담하는 툴팁 컴포넌트입니다.
+ * 기능 요약: 탐색기 항목에 마우스 호버 시 노출되는 상대 경로 표시 및 클립보드 복사 기능을 전담하는 툴팁 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
@@ -14,7 +14,6 @@ function NodeTooltip({ relativePath, nodePath, onTooltipOpen, onTooltipClose }) 
     e.stopPropagation();
     if (relativePath) {
       navigator.clipboard.writeText(relativePath).then(() => {
-        console.log(`[NodeTooltip v1.0] 상대 경로 복사 완료: ${relativePath}`);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       });
@@ -33,11 +32,9 @@ function NodeTooltip({ relativePath, nodePath, onTooltipOpen, onTooltipClose }) 
         maxWidth: '210px'
       }}
       onMouseEnter={() => {
-        console.log(`[NodeTooltip v1.0] 툴팁 호버 유지 - 경로: ${nodePath}`);
         onTooltipOpen(nodePath);
       }} 
       onMouseLeave={() => {
-        console.log(`[NodeTooltip v1.0] 툴팁 마우스 아웃`);
         onTooltipClose();
       }}
       onClick={(e) => e.stopPropagation()} 

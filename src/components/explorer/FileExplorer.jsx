@@ -1,8 +1,8 @@
-// src/components/explorer/FileExplorer.jsx v6.1
+// src/components/explorer/FileExplorer.jsx v6.2
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
- * 파일 설명: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다.
+ * 기능 요약: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v6.1 수정사항): 마우스 호버 시 경로 팝업(툴팁)이 즉시 열리고 오래 남아 갑자기 메뉴가 펼쳐진 것처럼 보이던 불편함을 개선했습니다. (0.6초 딜레이 후 열림, 마우스 이탈 시 즉시 닫힘)
  */
 import React, { useState, useEffect, useRef } from 'react';
@@ -25,13 +25,12 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const resizeRef = useRef(null);
 
   const loadTree = async () => {
-    try { console.log(`[FileExplorer v6.1] 트리 스캔`); setTreeData(await fetchTreeData()); }
+    try { setTreeData(await fetchTreeData()); }
     catch (e) { console.error('트리 로드 실패', e); }
   };
 
   const loadWorkspacePath = async () => {
     try {
-      console.log(`[FileExplorer v6.1] 경로 조회`);
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
     } catch (e) { console.error('경로 로드 실패', e); }
@@ -40,7 +39,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const submitWorkspacePath = async (targetPath) => {
     if (!targetPath || targetPath.trim() === '') return;
     try {
-      console.log(`[FileExplorer v6.1] 경로 변경: ${targetPath}`);
       const data = await updateWorkspacePath(targetPath);
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []);
       setIsEditingWorkspace(false); loadTree();
@@ -95,7 +93,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     <>
       <button 
         onClick={() => { 
-          console.log(`[FileExplorer v6.3] 토글 버튼 클릭. 변경 후 상태: ${!isExplorerOpen}`); 
           setIsExplorerOpen(!isExplorerOpen); 
         }} 
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 

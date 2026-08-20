@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/DdlGridRow.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/DdlGridRow.jsx v1.1
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/DdlGridRow.jsx
- * 파일 설명: DDL 스프레드시트 패널에서 단일 컬럼을 제어하는 행(Row) 컴포넌트입니다.
+ * 파일 설명: DDL 스프레드시트 패널에서 단일 컬럼을 제어하는 행(Row) 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 데이터 타입 선택에 따라 괄호(길이) 입력칸이 동적으로 나타나며, PK/NN 등의 제약조건을 토글합니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/DdlGridPanel.jsx 내부 리스트에서 렌더링됨
  */
@@ -14,7 +14,6 @@ function DdlGridRow({ index, column, onChange, onDelete, onAddColumn, isLast }) 
 
   // 컬럼 데이터 변경 핸들러
   const handleChange = (field, value) => {
-    console.log(`[DdlGridRow v1.0] 인덱스 ${index} 컬럼 변경 - 필드: ${field}, 값: ${value}`);
     onChange(index, field, value);
   };
 
@@ -149,7 +148,6 @@ function DdlGridRow({ index, column, onChange, onDelete, onAddColumn, isLast }) 
       <div style={{ ...cellStyle, justifyContent: 'center', borderRight: 'none' }}>
         <button 
           onClick={() => {
-            console.log(`[DdlGridRow v1.0] 행 삭제 버튼 클릭 - 인덱스: ${index}`);
             onDelete(index);
           }} 
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cf222e', padding: '4px', display: 'flex', alignItems: 'center' }}

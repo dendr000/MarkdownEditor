@@ -1,6 +1,7 @@
-// src/components/diagram/forms/SequenceForm.jsx v1.0
+// src/components/diagram/forms/SequenceForm.jsx v1.1
 /*
- * 파일 설명: 시퀀스 다이어그램(Sequence Diagram) 전용 GUI 입력 폼 컴포넌트입니다.
+ * 파일 위치: src/components/diagram/forms/SequenceForm.jsx
+ * 기능 설명: 시퀀스 다이어그램(Sequence Diagram) 전용 GUI 입력 폼 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 참여자(Actor/Participant) 선언과 메시지 송수신(화살표, 텍스트, 활성화) 규격을 지원합니다.
  * 연결 위치: src/components/diagram/DiagramModal.jsx
  */
@@ -11,8 +12,6 @@ function SequenceForm({
   seqParticipants, setSeqParticipants, handleAddSeqParticipant, handleRemoveSeqParticipant, handleUpdateSeqParticipant,
   seqMessages, setSeqMessages, handleAddSeqMessage, handleRemoveSeqMessage, handleUpdateSeqMessage 
 }) {
-  console.log("SequenceForm 컴포넌트 렌더링 - 시퀀스 다이어그램 폼 마운트");
-
   // 현재 선언된 참여자들의 이름 목록 (메시지 발신/수신자 선택용)
   const participantNames = seqParticipants.map(p => p.name).filter(name => name.trim() !== '');
 

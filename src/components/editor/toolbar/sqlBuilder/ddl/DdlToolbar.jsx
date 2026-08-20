@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/ddl/DdlToolbar.jsx v1.0
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlToolbar.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlToolbar.jsx
- * 파일 설명: DDL 그리드 패널의 상단 제어 바입니다. 테이블 이름 설정, 네이밍 규칙 전환,
+ * 파일 설명: DDL 그리드 패널의 상단 제어 바입니다. 테이블 이름 설정, 네이밍 규칙 전환, (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * SQL 파싱 영역 토글 및 다양한 포맷(JPA, DBML, Migration 등)으로의 코드 추출(Export)을 담당합니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
  */
@@ -17,8 +17,6 @@ function DdlToolbar({
   setShowImportArea,
   handleExport
 }) {
-  console.log("[DdlToolbar v1.1] 툴바 컴포넌트 렌더링");
-
   const handleNameChange = (e) => {
     onTableNameChange(e.target.value);
   };

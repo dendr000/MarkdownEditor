@@ -1,7 +1,7 @@
-// src/components/preview/ErdNode.jsx v1.0
+// src/components/preview/ErdNode.jsx v1.1
 /*
  * 파일 위치: src/components/preview/ErdNode.jsx
- * 파일 설명: React Flow에서 ERD(Entity-Relationship Diagram)의 개별 테이블을 시각적으로 렌더링하는 커스텀 노드 컴포넌트입니다.
+ * 파일 설명: React Flow에서 ERD(Entity-Relationship Diagram)의 개별 테이블을 시각적으로 렌더링하는 커스텀 노드 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/preview/SqlErdViewer.jsx
  * 기능: dbdiagram.io 스타일의 다크 블루 헤더와 화이트 바디를 적용하여 테이블 명칭과 컬럼(PK, FK 포함) 목록을 출력합니다.
  */
@@ -10,8 +10,6 @@ import { Handle, Position } from 'reactflow';
 import { Key } from 'lucide-react';
 
 function ErdNode({ data }) {
-  console.log(`[ErdNode v1.0] ERD 노드 렌더링 시작 - 테이블명: ${data.label}`);
-
   return (
     <div style={{ 
       minWidth: '220px', 
@@ -42,7 +40,6 @@ function ErdNode({ data }) {
       {/* 테이블의 컬럼 목록이 렌더링되는 바디 영역입니다. */}
       <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column' }}>
         {data.columns.map((col, idx) => {
-          console.log(`[ErdNode v1.0] 컬럼 렌더링 - ${col.name || '제약조건'}`);
           
           // 제약 조건일 경우 별도의 하이라이트 스타일을 적용합니다.
           if (col.isConstraint) {

@@ -1,7 +1,7 @@
-// src/components/editor/toolbar/sqlBuilder/ddl/DdlPreview.jsx v1.1
+// src/components/editor/toolbar/sqlBuilder/ddl/DdlPreview.jsx v1.2
 /*
  * 파일 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlPreview.jsx
- * 파일 설명: 조립된 DDL 쿼리를 실시간으로 구문 강조(Syntax Highlighting)하여 보여주고,
+ * 파일 설명: 조립된 DDL 쿼리를 실시간으로 구문 강조(Syntax Highlighting)하여 보여주고, (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 이를 에디터 본문에 즉시 삽입하는 하단 뷰어 패널입니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/ddl/DdlGridPanel.jsx
  */
@@ -9,8 +9,6 @@ import React from 'react';
 import { Check } from 'lucide-react';
 
 function DdlPreview({ highlightedSql, compiledSql, onInsert }) {
-  console.log("[DdlPreview v1.1] 하단 실시간 컴파일 뷰어 업데이트");
-
   return (
     <div style={{ height: '220px', backgroundColor: '#24292f', borderRadius: '8px', border: '1px solid #d0d7de', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, flexShrink: 0 }}>
       <div style={{ padding: '8px 16px', backgroundColor: '#32383f', borderBottom: '1px solid #1b1f24', fontSize: '12px', fontWeight: 'bold', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
