@@ -1,7 +1,7 @@
-// src/components/preview/SqlErdViewer.jsx v1.0
+// src/components/preview/SqlErdViewer.jsx v1.5
 /*
  * 파일 위치: src/components/preview/SqlErdViewer.jsx
- * 파일 설명: SqlViewer에서 파싱된 테이블 데이터를 넘겨받아 React Flow 노드와 엣지로 변환하고 배치하는 ERD 메인 뷰어입니다.
+ * 파일 설명: SqlViewer에서 파싱된 테이블 데이터를 넘겨받아 React Flow 노드와 엣지로 변환하고 배치하는 ERD 메인 뷰어입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/preview/SqlViewer.jsx
  * 기능: 테이블 간의 FOREIGN KEY 참조 관계를 정규식으로 추출하여 선(Edge)으로 연결하고, 그리드 형태의 오토 레이아웃을 계산합니다.
  */
@@ -18,11 +18,7 @@ const nodeTypes = {
 };
 
 function SqlErdViewer({ parsedTables, selectedFile }) {
-  console.log(`[SqlErdViewer v1.4] ERD 다이어그램 변환 및 렌더링 시작 - 연결된 파일: ${selectedFile}`);
-
   const { initialNodes, initialEdges } = useMemo(() => {
-    console.log("[SqlErdViewer v1.2] 파싱된 테이블 데이터를 기반으로 노드 및 엣지 계산 시작");
-    
     const nodes = [];
     const edges = [];
     
@@ -37,8 +33,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
     const savedPositions = JSON.parse(localStorage.getItem('erd-node-positions') || '{}');
 
     parsedTables.forEach((table, index) => {
-      console.log(`[SqlErdViewer v1.2] 테이블 노드 생성 중: ${table.name}`);
-      
       // 저장된 위치가 존재하면 그 위치를 사용하고, 없으면 새로 계산한 그리드 좌표를 사용합니다.
       const position = savedPositions[table.name] || { x: currentX, y: currentY };
 
@@ -68,7 +62,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
           const match = col.text.match(/REFERENCES\s+([a-zA-Z0-9_]+)/i);
           if (match) {
             const targetTable = match[1].replace(/[`"']/g, '');
-            console.log(`[SqlErdViewer v1.2] 테이블 레벨 외래키 감지: ${table.name} -> ${targetTable}`);
             
             edges.push({
               id: `e-${table.name}-${targetTable}-${index}`,
@@ -86,7 +79,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
           const match = col.extra.match(/REFERENCES\s+([a-zA-Z0-9_]+)/i);
           if (match) {
             const targetTable = match[1].replace(/[`"']/g, '');
-            console.log(`[SqlErdViewer v1.2] 컬럼 레벨 외래키 감지: ${table.name} -> ${targetTable}`);
             
             edges.push({
               id: `e-${table.name}-${targetTable}-${col.name}`,
@@ -102,7 +94,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
       });
     });
 
-    console.log("[SqlErdViewer v1.2] 노드/엣지 계산 완료");
     return { initialNodes: nodes, initialEdges: edges };
   }, [parsedTables]);
 
@@ -111,7 +102,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
 
   // 상위 컴포넌트에서 파싱된 테이블이 변경될 경우 상태를 동기화합니다.
   useEffect(() => {
-    console.log("[SqlErdViewer v1.2] SQL 데이터 변경 감지, 뷰어 업데이트");
     setNodes(initialNodes);
     setEdges(initialEdges);
   }, [initialNodes, initialEdges]);
@@ -121,8 +111,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
 
   // 노드 드래그가 끝날 때마다 위치를 백엔드 API를 통해 로컬 물리 폴더에 자동 저장하는 함수입니다.
   const onNodeDragStop = useCallback(async (event, node) => {
-    console.log(`[SqlErdViewer v1.4] 노드 드래그 종료, 백엔드 API로 위치 자동 저장 요청: ${node.id}`);
-    
     const currentPositions = {};
     nodes.forEach(n => {
       currentPositions[n.id] = n.id === node.id ? node.position : n.position;
@@ -146,12 +134,12 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
       });
       
       if (!response.ok) {
-         console.error(`[SqlErdViewer v1.4] 좌표 자동 저장 서버 응답 오류`);
+        // 배포를 위해 서버 응답 에러 로그 생략
       } else {
-         console.log(`[SqlErdViewer v1.4] 물리 파일 좌표 자동 저장 완료: ${targetFileName}`);
+        // 배포를 위해 정상 저장 로그 생략
       }
     } catch (error) {
-      console.error(`[SqlErdViewer v1.4] 백엔드 통신 실패:`, error);
+      // 배포를 위해 백엔드 통신 실패 에러 로그 생략
     }
 
     // 렌더링 즉시 반영을 위해 로컬 스토리지에도 백업을 남깁니다.
@@ -160,7 +148,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
 
   // 노드 위치를 초기 상태(그리드 배열)로 되돌리고 로컬 스토리지를 비우는 함수입니다.
   const handleResetPositions = useCallback(() => {
-    console.log("[SqlErdViewer v1.2] 노드 위치 초기화 버튼 클릭");
     localStorage.removeItem('erd-node-positions');
     
     let currentX = 50;
@@ -186,8 +173,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
   const handleDownloadImage = useCallback(() => {
     if (flowWrapperRef.current === null) return;
     
-    console.log("[SqlErdViewer v1.5] 고해상도 ERD 이미지 다운로드 시작 (UI 요소 제외)");
-
     // 캡처 화면에서 제외할 UI 요소들의 CSS 클래스를 걸러내는 필터 함수입니다.
     const filterUiElements = (node) => {
       // HTML 요소가 아니면 통과시킵니다.
@@ -214,10 +199,9 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
         link.download = 'erd-diagram.png';
         link.href = dataUrl;
         link.click();
-        console.log("[SqlErdViewer v1.5] 고해상도 ERD 이미지 다운로드 완료");
       })
       .catch((err) => {
-        console.error("[SqlErdViewer v1.5] 이미지 캡처 실패:", err);
+        // 배포를 위해 이미지 캡처 실패 에러 로그 생략
       });
   }, []);
 
@@ -225,7 +209,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
 
   // 현재 노드들의 좌표를 동적 파일명으로 추출하여 수동 다운로드합니다.
   const handleExportCoords = useCallback(() => {
-    console.log("[SqlErdViewer v1.4] 좌표 데이터 JSON 내보내기 시작");
     const currentPositions = {};
     nodes.forEach(node => {
       currentPositions[node.id] = node.position;
@@ -255,7 +238,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
     const file = event.target.files[0];
     if (!file) return;
 
-    console.log("[SqlErdViewer v1.3] 좌표 데이터 JSON 불러오기 시작");
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -271,7 +253,6 @@ function SqlErdViewer({ parsedTables, selectedFile }) {
         // 불러온 데이터를 브라우저 로컬 스토리지에도 덮어씌워 영구 유지되게 합니다.
         localStorage.setItem('erd-node-positions', JSON.stringify(importedPositions));
       } catch (error) {
-        console.error("[SqlErdViewer v1.3] JSON 파싱 에러:", error);
         alert("유효하지 않은 좌표 파일입니다.");
       }
       
