@@ -24,6 +24,8 @@ export const useEditor = (markdown, setMarkdown, selectedFile, textareaRef, hand
   } = useTextFormat(
     markdown, 
     textareaRef, 
+    selectedFile,
+    isReadOnly,
     modalState.setSelectionRange, 
     modalState.setSelectedTableText
   );

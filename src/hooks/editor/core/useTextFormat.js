@@ -52,12 +52,12 @@ export const useTextFormat = (markdown, textareaRef, setSelectionRange, setSelec
   };
 
   const handleInsertTable = (tableOutput, currentSelectionRange) => {
-    if (!textareaRef.current) return;
+    if (!textareaRef.current || !selectedFile || isReadOnly) return;
     insertTextNatively(textareaRef.current, currentSelectionRange.start, currentSelectionRange.end, tableOutput);
   };
 
   const handleReplaceAll = (findStr, replaceStr, inSelectionOnly, searchRange) => {
-    if (!textareaRef.current || !findStr) return;
+    if (!textareaRef.current || !findStr || !selectedFile || isReadOnly) return;
     const textarea = textareaRef.current;
     const currentVal = textarea.value;
     const parsedFind = findStr.replace(/\\n/g, '\n');
