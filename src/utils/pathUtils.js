@@ -1,4 +1,4 @@
-// src/utils/pathUtils.js v1.1
+// src/utils/pathUtils.js v1.2
 /*
  * 파일 위치: src/utils/pathUtils.js
  * 연결 위치: src/components/explorer/ExplorerTreeNode.jsx 내부에서 호출
@@ -23,7 +23,9 @@ export const getRelativePath = (currentPath, targetPath) => {
   }
 
   const upCount = currentParts.length - commonLength;
-  const upString = upCount > 0 ? '../'.repeat(upCount) : './';
+  
+  // [핵심 패치] upCount가 0일 때 (같은 폴더이거나 하위 폴더로 진입할 때) 불필요한 './' 접두사를 제거하여 깃허브 마크다운 포맷에 맞게 자연스럽게 출력되도록 수정
+  const upString = upCount > 0 ? '../'.repeat(upCount) : ''; 
   const downString = targetParts.slice(commonLength).join('/');
 
   return upString + downString;
