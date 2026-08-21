@@ -1,8 +1,8 @@
-// src/App.jsx v10.0
+// src/App.jsx v11.0
 /*
  * 파일 위치: src/App.jsx
  * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
- * (v10.0 수정사항): 브라우저 새로고침 시 탐색기 상태가 강제로 열리는 현상을 방지하기 위해 localStorage와 상태를 동기화했습니다.
+ * (v11.0 수정사항): 브라우저 전역에 걸쳐 사용자의 Ctrl+S (저장) 단축키 입력을 차단하여, 브라우저 기본 다른 이름으로 저장 창이 뜨지 않도록 방어하는 로직이 추가되었습니다.
  */
 import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
@@ -27,7 +27,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewMode, setViewMode] = useState('split');
   
-  // [핵심 수정] 탐색기 열림/닫힘 상태를 localStorage에서 불러옴 (기본값 true)
+  // 탐색기 열림/닫힘 상태를 localStorage에서 불러옴 (기본값 true)
   const [isExplorerOpen, setIsExplorerOpen] = useState(() => {
     const savedExplorerState = localStorage.getItem('md_editor_explorer_open');
     return savedExplorerState !== null ? JSON.parse(savedExplorerState) : true;
@@ -52,10 +52,25 @@ function App() {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // [핵심 수정] 탐색기 상태가 변할 때마다 localStorage에 즉시 저장
+  // 탐색기 상태가 변할 때마다 localStorage에 즉시 저장
   useEffect(() => {
     localStorage.setItem('md_editor_explorer_open', JSON.stringify(isExplorerOpen));
   }, [isExplorerOpen]);
+
+  // [핵심 로직] 브라우저 전역 레벨에서 Ctrl + S 동작을 무력화합니다.
+  useEffect(() => {
+    const preventGlobalSave = (e) => {
+      // MacOS의 Cmd 키(metaKey)와 Windows의 Ctrl 키(ctrlKey)를 모두 감지
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault(); // 브라우저 고유의 다운로드 창 실행 방지
+      }
+    };
+
+    window.addEventListener('keydown', preventGlobalSave);
+    return () => {
+      window.removeEventListener('keydown', preventGlobalSave);
+    };
+  }, []);
 
   return (
     <div className="app-layout">
