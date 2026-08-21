@@ -1,8 +1,8 @@
-// src/components/explorer/WorkspaceConfig.jsx v1.2
+// src/components/explorer/WorkspaceConfig.jsx v1.3
 /*
  * 파일 위치: src/components/explorer/WorkspaceConfig.jsx
  * 파일 설명: 탐색기 상단의 워크스페이스(루트 폴더) 경로를 설정하고 히스토리를 관리하는 컴포넌트입니다.
- * (v1.1 수정사항): 히스토리 드롭다운 텍스트 좌측 정렬 및 엔터 키 입력 시 타이핑 값이 무시되고 첫 번째 항목이 제출되는 버그 수정.
+ * (v1.3 수정사항): Ghost Click 통과 옵션 동기화를 위해 isPointerEventsEnabled Prop을 직접 사용하도록 수정되었습니다.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
  */
 import React, { useState } from 'react';
@@ -17,7 +17,7 @@ function WorkspaceConfig({
   handleWorkspaceSubmit, 
   workspaceHistory,
   submitWorkspacePath,
-  explorerOpacity
+  isPointerEventsEnabled
 }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [focusedHistoryIndex, setFocusedHistoryIndex] = useState(-1);
@@ -46,8 +46,6 @@ function WorkspaceConfig({
       setFocusedHistoryIndex(-1);
     }
   };
-
-  const isPointerEventsEnabled = explorerOpacity >= 1;
 
   return (
     <div style={{ padding: '8px 12px', borderBottom: '1px solid #d0d7de', backgroundColor: '#ffffff', position: 'relative' }}>

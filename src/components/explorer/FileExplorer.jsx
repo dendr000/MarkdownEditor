@@ -1,9 +1,9 @@
-// src/components/explorer/FileExplorer.jsx v6.5
+// src/components/explorer/FileExplorer.jsx v6.6
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 기능 요약: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
- * (v6.5 수정사항): 탐색기 본체와 토글 버튼이 겹칠 때 투명도가 이중으로 짙어지는 색상 왜곡 현상을 방지하기 위해, 두 요소를 단일 래퍼(Wrapper)로 묶어 투명도를 한 번에 렌더링하도록 구조를 개선했습니다.
+ * (v6.6 수정사항): Ghost Click 옵션을 적용하여 사용자가 토글 설정에 따라 클릭 통과 여부를 결정할 수 있도록 isPointerEventsEnabled 상태 연산 구조가 변경되었습니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -11,7 +11,7 @@ import { fetchTreeData, createFileOrFolder, fetchWorkspacePath, updateWorkspaceP
 import WorkspaceConfig from './WorkspaceConfig';
 import ExplorerTreeNode from './ExplorerTreeNode';
 
-function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode, explorerOpacity }) {
+function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode, explorerOpacity, isGhostModeClickThrough }) {
   const [treeData, setTreeData] = useState({ name: 'root', isFolder: true, children: [], path: '' });
   const [workspacePath, setWorkspacePath] = useState(''); 
   const [isEditingWorkspace, setIsEditingWorkspace] = useState(false); 
@@ -19,7 +19,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
   const [workspaceHistory, setWorkspaceHistory] = useState([]); 
   const [activeTooltipNode, setActiveTooltipNode] = useState(null);
   
-  // 툴팁 등장 및 소멸 타이머 분리
   const tooltipShowTimer = useRef(null);
   const tooltipHideTimer = useRef(null);
   const resizeRef = useRef(null);
@@ -86,7 +85,8 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     return newName;
   };
 
-  const isPointerEventsEnabled = explorerOpacity >= 1;
+  // [핵심 패치] 투명도가 100% 이거나 고스트 클릭 옵션이 꺼져있을 때만 이벤트를 가로챕니다.
+  const isPointerEventsEnabled = explorerOpacity === 1 || !isGhostModeClickThrough;
 
   return (
     <div 
@@ -96,11 +96,11 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         top: 0,
         left: 0,
         bottom: 0,
-        width: 0, // 래퍼 자체는 공간을 차지하지 않음
+        width: 0, 
         zIndex: isExplorerPinned ? 1 : 1000,
-        opacity: explorerOpacity, // [핵심 패치] 버튼과 본체의 투명도를 한 번에 통제하여 이중 겹침 차단
+        opacity: explorerOpacity, 
         transition: 'opacity 0.2s ease',
-        pointerEvents: 'none' // 래퍼 박스는 클릭 이벤트를 캡처하지 않음
+        pointerEvents: 'none' 
       }}
     >
       <button 
@@ -158,7 +158,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
               activeTooltipNode={activeTooltipNode} 
               onTooltipOpen={handleTooltipOpen} 
               onTooltipClose={handleTooltipClose} 
-              explorerOpacity={explorerOpacity}
+              isPointerEventsEnabled={isPointerEventsEnabled}
             />
           ))}
           {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: 'var(--text-muted, #8c959f)', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}

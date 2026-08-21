@@ -1,8 +1,8 @@
-// src/App.jsx v12.0
+// src/App.jsx v13.0
 /*
  * 파일 위치: src/App.jsx
  * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
- * (v12.0 수정사항): 파일 탐색기의 투명도를 상단 헤더에서 조절할 수 있도록 explorerOpacity 상태가 추가되었습니다.
+ * (v13.0 수정사항): 탐색기 투명 모드 시 클릭이 통과되게 할 것인지(Ghost Click) 결정하는 전역 상태 isGhostModeClickThrough가 추가되었습니다.
  */
 import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
@@ -27,16 +27,20 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewMode, setViewMode] = useState('split');
   
-  // 탐색기 열림/닫힘 상태를 localStorage에서 불러옴 (기본값 true)
   const [isExplorerOpen, setIsExplorerOpen] = useState(() => {
     const savedExplorerState = localStorage.getItem('md_editor_explorer_open');
     return savedExplorerState !== null ? JSON.parse(savedExplorerState) : true;
   });
 
-  // [신규] 탐색기 투명도 상태 (0.1 ~ 1.0)
   const [explorerOpacity, setExplorerOpacity] = useState(() => {
     const savedOpacity = localStorage.getItem('md_editor_explorer_opacity');
     return savedOpacity !== null ? parseFloat(savedOpacity) : 1.0;
+  });
+
+  // [신규] 고스트 클릭 (클릭 통과) 옵션 상태
+  const [isGhostModeClickThrough, setIsGhostModeClickThrough] = useState(() => {
+    const savedGhost = localStorage.getItem('md_editor_ghost_click');
+    return savedGhost !== null ? JSON.parse(savedGhost) : true;
   });
 
   const textareaRef = useRef(null);
@@ -62,12 +66,15 @@ function App() {
     localStorage.setItem('md_editor_explorer_open', JSON.stringify(isExplorerOpen));
   }, [isExplorerOpen]);
 
-  // 탐색기 투명도가 변경될 때마다 로컬 스토리지에 저장
   useEffect(() => {
     localStorage.setItem('md_editor_explorer_opacity', explorerOpacity);
   }, [explorerOpacity]);
 
-  // 브라우저 전역 레벨에서 Ctrl + S 동작 무력화
+  // 고스트 클릭 상태 로컬 스토리지 동기화
+  useEffect(() => {
+    localStorage.setItem('md_editor_ghost_click', JSON.stringify(isGhostModeClickThrough));
+  }, [isGhostModeClickThrough]);
+
   useEffect(() => {
     const preventGlobalSave = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -98,6 +105,8 @@ function App() {
         setTheme={setTheme}
         explorerOpacity={explorerOpacity}
         setExplorerOpacity={setExplorerOpacity}
+        isGhostModeClickThrough={isGhostModeClickThrough}
+        setIsGhostModeClickThrough={setIsGhostModeClickThrough}
       />
 
       <main
@@ -123,13 +132,13 @@ function App() {
           setIsResizing={setIsResizing}
           storageMode="BROWSER"
           explorerOpacity={explorerOpacity}
+          isGhostModeClickThrough={isGhostModeClickThrough}
         />
 
         <div
           className={`main-content mode-${viewMode}`}
           data-explorer-floating={!(isExplorerPinned && isExplorerOpen)}
           style={{
-            // 탐색기가 투명할 때는 공간을 차지하지 않도록 밀어내는 로직을 해제합니다.
             width: (isExplorerPinned && isExplorerOpen && explorerOpacity === 1) ? `calc(100% - ${explorerWidth}px)` : '100%',
             marginLeft: (isExplorerPinned && isExplorerOpen && explorerOpacity === 1) ? `${explorerWidth}px` : '0',
             transition: isResizing ? 'none' : 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'

@@ -1,20 +1,20 @@
-// src/components/Header.jsx v6.2
+// src/components/Header.jsx v6.3
 /*
  * 파일 위치: src/components/Header.jsx
  * 연결 위치: src/App.jsx 내부에서 최상단 네비게이션 바로 렌더링됨
  * 기능 요약: 앱 상단의 헤더 컴포넌트로, 뷰 모드 제어, 스크롤 설정 및 테마 스위치 팝업 등을 제공합니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
+ * (v6.3 수정사항): 고스트 클릭 통과 토글 스위치가 설정 팝업에 추가되었습니다.
  */
 import React, { useState } from 'react';
 import { PanelLeft, Columns, PanelRight, Settings } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
-// [핵심 수정] explorerOpacity, setExplorerOpacity Props 추가 전달받음
 function Header({ 
   markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen, 
   selectedFile, isSyncScroll, setIsSyncScroll, isExplorerAutoClose, 
   setIsExplorerAutoClose, onBreadcrumbClick, theme, setTheme,
-  explorerOpacity, setExplorerOpacity
+  explorerOpacity, setExplorerOpacity, isGhostModeClickThrough, setIsGhostModeClickThrough
 }) {
   const [copied, setCopied] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -97,7 +97,6 @@ function Header({
             <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '4px', zIndex: 1000, minWidth: '240px' }}>
               <div style={{ backgroundColor: 'var(--bg-main, #ffffff)', border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', padding: '12px' }}>
                 
-                {/* 탐색기 투명도 조절 슬라이더 추가 */}
                 <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color, #d0d7de)' }}>
                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main, #24292f)', marginBottom: '8px' }}>
                     <span>탐색기 배경 투명도</span>
@@ -110,11 +109,20 @@ function Header({
                     step="0.1" 
                     value={explorerOpacity} 
                     onChange={(e) => setExplorerOpacity(parseFloat(e.target.value))}
-                    style={{ width: '100%', cursor: 'pointer' }}
+                    style={{ width: '100%', cursor: 'pointer', marginBottom: '12px' }}
                   />
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted, #8c959f)', marginTop: '4px', lineHeight: '1.4' }}>
-                    100% 미만일 경우 투명(고스트) 모드가 되어 에디터와 겹쳐지며, 클릭이 통과됩니다.
-                  </div>
+                  
+                  {/* [신규] 고스트 클릭 통과 토글 옵션 (투명도가 100%일 때는 비활성화) */}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: explorerOpacity < 1 ? 'var(--text-main, #24292f)' : 'var(--text-muted, #8c959f)', cursor: explorerOpacity < 1 ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={isGhostModeClickThrough} 
+                      onChange={(e) => setIsGhostModeClickThrough(e.target.checked)} 
+                      disabled={explorerOpacity === 1}
+                      style={{ cursor: explorerOpacity < 1 ? 'pointer' : 'not-allowed' }} 
+                    />
+                    투명 모드 시 클릭 통과 (Ghost Click)
+                  </label>
                 </div>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-main, #24292f)', cursor: 'pointer', marginBottom: '12px', whiteSpace: 'nowrap' }}>
