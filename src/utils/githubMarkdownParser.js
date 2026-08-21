@@ -1,7 +1,7 @@
-// C:\dev\MarkdownEditor\src\utils\githubMarkdownParser.js
+// C:\dev\MarkdownEditor\src\utils\githubMarkdownParser.js v4.1
 /*
  * 파일 위치: C:\dev\MarkdownEditor\src\utils\githubMarkdownParser.js
- * 파일 설명: 기본 마크다운 파서가 인식하지 못하는 GitHub 고유 문법(Alerts)을 HTML 구조와 공식 SVG 아이콘으로 사전 변환하는 프리프로세서입니다.
+ * 기능 요약: 기본 마크다운 파서가 인식하지 못하는 GitHub 고유 문법(Alerts)을 HTML 구조와 공식 SVG 아이콘으로 사전 변환하는 프리프로세서입니다.
  * (v4.0 수정사항): 에디터 환경의 특수 공백(\xA0) 혼입 문제를 해결하기 위해 블록 단위 캡처 정규식 알고리즘으로 전면 교체했습니다.
  */
 

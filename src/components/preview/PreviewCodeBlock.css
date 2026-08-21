@@ -1,6 +1,7 @@
 /* C:\dev\MarkdownEditor\src\components\preview\PreviewCodeBlock.css */
 /*
- * 파일 설명: 마크다운 내부의 인라인 코드, 코드 블록, 구문 강조, 복사 버튼 및 색상 시각화 스타일을 정의합니다.
+ * 파일 위치: C:\dev\MarkdownEditor\src\components\preview\PreviewCodeBlock.css
+ * 기능 요약: 마크다운 내부의 인라인 코드, 코드 블록, 구문 강조, 복사 버튼 및 색상 시각화 스타일을 정의합니다.
  */
 
 /* 코드 블록 내부의 구문 강조 색상을 보호하기 위한 예외 처리 */
@@ -8,17 +9,35 @@
   color: inherit;
 }
 
-.preview-content.markdown-body pre,
+/* 
+ * [핵심 패치] 인라인 코드(code)와 여러 줄 코드 블록(pre)의 속성 분리 
+ * 인라인 코드는 display: inline으로 설정하여 텍스트의 자연스러운 흐름(Flow)을 방해하지 않도록 합니다.
+ */
+.preview-content.markdown-body pre {
+  background-color: var(--explorer-bg, #f6f8fa) !important;
+  color: var(--text-main, #24292f) !important;
+  border: 1px solid var(--border-color, #d0d7de) !important;
+  text-shadow: none !important;
+  white-space: pre-wrap !important;
+  word-break: break-all;
+}
+
 .preview-content.markdown-body code {
   background-color: var(--explorer-bg, #f6f8fa) !important;
   color: var(--text-main, #24292f) !important;
   border: 1px solid var(--border-color, #d0d7de) !important;
   text-shadow: none !important;
+  display: inline !important; /* 강제 인라인 표시 */
+  padding: 0.2em 0.4em !important;
+  margin: 0 !important;
+  border-radius: 6px !important;
 }
 
 .preview-content.markdown-body pre code {
   background-color: transparent !important;
   border: none !important;
+  display: block !important; /* pre 내부에서는 block 형태로 동작해야 복사 래퍼 등과 어우러집니다 */
+  padding: 0 !important;
 }
 
 .preview-content.code-file-view {
@@ -81,7 +100,7 @@
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 85%;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 6px;
   vertical-align: middle;
