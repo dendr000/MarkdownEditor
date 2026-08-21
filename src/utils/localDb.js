@@ -1,6 +1,7 @@
-// src/utils/localDb.js v1.0
+// src/utils/localDb.js v1.1
 /*
- * 파일 설명: 백엔드 DB를 대신하여 브라우저의 localStorage를 미니 데이터베이스로 활용하는 CRUD 래퍼 유틸리티입니다.
+ * 파일 위치: src/utils/localDb.js
+ * 기능 요약: 백엔드 DB를 대신하여 브라우저의 localStorage를 미니 데이터베이스로 활용하는 CRUD 래퍼 유틸리티입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 import { DEFAULT_TEMPLATES } from './templates';
 
@@ -14,7 +15,7 @@ export const getTemplates = () => {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.error("[localDb] 템플릿 파싱 에러:", error);
+    // 배포 환경을 위한 파싱 에러 로그 생략
   }
   // 로컬 스토리지에 데이터가 없으면 하드코딩된 기본값 로드
   return DEFAULT_TEMPLATES;

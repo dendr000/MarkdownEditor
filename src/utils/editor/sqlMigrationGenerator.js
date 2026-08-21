@@ -7,7 +7,6 @@
  */
 
 export const generateMigrationScript = (oldTableName, newTableName, oldCols, newCols) => {
-  console.log("[sqlMigrationGenerator v1.0] 마이그레이션 스크립트 생성 시작");
 
   let script = `-- 마이그레이션 스크립트 자동 생성 (Diff 추적)\n`;
   let alters = [];
@@ -63,7 +62,6 @@ export const generateMigrationScript = (oldTableName, newTableName, oldCols, new
     script += `-- 변경된 스키마 내역이 없습니다.\n`;
   }
 
-  console.log("[sqlMigrationGenerator v1.0] 마이그레이션 스크립트 생성 완료");
   return script;
 };
 

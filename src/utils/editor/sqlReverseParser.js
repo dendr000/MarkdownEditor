@@ -7,7 +7,6 @@
  */
 
 export const parseCreateTableSql = (sql) => {
-  console.log("[sqlReverseParser v1.0] SQL 역설계 파싱 시작");
   
   // 1. 테이블 이름 추출
   const tableMatch = sql.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`'"]?([a-zA-Z0-9_]+)[`'"]?/i);
@@ -16,7 +15,6 @@ export const parseCreateTableSql = (sql) => {
   // 2. 괄호 내부의 컬럼 정의부 블록 추출
   const bodyMatch = sql.match(/\(([\s\S]*)\)/);
   if (!bodyMatch) {
-    console.warn("[sqlReverseParser v1.0] 괄호로 둘러싸인 컬럼 정의부를 찾을 수 없습니다.");
     return { tableName, columns: [] };
   }
 
@@ -83,6 +81,5 @@ export const parseCreateTableSql = (sql) => {
     }
   });
 
-  console.log("[sqlReverseParser v1.0] SQL 역설계 파싱 완료", { tableName, columnCount: columns.length });
   return { tableName, columns };
 };

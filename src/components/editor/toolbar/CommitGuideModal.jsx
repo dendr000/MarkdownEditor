@@ -1,4 +1,4 @@
-// src/components/editor/toolbar/CommitGuideModal.jsx v1.2
+// src/components/editor/toolbar/CommitGuideModal.jsx v1.3
 /*
  * 파일 위치: src/components/editor/toolbar/CommitGuideModal.jsx
  * 기능 요약: 깃허브 커밋 메시지 컨벤션을 시각적으로 안내하고, 클릭 시 해당 태그를 에디터에 삽입하거나 복사할 수 있는 가이드 모달입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
@@ -55,7 +55,7 @@ function CommitGuideModal({ isOpen, onClose, onInsert }) {
         <div className="diagram-modal-header">
           <div className="header-title-section">
             <GitCommit size={18} style={{ color: '#57606a', marginRight: '8px' }} />
-            <h3>Git 커밋 메시지 컨벤션 가이드 v1.2</h3>
+            <h3>Git 커밋 메시지 컨벤션 가이드 v1.3</h3>
           </div>
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>

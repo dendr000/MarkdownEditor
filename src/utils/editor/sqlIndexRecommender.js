@@ -7,7 +7,6 @@
  */
 
 export const recommendIndexes = (nodes, edges, filters) => {
-  console.log("[sqlIndexRecommender v1.0] 인덱스 추천 분석 시작", { edgesCount: edges.length, filters });
   
   const recommendations = [];
   const indexSet = new Set(); // 중복 방지용 Set (형식: table.column)
@@ -105,6 +104,5 @@ export const recommendIndexes = (nodes, edges, filters) => {
     }
   });
 
-  console.log(`[sqlIndexRecommender v1.0] 인덱스 추천 도출 완료: 총 ${recommendations.length}건`);
   return recommendations;
 };

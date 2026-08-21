@@ -29,7 +29,6 @@ export function useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRe
         const word = match[1];
         if (snippets[word]) {
           e.preventDefault(); // 기본 띄어쓰기 차단
-          console.log(`[useSnippetExpand v1.0] 스니펫 전개 실행: ${word} -> ${snippets[word]}`);
 
           const snippet = snippets[word];
           // '|' 기호를 기준으로 커서가 배치될 상대적 위치를 계산합니다.
@@ -79,8 +78,6 @@ export function useSnippetExpand(markdown, setMarkdown, selectedFile, textareaRe
           e.preventDefault();
           
           const replacement = replaces[word] || replaces[lowerWord];
-          console.log(`[useSnippetExpand v1.0] 예약어 자동 치환 실행: ${word} -> ${replacement}`);
-
           const newTextBefore = textBefore.substring(0, textBefore.length - word.length) + replacement;
           const insertChar = e.key === 'Enter' ? '\n' : ' ';
           const newValue = newTextBefore + insertChar + textAfter;

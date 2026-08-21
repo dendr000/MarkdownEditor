@@ -46,7 +46,6 @@ const formatCSS = (code) => {
 };
 
 const formatSQL = (code) => {
-  console.log("[codeFormatter v1.2] SQL 정밀 포매팅 시작 (문자열 스캐너 및 깊이 추적 로직 도입)");
   
   // 1. 모든 공백을 단일 공백으로 통일하여 스쿼시(Squash) 상태에서 시작합니다. (파편화된 기존 들여쓰기 완벽 초기화)
   let flatCode = code.replace(/\s+/g, ' ').trim();
@@ -146,7 +145,6 @@ const formatSQL = (code) => {
     return tLine;
   });
 
-  console.log("[codeFormatter v1.2] SQL 정밀 포매팅 완료");
   // 불필요하게 3번 이상 연속된 줄바꿈을 2번으로 축소하여 반환
   return finalLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 };
@@ -194,13 +192,11 @@ export const formatCode = (code, lang) => {
         return formatCStyle(code);
       case 'jsx': case 'tsx':
         // [안전 장치] JSX는 HTML과 JS가 섞여 있어 단일 정규식 포매팅 시 코드가 파손될 위험이 있으므로 원본을 유지합니다.
-        console.warn(`[codeFormatter] ${lang} 확장자는 안전을 위해 포매팅을 생략합니다.`);
         return code;
       default:
         return code; // 포매팅을 지원하지 않는 언어는 원본 반환
     }
   } catch (error) {
-    console.error(`[codeFormatter v1.0] ${lang} 포매팅 중 오류 발생. 원본 코드를 유지합니다.`, error);
     return code; // 안전성 확보: 파싱 실패 시 코드 유실 방지
   }
 };

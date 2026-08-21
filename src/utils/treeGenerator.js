@@ -1,11 +1,11 @@
-// src/utils/treeGenerator.js v1.0
+// src/utils/treeGenerator.js v1.1
 /*
- * 파일 설명: 폴더 트리 배열 데이터를 마크다운/텍스트 구조의 연결선 기호(├──, └──, │)로 변환하는 알고리즘 모듈입니다.
+ * 파일 위치: src/utils/treeGenerator.js
+ * 기능 요약: 폴더 트리 배열 데이터를 마크다운/텍스트 구조의 연결선 기호(├──, └──, │)로 변환하는 알고리즘 모듈입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/tree/FolderTreeModal.jsx 에서 import 하여 사용
  */
 
 export const generateTreeString = (currentNodes) => {
-  console.log("[treeGenerator v1.0] 폴더 트리 문자열 변환 알고리즘 가동");
   let result = '';
 
   for (let i = 0; i < currentNodes.length; i++) {
@@ -52,6 +52,5 @@ export const generateTreeString = (currentNodes) => {
     result += prefix + node.name + '\n';
   }
 
-  console.log("[treeGenerator v1.0] 문자열 변환 완료");
   return result.trimEnd();
 };

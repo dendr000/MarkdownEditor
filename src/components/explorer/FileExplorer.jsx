@@ -1,4 +1,4 @@
-// src/components/explorer/FileExplorer.jsx v6.2
+// src/components/explorer/FileExplorer.jsx v6.3
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
@@ -26,14 +26,14 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
 
   const loadTree = async () => {
     try { setTreeData(await fetchTreeData()); }
-    catch (e) { console.error('트리 로드 실패', e); }
+    catch (e) { /* 에러 로그 생략 */ }
   };
 
   const loadWorkspacePath = async () => {
     try {
       const data = await fetchWorkspacePath();
       setWorkspacePath(data.path); setTempWorkspacePath(data.path); setWorkspaceHistory(data.history || []); 
-    } catch (e) { console.error('경로 로드 실패', e); }
+    } catch (e) { /* 에러 로그 생략 */ }
   };
 
   const submitWorkspacePath = async (targetPath) => {

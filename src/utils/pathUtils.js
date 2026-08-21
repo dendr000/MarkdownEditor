@@ -1,12 +1,11 @@
-// src/utils/pathUtils.js v1.0
+// src/utils/pathUtils.js v1.1
 /*
  * 파일 위치: src/utils/pathUtils.js
  * 연결 위치: src/components/explorer/ExplorerTreeNode.jsx 내부에서 호출
- * 기능 요약: 파일 시스템 경로 계산(상대 경로 추출 등)과 관련된 순수 자바스크립트 비즈니스 로직을 제공하는 유틸리티입니다.
+ * 기능 요약: 파일 시스템 경로 계산(상대 경로 추출 등)과 관련된 순수 자바스크립트 비즈니스 로직을 제공하는 유틸리티입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  */
 
 export const getRelativePath = (currentPath, targetPath) => {
-  console.log(`[pathUtils v1.0] 상대 경로 계산 호출 - 현재: ${currentPath}, 타겟: ${targetPath}`);
   if (!currentPath || !targetPath) return '';
   const currentParts = currentPath.split('/');
   

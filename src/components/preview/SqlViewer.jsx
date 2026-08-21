@@ -1,6 +1,7 @@
-// src/components/preview/SqlViewer.jsx v1.0
+// src/components/preview/SqlViewer.jsx v1.6
 /*
- * 파일 설명: SQL 텍스트 파일(.sql)이 선택되었을 때, CREATE TABLE 구문을 분석(Parsing)하여 시각화된 테이블 형태로 렌더링하는 전용 뷰어입니다.
+ * 파일 위치: src/components/preview/SqlViewer.jsx
+ * 기능 요약: SQL 텍스트 파일(.sql)이 선택되었을 때, CREATE TABLE 구문을 분석(Parsing)하여 시각화된 테이블 형태로 렌더링하는 전용 뷰어입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/App.jsx
  */
 import React, { useMemo } from 'react';
@@ -11,15 +12,11 @@ import { createFileOrFolder, saveFileContent } from '../../api/fileApi';
 import { generateTableDictionary } from '../../utils/editor/sqlDictGenerator';
 
 function SqlViewer({ sql, selectedFile }) {
-  console.log("[SqlViewer v1.5] SQL 구문 분석 및 시각화 렌더링 시작 (테이블 명세서 자동 생성 기능 연동)");
-
   const parsedTables = useMemo(() => {
     if (!sql) return [];
 
     const tables = [];
     let isDbml = false;
-
-    console.log("[SqlViewer v1.3] DBML 및 SQL DDL 혼합 구문 분석 시작");
 
     // 1. DBML 문법 파싱 (Table ... { ... })
     const dbmlTableRegex = /Table\s+([^\s{]+)\s*\{([^}]+)\}/gi;
@@ -62,7 +59,6 @@ function SqlViewer({ sql, selectedFile }) {
             isConstraint: true,
             text: `FOREIGN KEY (${sourceCol}) REFERENCES ${targetTable}(${targetCol})`
           });
-          console.log(`[SqlViewer v1.3] DBML Ref 변환 성공: ${sourceTable} -> ${targetTable}`);
         }
       }
     }
@@ -117,7 +113,6 @@ function SqlViewer({ sql, selectedFile }) {
   // 테이블 명세서를 마크다운으로 생성하여 백엔드 로컬 스토리지에 물리 파일로 저장하는 핸들러
   const handleGenerateDict = async () => {
     try {
-      console.log("[SqlViewer v1.5] 테이블 명세서 자동 생성 요청 시작");
       const mdContent = generateTableDictionary(parsedTables, selectedFile);
       
       // 원본 파일명과 경로를 추적하여 같은 폴더 내에 '_dict.md' 접미사를 붙여 생성합니다.
@@ -129,10 +124,8 @@ function SqlViewer({ sql, selectedFile }) {
       await createFileOrFolder(targetPath, false);
       await saveFileContent(targetPath, mdContent);
       
-      console.log(`[SqlViewer v1.5] 명세서 물리 파일 생성 및 저장 완료: ${targetPath}`);
       alert(`테이블 명세서가 생성되었습니다.\n경로: ${targetPath}\n\n좌측 탐색기를 새로고침(폴더 닫기/열기)하여 추가된 파일을 확인해 주세요.`);
     } catch (error) {
-      console.error("[SqlViewer v1.5] 명세서 생성 실패:", error);
       alert(`명세서 생성 중 오류가 발생했습니다: ${error.message}`);
     }
   };

@@ -65,7 +65,6 @@ export const useAutocomplete = (markdown, setMarkdown, textareaRef, selectedFile
   })();
 
   const handleSelectSuggest = (item) => {
-    console.log("[useAutocomplete v4.1] 코드 예약어 선택 완료:", item);
     const textarea = textareaRef.current;
     if (!textarea) return;
 

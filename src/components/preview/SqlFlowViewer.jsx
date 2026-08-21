@@ -1,7 +1,7 @@
-// src/components/preview/SqlFlowViewer.jsx v1.0
+// src/components/preview/SqlFlowViewer.jsx v1.1
 /*
  * 파일 위치: src/components/preview/SqlFlowViewer.jsx
- * 파일 설명: SQL 쿼리(SELECT, WITH, CREATE VIEW 등)의 데이터 흐름(Data Lineage)을 분석하여 노드 기반 다이어그램으로 시각화하는 컴포넌트입니다.
+ * 기능 요약: SQL 쿼리(SELECT, WITH, CREATE VIEW 등)의 데이터 흐름(Data Lineage)을 분석하여 노드 기반 다이어그램으로 시각화하는 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 기능: AST 파서의 크래시 위험을 방지하기 위해 정규식 기반 커스텀 파서를 사용하여 CTE(WITH) 블록과 물리 테이블 간의 의존성을 추출하고, reactflow를 통해 렌더링합니다.
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -9,11 +9,8 @@ import ReactFlow, { Background, Controls, MarkerType, applyNodeChanges, applyEdg
 import 'reactflow/dist/style.css';
 
 function SqlFlowViewer({ sql }) {
-  console.log("[SqlFlowViewer v1.0] SQL 데이터 흐름 다이어그램 렌더링 시작");
-
   // 정규식을 이용하여 안전하게 테이블 및 CTE 의존성을 추출하는 커스텀 로직
   const { initialNodes, initialEdges } = useMemo(() => {
-    console.log("[SqlFlowViewer v1.0] 커스텀 정규식 기반 리니지(Lineage) 분석 시작");
     const nodes = [];
     const edges = [];
     const nodeMap = new Map();
@@ -22,7 +19,6 @@ function SqlFlowViewer({ sql }) {
     const addNode = (id, label, type, col) => {
       if (!nodeMap.has(id)) {
         nodeMap.set(id, { id, label, type, col });
-        console.log(`[SqlFlowViewer v1.0] 노드 등록: ${id} (${type})`);
       }
     };
 
@@ -39,7 +35,6 @@ function SqlFlowViewer({ sql }) {
           style: { stroke: '#0969da', strokeWidth: 2 },
           markerEnd: { type: MarkerType.ArrowClosed, color: '#0969da' }
         });
-        console.log(`[SqlFlowViewer v1.0] 엣지 연결: ${source} -> ${target}`);
       }
     };
 
@@ -130,7 +125,6 @@ function SqlFlowViewer({ sql }) {
       yPos[n.col] += 100; // 다음 노드를 위해 Y축 간격 증가
     });
 
-    console.log("[SqlFlowViewer v1.0] 분석 완료, 노드/엣지 데이터 생성 성공");
     return { initialNodes: nodes, initialEdges: edges };
   }, [sql]);
 

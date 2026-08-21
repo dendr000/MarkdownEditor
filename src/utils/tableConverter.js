@@ -11,10 +11,8 @@
  * @returns {Array|null} 2차원 그리드 배열 객체 또는 실패 시 null
  */
 export const parseMdToGrid = (mdText) => {
-  console.log("parseMdToGrid 실행 - 마크다운 텍스트 파싱 시작");
   
   if (!mdText || mdText.trim() === '') {
-    console.log("[로그] 입력된 마크다운 텍스트가 비어 있어 파싱을 중단합니다.");
     return null;
   }
 
@@ -25,11 +23,8 @@ export const parseMdToGrid = (mdText) => {
   const separatorIndex = lines.findIndex(line => /^[|\s\-:]+$/.test(line) && line.includes('-'));
   
   if (separatorIndex === -1) {
-    console.log("[로그] 마크다운 구분선(---)을 찾지 못해 유효한 표가 아닌 것으로 판단합니다.");
     return null;
   }
-
-  console.log(`[로그] 구분선 확인 완료. 구분선 행 인덱스: ${separatorIndex}`);
 
   // 구분선 행을 파이프(|) 기준으로 분리하여 각 열의 정렬 상태 파악
   const separatorParts = lines[separatorIndex].split('|').map(p => p.trim()).filter((_, i, arr) => {
@@ -107,7 +102,6 @@ export const parseMdToGrid = (mdText) => {
   if (parsedRows.length === 0) return null;
 
   const maxCols = Math.max(...parsedRows.map(r => r.length));
-  console.log(`[로그] 마크다운 파싱 완료. 크기 - 행: ${maxRows}, 열: ${maxCols}`);
 
   // 규격 정규화
   const finalGrid = parsedRows.map((row, rIndex) => {
@@ -130,10 +124,8 @@ export const parseMdToGrid = (mdText) => {
  * @returns {string} 변환 완성된 마크다운 표 문자열
  */
 export const generateMdFromGrid = (grid) => {
-  console.log("generateMdFromGrid 실행 - 그리드 상태를 마크다운 텍스트로 전환 시작");
   
   if (!grid || grid.length === 0) {
-    console.log("[로그] 그리드가 유효하지 않아 빈 문자열을 반환합니다.");
     return '';
   }
 
@@ -173,11 +165,9 @@ export const generateMdFromGrid = (grid) => {
         else separatorCells.push(':---');
       }
       mdOutput += '| ' + separatorCells.join(' | ') + ' |\n';
-      console.log("[로그] 마크다운 구분선 조립 완료");
     }
   });
 
   mdOutput += '\n';
-  console.log("마크다운 표 최종 문자열 생성 성공");
   return mdOutput;
 };

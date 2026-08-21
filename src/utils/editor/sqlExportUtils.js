@@ -33,7 +33,6 @@ const mapSqlToJavaType = (sqlType) => {
  * 1. Java Spring Boot JPA @Entity 클래스 코드 생성기
  */
 export const generateJpaEntity = (tableName, columns) => {
-  console.log("[sqlExportUtils v1.0] JPA Entity 변환 시작");
   const className = toPascalCase(tableName);
   
   let code = `import jakarta.persistence.*;\nimport lombok.Getter;\nimport lombok.Setter;\nimport lombok.NoArgsConstructor;\n`;
@@ -70,7 +69,6 @@ export const generateJpaEntity = (tableName, columns) => {
  * 2. DBML(Database Markup Language) 명세서 코드 생성기
  */
 export const generateDbml = (tableName, columns) => {
-  console.log("[sqlExportUtils v1.0] DBML 변환 시작");
   let dbml = `Table ${tableName} {\n`;
 
   columns.forEach((col) => {
@@ -103,7 +101,6 @@ export const generateDbml = (tableName, columns) => {
  * 3. Java Spring Boot JpaRepository 인터페이스 생성기
  */
 export const generateJpaRepository = (tableName, columns) => {
-  console.log("[sqlExportUtils v1.1] JpaRepository 변환 시작");
   const className = toPascalCase(tableName);
   
   // PK(기본키)의 데이터 타입을 탐색하여 제네릭 타입으로 지정 (없을 경우 Long 기본값)
@@ -117,7 +114,6 @@ export const generateJpaRepository = (tableName, columns) => {
   code += `    // 추가적인 쿼리 메서드가 필요하다면 여기에 작성하세요.\n`;
   code += `}\n`;
   
-  console.log("[sqlExportUtils v1.1] JpaRepository 변환 완료");
   return code;
 };
 
@@ -125,7 +121,6 @@ export const generateJpaRepository = (tableName, columns) => {
  * 4. Java Spring Boot Service 계층 클래스 생성기
  */
 export const generateJpaService = (tableName) => {
-  console.log("[sqlExportUtils v1.1] Service 변환 시작");
   const className = toPascalCase(tableName);
   const camelName = toCamelCase(tableName);
 
@@ -161,7 +156,6 @@ export const generateJpaService = (tableName) => {
   code += `    }\n`;
   code += `}\n`;
 
-  console.log("[sqlExportUtils v1.1] Service 변환 완료");
   return code;
 };
 
@@ -169,7 +163,6 @@ export const generateJpaService = (tableName) => {
  * 5. Java Spring Boot Controller (REST API) 계층 클래스 생성기
  */
 export const generateJpaController = (tableName) => {
-  console.log("[sqlExportUtils v1.1] Controller 변환 시작");
   const className = toPascalCase(tableName);
   const camelName = toCamelCase(tableName);
   // URL 엔드포인트용 Kebab-case 변환 (예: my_table -> /api/my-tables)
@@ -208,6 +201,5 @@ export const generateJpaController = (tableName) => {
   code += `    }\n`;
   code += `}\n`;
 
-  console.log("[sqlExportUtils v1.1] Controller 변환 완료");
   return code;
 };

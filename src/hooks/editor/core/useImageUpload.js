@@ -1,6 +1,7 @@
-// src/hooks/editor/core/useImageUpload.js v2.0
+// src/hooks/editor/core/useImageUpload.js v2.1
 /*
- * 파일 설명: 드래그 앤 드롭 및 클립보드 붙여넣기를 통해 이미지를 입력받고, ImgBB 클라우드 API를 호출하여 외부 호스팅 URL로 변환 및 에디터 본문에 삽입하는 비동기 통신 훅입니다. Base64 렌더링 렉을 원천 차단합니다.
+ * 파일 위치: src/hooks/editor/core/useImageUpload.js
+ * 기능 요약: 드래그 앤 드롭 및 클립보드 붙여넣기를 통해 이미지를 입력받고, ImgBB 클라우드 API를 호출하여 외부 호스팅 URL로 변환 및 에디터 본문에 삽입하는 비동기 통신 훅입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.) Base64 렌더링 렉을 원천 차단합니다.
  * 연결 위치: src/components/editor/Editor.jsx
  */
 import { useState } from 'react';
@@ -21,8 +22,6 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
   };
 
   const handleImageUpload = async (file) => {
-    console.log("[useImageUpload v2.0] 이미지 클라우드 업로드 파이프라인 진입 - 파일명:", file.name);
-    
     if (!file.type.startsWith('image/')) {
       alert("이미지 포맷의 파일만 에디터 내에 즉시 삽입할 수 있습니다.");
       return;
@@ -58,7 +57,6 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
     // ImgBB 공식 권장에 따라 key는 FormData가 아닌 URL 쿼리 파라미터로 명확히 전달합니다.
 
     try {
-      console.log("[useImageUpload v2.0] ImgBB 서버로 POST 요청 발송");
       const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: 'POST',
         body: formData,
@@ -71,8 +69,6 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
         const imageUrl = result.data.url;
         const finalImageMarkdown = `![image](${imageUrl})`;
         
-        console.log("[useImageUpload v2.0] 업로드 성공 - URL:", imageUrl);
-
         setMarkdown((prevMarkdown) => {
           // 임시로 주입했던 문자열의 위치를 찾아 정식 URL 문자열로 리플레이스
           const replaceStart = prevMarkdown.indexOf(uploadingText);
@@ -86,7 +82,6 @@ export const useImageUpload = (markdown, setMarkdown, textareaRef) => {
         throw new Error(result.error?.message || "업로드 실패");
       }
     } catch (error) {
-      console.error("[useImageUpload v2.0] 이미지 업로드 통신 에러:", error);
       alert("클라우드 서버 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해 주세요.");
       
       // 4. 실패 시: 임시 텍스트 롤백

@@ -19,36 +19,30 @@ import {
 const router = express.Router();
 
 router.get('/workspace', (req, res) => {
-  console.log(`[GET /api/workspace] 요청 수신. 반환 값: ${DATA_DIR}`);
   res.json({ path: DATA_DIR, history: workspaceConfig.history || [] });
 });
 
 router.post('/workspace', async (req, res) => {
   const { newPath } = req.body;
-  console.log(`[POST /api/workspace] 경로 변경 요청 - 타겟: ${newPath}`);
   try {
     const result = await updateWorkspaceConfig(newPath);
     res.json({ success: true, ...result });
   } catch (error) {
-    console.error(`[POST /api/workspace] 변경 에러:`, error);
     res.status(400).json({ error: error.message || '유효하지 않은 경로입니다.' });
   }
 });
 
 router.get('/tree', async (req, res) => {
-  console.log(`[GET /api/tree] 스캔 요청 수신 (기준 경로: ${DATA_DIR})`);
   try {
     const tree = await buildTree(DATA_DIR);
     res.json(tree);
   } catch (error) {
-    console.error('[GET /api/tree] 에러 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 router.get('/file', async (req, res) => {
   const { target } = req.query;
-  console.log(`[GET /api/file] 조회 요청 - 타겟: ${target}`);
   try {
     const safePath = getSafePath(target);
     const stats = await fs.stat(safePath);
@@ -90,7 +84,6 @@ router.get('/file', async (req, res) => {
     const content = await fs.readFile(safePath, 'utf8');
     res.send(content);
   } catch (error) {
-    console.error(`[GET /api/file] 읽기 에러:`, error.message);
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: '해당 파일이 존재하지 않습니다.' });
     } else {
@@ -101,7 +94,6 @@ router.get('/file', async (req, res) => {
 
 router.get('/raw', (req, res) => {
   const { target } = req.query;
-  console.log(`[GET /api/raw] 바이너리 스트리밍 요청 - 타겟: ${target}`);
   try {
     const safePath = getSafePath(target);
     res.sendFile(safePath, (err) => {
@@ -114,7 +106,6 @@ router.get('/raw', (req, res) => {
 
 router.post('/file', async (req, res) => {
   const { target, isFolder } = req.body;
-  console.log(`[POST /api/file] 생성 요청 - 타겟: ${target}, 폴더여부: ${isFolder}`);
   try {
     const safePath = getSafePath(target);
     if (isFolder) {
@@ -130,7 +121,6 @@ router.post('/file', async (req, res) => {
 
 router.put('/file', async (req, res) => {
   const { target, content } = req.body;
-  console.log(`[PUT /api/file] 덮어쓰기 요청 - 타겟: ${target}`);
   try {
     const safePath = getSafePath(target);
     
@@ -150,7 +140,6 @@ router.put('/file', async (req, res) => {
 
 router.delete('/file', async (req, res) => {
   const { target } = req.body;
-  console.log(`[DELETE /api/file] 삭제 요청 - 타겟: ${target}`);
   try {
     const safePath = getSafePath(target);
     const stats = await fs.stat(safePath);
@@ -167,7 +156,6 @@ router.delete('/file', async (req, res) => {
 
 router.patch('/file', async (req, res) => {
   const { oldTarget, newTarget } = req.body;
-  console.log(`[PATCH /api/file] 이름 변경 요청 - 기존: ${oldTarget}, 변경: ${newTarget}`);
   try {
     const oldSafePath = getSafePath(oldTarget);
     const newSafePath = getSafePath(newTarget);
@@ -181,12 +169,10 @@ router.patch('/file', async (req, res) => {
 // [신규] 전역 검색 라우터
 router.post('/search', async (req, res) => {
   const { query, useRegex, matchCase } = req.body;
-  console.log(`[POST /api/search] 전역 검색 요청 수신 - 쿼리: ${query}`);
   try {
     const results = await searchWorkspaceFiles(query, useRegex, matchCase);
     res.json({ success: true, results });
   } catch (error) {
-    console.error(`[POST /api/search] 검색 에러:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -194,12 +180,10 @@ router.post('/search', async (req, res) => {
 // [신규] 전역 치환 라우터
 router.post('/replace', async (req, res) => {
   const { query, replaceText, useRegex, matchCase } = req.body;
-  console.log(`[POST /api/replace] 전역 치환 요청 수신 - 쿼리: ${query} -> ${replaceText}`);
   try {
     const results = await replaceWorkspaceFiles(query, replaceText, useRegex, matchCase);
     res.json({ success: true, results });
   } catch (error) {
-    console.error(`[POST /api/replace] 치환 에러:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

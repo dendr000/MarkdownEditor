@@ -1,6 +1,7 @@
-// src/controllers/fileController.js v1.0
+// src/controllers/fileController.js v1.1
 /*
- * 파일 설명: 로컬 파일 시스템(fs)에 접근하여 파일과 디렉토리 CRUD를 수행하는 백엔드 컨트롤러입니다.
+ * 파일 위치: src/controllers/fileController.js
+ * 기능 요약: 로컬 파일 시스템(fs)에 접근하여 파일과 디렉토리 CRUD를 수행하는 백엔드 컨트롤러입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * server.js에서 분리되었습니다.
  */
 import fs from 'fs/promises';
@@ -35,12 +36,10 @@ export const loadWorkspaceConfig = () => {
       
       if (workspaceConfig.workspace) {
         DATA_DIR = workspaceConfig.workspace;
-        console.log(`[fileController v1.0] 저장된 워크스페이스 경로를 로드했습니다: ${DATA_DIR}`);
-        console.log(`[fileController v1.0] 로드된 히스토리 개수: ${workspaceConfig.history ? workspaceConfig.history.length : 0}개`);
       }
     }
   } catch (error) {
-    console.error(`[fileController v1.0] 설정 파일 로드 중 에러 발생, 기본 경로를 사용합니다:`, error);
+    // 배포 환경을 위한 로드 에러 콘솔 로그 생략
   }
 };
 
@@ -48,10 +47,8 @@ export const loadWorkspaceConfig = () => {
 export const initDataDir = async () => {
   try {
     await fs.access(DATA_DIR);
-    console.log(`[fileController v1.0] 데이터 루트 폴더 확인 완료: ${DATA_DIR}`);
   } catch {
     await fs.mkdir(DATA_DIR, { recursive: true });
-    console.log(`[fileController v1.0] 데이터 루트 폴더 신규 생성: ${DATA_DIR}`);
   }
 };
 
@@ -98,7 +95,7 @@ export const buildTree = async (currentPath, relativePath = '') => {
             }
           }
         } catch (fileError) {
-          console.warn(`[fileController v1.0] 파일 스캔 건너뜀: ${file}`, fileError.message);
+          // 파일 스캔 에러 로그 생략
         }
       }
       
@@ -110,7 +107,6 @@ export const buildTree = async (currentPath, relativePath = '') => {
     }
     return null;
   } catch (dirError) {
-    console.error(`[fileController v1.0] 디렉토리 스캔 에러 발생: ${currentPath}`, dirError.message);
     throw dirError;
   }
 };
@@ -137,7 +133,6 @@ export const updateWorkspaceConfig = async (newPath) => {
 
 // [신규] 전역 검색 로직 (Global Search)
 export const searchWorkspaceFiles = async (query, useRegex, matchCase) => {
-  console.log(`[fileController v1.1] 전역 검색 스캔 시작 - 쿼리: ${query}`);
   const results = [];
   const regexFlags = matchCase ? 'g' : 'gi';
   let regex;
@@ -183,18 +178,16 @@ export const searchWorkspaceFiles = async (query, useRegex, matchCase) => {
         }
       }
     } catch (error) {
-      console.warn(`[fileController v1.1] 폴더 스캔 중 에러 (경로: ${currentDir}):`, error.message);
+      // 폴더 스캔 에러 로그 생략
     }
   };
 
   await scanDir(DATA_DIR, '');
-  console.log(`[fileController v1.1] 전역 검색 완료 - 매칭된 파일 수: ${results.length}`);
   return results;
 };
 
 // [신규] 전역 치환 로직 (Global Replace)
 export const replaceWorkspaceFiles = async (query, replaceText, useRegex, matchCase) => {
-  console.log(`[fileController v1.1] 전역 치환 시작 - 쿼리: ${query} -> 치환: ${replaceText}`);
   const results = [];
   const regexFlags = matchCase ? 'g' : 'gi';
   let regex;
@@ -232,19 +225,17 @@ export const replaceWorkspaceFiles = async (query, replaceText, useRegex, matchC
         }
       }
     } catch (error) {
-      console.warn(`[fileController v1.1] 파일 치환 중 에러 (경로: ${currentDir}):`, error.message);
+      // 파일 치환 중 에러 로그 생략
     }
   };
 
   await scanDir(DATA_DIR, '');
-  console.log(`[fileController v1.1] 전역 치환 완료 - 변경된 파일 수: ${results.length}`);
   return results;
 };
 
 // [신규] 파일/폴더 삭제 로직 (Delete)
 export const deleteTarget = async (targetPath) => {
   const safePath = getSafePath(targetPath);
-  console.log(`[fileController v1.2] 삭제 로직 실행 - 경로: ${safePath}`);
   
   try {
     const stats = await fs.stat(safePath);
@@ -255,7 +246,6 @@ export const deleteTarget = async (targetPath) => {
     }
     return { success: true };
   } catch (error) {
-    console.error(`[fileController v1.2] 삭제 중 에러 발생:`, error.message);
     throw new Error('파일 또는 폴더를 삭제할 수 없습니다.');
   }
 };
@@ -264,13 +254,11 @@ export const deleteTarget = async (targetPath) => {
 export const renameTargetFile = async (oldPath, newPath) => {
   const safeOldPath = getSafePath(oldPath);
   const safeNewPath = getSafePath(newPath);
-  console.log(`[fileController v1.2] 이름 변경 로직 실행 - 기존: ${safeOldPath} -> 변경: ${safeNewPath}`);
   
   try {
     await fs.rename(safeOldPath, safeNewPath);
     return { success: true };
   } catch (error) {
-    console.error(`[fileController v1.2] 이름 변경 중 에러 발생:`, error.message);
     throw new Error('파일 또는 폴더 이름을 변경할 수 없습니다.');
   }
 };

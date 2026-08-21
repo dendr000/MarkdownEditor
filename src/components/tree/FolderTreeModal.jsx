@@ -10,7 +10,6 @@ import { generateTreeString } from '../../utils/treeGenerator';
 import TreeNodeItem from './TreeNodeItem';
 
 function FolderTreeModal({ isOpen, onClose, onInsert }) {
-  console.log("[FolderTreeModal v3.0] 모달 컴포넌트 렌더링 - 모듈 분리 및 상태 계승 패치 적용됨");
 
   const [nodes, setNodes] = useState([
     { id: 'node-1', name: 'project', isFolder: true, depth: 0 },
@@ -28,17 +27,14 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   }, [nodes, isOpen]);
 
   const handleNameChange = (id, newName) => {
-    console.log(`[FolderTreeModal v3.0] 노드 이름 변경 - ID: ${id}, 값: ${newName}`);
     setNodes(nodes.map(node => node.id === id ? { ...node, name: newName } : node));
   };
 
   const handleTypeToggle = (id) => {
-    console.log(`[FolderTreeModal v3.0] 노드 타입 토글 - ID: ${id}`);
     setNodes(nodes.map(node => node.id === id ? { ...node, isFolder: !node.isFolder } : node));
   };
 
   const handleDepthIncrease = (idx) => {
-    console.log(`[FolderTreeModal v3.0] 노드 깊이 증가 - 인덱스: ${idx}`);
     if (idx === 0) return;
     const newNodes = [...nodes];
     const prevDepth = newNodes[idx - 1].depth;
@@ -49,7 +45,6 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleDepthDecrease = (idx) => {
-    console.log(`[FolderTreeModal v3.0] 노드 깊이 감소 - 인덱스: ${idx}`);
     const newNodes = [...nodes];
     if (newNodes[idx].depth > 0) {
       newNodes[idx].depth -= 1;
@@ -58,7 +53,6 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleMoveUp = (idx) => {
-    console.log(`[FolderTreeModal v3.0] 노드 상단 이동 - 인덱스: ${idx}`);
     if (idx === 0) return;
     const newNodes = [...nodes];
     const temp = newNodes[idx - 1];
@@ -68,7 +62,6 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleMoveDown = (idx) => {
-    console.log(`[FolderTreeModal v3.0] 노드 하단 이동 - 인덱스: ${idx}`);
     if (idx === nodes.length - 1) return;
     const newNodes = [...nodes];
     const temp = newNodes[idx + 1];
@@ -79,7 +72,6 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
 
   // 특정 위치 바로 아래에 새 노드 추가 (아이콘 상태 상속)
   const handleAddNodeBelow = (idx) => {
-    console.log(`[FolderTreeModal v3.0] 신규 노드 중간 삽입 - 상속된 상태 적용 (인덱스: ${idx})`);
     const currentDepth = nodes[idx].depth;
     const currentIsFolder = nodes[idx].isFolder; // 클릭한 부모의 isFolder 상태 추출
     
@@ -96,7 +88,6 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleAddNodeAtBottom = () => {
-    console.log("[FolderTreeModal v3.0] 최하단 신규 노드 추가");
     const lastNode = nodes.length > 0 ? nodes[nodes.length - 1] : { depth: 0, isFolder: false };
     
     setNodes([...nodes, {
@@ -108,12 +99,10 @@ function FolderTreeModal({ isOpen, onClose, onInsert }) {
   };
 
   const handleRemoveNode = (id) => {
-    console.log(`[FolderTreeModal v3.0] 노드 삭제 - ID: ${id}`);
     setNodes(nodes.filter(node => node.id !== id));
   };
 
   const handleInsertSubmit = () => {
-    console.log("[FolderTreeModal v3.0] 에디터 본문 삽입 이벤트 발송");
     const formattedCodeBlock = `\n\`\`\`text\n${previewText}\n\`\`\`\n`;
     onInsert(formattedCodeBlock);
     onClose();

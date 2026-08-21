@@ -7,14 +7,12 @@ import { useState, useCallback } from 'react';
 import { parseHtmlToGrid } from '../utils/htmlTableParser';
 
 export const useHtmlTable = () => {
-  console.log("useHtmlTable 훅 초기화");
   
   const [grid, setGrid] = useState([]);
   const [focusedCell, setFocusedCell] = useState(null);
 
   // 초기 표 세팅 (문자열 파싱 또는 3x3 기본값)
   const initGrid = useCallback((initialHtml) => {
-    console.log("initGrid 실행 - 초기 HTML 검사");
     if (initialHtml && initialHtml.includes('<table')) {
       const parsedGrid = parseHtmlToGrid(initialHtml);
       if (parsedGrid) {
@@ -23,7 +21,6 @@ export const useHtmlTable = () => {
         return;
       }
     }
-    console.log("파싱 가능한 HTML이 없어 기본 3x3 표로 초기화");
     setGrid(
       Array.from({ length: 3 }, (_, r) =>
         Array.from({ length: 3 }, () => ({
@@ -35,7 +32,6 @@ export const useHtmlTable = () => {
   }, []);
 
   const handleCellChange = (r, c, value) => {
-    console.log(`텍스트 변경 - 위치: [${r}, ${c}], 내용: ${value}`);
     setGrid(prev => {
       const newGrid = prev.map(row => [...row]);
       newGrid[r][c] = { ...newGrid[r][c], text: value };
@@ -46,7 +42,6 @@ export const useHtmlTable = () => {
   const handleAlignChange = (align) => {
     if (!focusedCell) return;
     const { r, c } = focusedCell;
-    console.log(`정렬 변경 - 위치: [${r}, ${c}], 방향: ${align}`);
     setGrid(prev => {
       const newGrid = prev.map(row => [...row]);
       newGrid[r][c] = { ...newGrid[r][c], align };
@@ -55,7 +50,6 @@ export const useHtmlTable = () => {
   };
 
   const addRow = () => {
-    console.log("행 추가");
     setGrid(prev => {
       const colsCount = prev[0].length;
       const newRow = Array.from({ length: colsCount }, () => ({
@@ -66,7 +60,6 @@ export const useHtmlTable = () => {
   };
 
   const removeRow = () => {
-    console.log("행 삭제");
     setGrid(prev => {
       if (prev.length <= 1) return prev;
       const newGrid = prev.map(row => row.map(cell => ({ ...cell })));
@@ -88,7 +81,6 @@ export const useHtmlTable = () => {
   };
 
   const addCol = () => {
-    console.log("열 추가");
     setGrid(prev => {
       return prev.map((row, rIndex) => [
         ...row,
@@ -98,7 +90,6 @@ export const useHtmlTable = () => {
   };
 
   const removeCol = () => {
-    console.log("열 삭제");
     setGrid(prev => {
       if (prev[0].length <= 1) return prev;
       const newGrid = prev.map(row => row.map(cell => ({ ...cell })));
@@ -123,7 +114,6 @@ export const useHtmlTable = () => {
   const mergeRight = () => {
     if (!focusedCell) return;
     const { r, c } = focusedCell;
-    console.log(`우측 병합 시도 - 기준: [${r}, ${c}]`);
     
     setGrid(prev => {
       const newGrid = prev.map(row => row.map(cell => ({ ...cell })));
@@ -142,9 +132,6 @@ export const useHtmlTable = () => {
               newGrid[r + rr][targetC + cc].text = ''; // 내용 삭제
             }
           }
-          console.log("우측 병합 완료");
-        } else {
-          console.log("우측 병합 불가: 높이가 다르거나 이미 병합된 셀입니다.");
         }
       }
       return newGrid;
@@ -155,7 +142,6 @@ export const useHtmlTable = () => {
   const mergeDown = () => {
     if (!focusedCell) return;
     const { r, c } = focusedCell;
-    console.log(`하단 병합 시도 - 기준: [${r}, ${c}]`);
 
     setGrid(prev => {
       const newGrid = prev.map(row => row.map(cell => ({ ...cell })));
@@ -174,9 +160,6 @@ export const useHtmlTable = () => {
               newGrid[targetR + rr][c + cc].text = '';
             }
           }
-          console.log("하단 병합 완료");
-        } else {
-          console.log("하단 병합 불가: 너비가 다르거나 이미 병합된 셀입니다.");
         }
       }
       return newGrid;
@@ -187,7 +170,6 @@ export const useHtmlTable = () => {
   const unmerge = () => {
     if (!focusedCell) return;
     const { r, c } = focusedCell;
-    console.log(`병합 해제 시도 - 기준: [${r}, ${c}]`);
 
     setGrid(prev => {
       const newGrid = prev.map(row => row.map(cell => ({ ...cell })));
@@ -203,7 +185,6 @@ export const useHtmlTable = () => {
         }
         current.rowSpan = 1;
         current.colSpan = 1;
-        console.log("병합 해제 완료");
       }
       return newGrid;
     });

@@ -5,13 +5,11 @@
  */
 
 export const parseHtmlToGrid = (html) => {
-  console.log("parseHtmlToGrid 실행 - 입력된 HTML 파싱 시작");
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const table = doc.querySelector('table');
   
   if (!table) {
-    console.log("유효한 table 태그를 찾지 못함. 파싱 중단");
     return null;
   }
 
@@ -80,7 +78,6 @@ export const parseHtmlToGrid = (html) => {
 };
 
 export const generateHtmlFromGrid = (grid, caption = '') => {
-  console.log("generateHtmlFromGrid 실행 - Grid를 HTML 태그로 변환 (다중 tbody 롤백)");
   let htmlOutput = '\n<table>\n';
   
   if (caption.trim() !== '') {

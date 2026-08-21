@@ -1,13 +1,11 @@
-// src/utils/editor/sqlDictGenerator.js v1.0
+// src/utils/editor/sqlDictGenerator.js v1.1
 /*
  * 파일 위치: src/utils/editor/sqlDictGenerator.js
- * 파일 설명: 파싱된 SQL 테이블 데이터를 바탕으로 깔끔한 마크다운(.md) 형태의 테이블 명세서(Data Dictionary) 문자열을 자동 생성하는 유틸리티입니다.
+ * 파일 설명: 파싱된 SQL 테이블 데이터를 바탕으로 깔끔한 마크다운(.md) 형태의 테이블 명세서(Data Dictionary) 문자열을 자동 생성하는 유틸리티입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/preview/SqlViewer.jsx
  */
 
 export const generateTableDictionary = (parsedTables, sourceFileName) => {
-  console.log(`[sqlDictGenerator v1.0] 마크다운 명세서 변환 시작 (대상 테이블 수: ${parsedTables.length})`);
-  
   let md = `> **📁 데이터베이스 테이블 명세서 (Data Dictionary)**\n`;
   md += `> 원본 스키마 파일: \`${sourceFileName || '알 수 없음'}\`\n\n`;
   md += `---\n\n`;
@@ -48,6 +46,5 @@ export const generateTableDictionary = (parsedTables, sourceFileName) => {
     md += `---\n\n`;
   });
 
-  console.log("[sqlDictGenerator v1.0] 마크다운 명세서 변환 완료");
   return md;
 };

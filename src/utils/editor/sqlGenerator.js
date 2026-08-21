@@ -1,21 +1,17 @@
-// src/utils/editor/sqlGenerator.js v1.0
+// src/utils/editor/sqlGenerator.js v1.1
 /*
  * 파일 위치: src/utils/editor/sqlGenerator.js
- * 파일 설명: 시각적 SQL 쿼리 빌더의 UI 상태 데이터(테이블, 컬럼 목록)를 파싱하여,
+ * 파일 설명: 시각적 SQL 쿼리 빌더의 UI 상태 데이터(테이블, 컬럼 목록)를 파싱하여, (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 실시간으로 실행 가능한 완전한 CREATE TABLE 구문(SQL 문자열)으로 컴파일하는 유틸리티입니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/DdlGridPanel.jsx
  */
 
 export const generateCreateTableSql = (tableName, columns) => {
-  console.log("[sqlGenerator v1.0] CREATE TABLE SQL 컴파일 시작", { tableName, columnsCount: columns.length });
-  
   if (!tableName || tableName.trim() === '') {
-    console.log("[sqlGenerator v1.0] 테이블 이름이 비어있어 기본 구문을 반환합니다.");
     return '-- 테이블 이름을 입력하세요.\nCREATE TABLE ...';
   }
 
   if (!columns || columns.length === 0) {
-    console.log("[sqlGenerator v1.0] 정의된 컬럼이 없어 빈 테이블 구문을 반환합니다.");
     return `CREATE TABLE ${tableName} (\n  -- 컬럼을 추가하세요.\n);`;
   }
 
@@ -66,6 +62,5 @@ export const generateCreateTableSql = (tableName, columns) => {
 
   sql += body + '\n);';
   
-  console.log("[sqlGenerator v1.0] CREATE TABLE SQL 컴파일 완료");
   return sql;
 };

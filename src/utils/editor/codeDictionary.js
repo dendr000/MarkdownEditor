@@ -1,14 +1,11 @@
-// C:\dev\MarkdownEditor\src\utils\editor\codeDictionary.js
+// C:\dev\MarkdownEditor\src\utils\editor\codeDictionary.js v1.4
 /*
- * 파일 위치: src/utils/editor/codeDictionary.js
- * 파일 설명: 에디터에서 지원하는 각 프로그래밍 언어별 주석 기호, 단축 스니펫, 자동 치환 규칙을 정의한 사전(Dictionary) 파일입니다.
+ * 파일 위치: C:\dev\MarkdownEditor\src\utils\editor\codeDictionary.js
+ * 기능 요약: 에디터에서 지원하는 각 프로그래밍 언어별 주석 기호, 단축 스니펫, 자동 치환 규칙을 정의한 사전(Dictionary) 파일입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * (v1.3 수정사항): SQL_UPPERCASE_KEYWORDS 셋업을 자동완성 팝업(KEYWORD_DICT)과 완벽하게 동기화하여 중복 선언을 제거했습니다.
  */
 
-console.log("[codeDictionary v1.3] 언어별 에디터 사전 데이터 로드 완료");
-
 export const getLanguage = (fileName) => {
-  console.log(`[codeDictionary v1.3] 확장자 분석 요청: ${fileName}`);
   if (!fileName) return 'text';
   const ext = fileName.split('.').pop().toLowerCase();
   
@@ -22,7 +19,6 @@ export const getLanguage = (fileName) => {
   };
   
   const result = languageMap[ext] || 'text';
-  console.log(`[codeDictionary v1.3] 분석 결과: ${ext} -> ${result}`);
   return result;
 };
 

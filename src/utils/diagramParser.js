@@ -6,7 +6,6 @@
 
 // 1. 노드 토큰 역분석 (순서도용)
 export const parseNodeToken = (token) => {
-  console.log("[diagramParser] 노드 토큰 역분석 시도:", token);
   if (!token) return null;
   
   const idMatch = token.match(/^([a-zA-Z0-9_\-]+)/);
@@ -56,7 +55,6 @@ export const parseNodeToken = (token) => {
   }
 
   if (!text) text = id;
-  console.log(`[diagramParser] 파싱 결과 -> ID: ${id}, 텍스트: ${text}, 보조설명: ${desc}`);
   return { id, shape, text, desc };
 };
 

@@ -12,7 +12,6 @@ import * as mammoth from 'mammoth'; // docx 파싱 라이브러리 추가
 export const useFileLoader = (setMarkdown, setSelectedFile) => {
   const handleSelectFile = async (filePath, isHistoryEvent = false) => {
     const normalizedPath = filePath ? filePath.replace(/\\/g, '/') : '';
-    console.log(`[useFileLoader v1.2] 파일 선택됨 (정규화 완료): ${normalizedPath}`);
     
     try {
       const fileExt = normalizedPath.split('.').pop().toLowerCase();
@@ -22,10 +21,8 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
       const unsupportedExts = ['pptx', 'ppt', 'doc', 'zip', 'tar', 'gz', 'rar', '7z', 'exe'];
 
       if (unsupportedExts.includes(fileExt)) {
-        console.log(`[useFileLoader v1.3] 미지원 파일 형식 감지: ${fileExt}`);
         setMarkdown(`> **미지원 파일 형식 (읽기 전용)**: \`${normalizedPath}\`\n\n현재 에디터에서는 \`.${fileExt}\` 형식의 파일을 텍스트로 읽거나 실시간 뷰어로 렌더링할 수 없습니다.\n\n해당 파일은 로컬 저장소의 원본 프로그램을 사용하여 열어주세요.`);
       } else if (fileExt === 'docx') {
-        console.log(`[useFileLoader v1.3] docx 파일 감지, 바이너리 로드 및 HTML 변환 시작`);
         const content = await fetchFileContent(normalizedPath);
         if (content instanceof ArrayBuffer) {
           try {
@@ -33,7 +30,6 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
             const html = result.value || '문서에 텍스트가 존재하지 않습니다.';
             setMarkdown(`> **Word 뷰어 (읽기 전용)**: \`${normalizedPath}\`\n\n<div style="width: 100%; background: #ffffff; padding: 24px; border-radius: 8px; border: 1px solid #d0d7de; margin-top: 16px; min-height: 200px;">\n${html}\n</div>`);
           } catch (parseError) {
-            console.error("[useFileLoader v1.3] docx 파싱 에러:", parseError);
             setMarkdown(`> **Word 로드 실패**: 파일이 손상되었거나 파싱할 수 없습니다.`);
           }
         }
@@ -44,7 +40,6 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
         const content = await fetchFileContent(normalizedPath);
         
         if (content instanceof ArrayBuffer) {
-          console.log("[useFileLoader v1.2] 엑셀 바이너리 데이터 HTML 표 변환 시작 (병합 셀 지원)");
           try {
             const workbook = XLSX.read(content, { type: 'array' });
             const firstSheetName = workbook.SheetNames[0];
@@ -92,7 +87,6 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
               setMarkdown(`> **엑셀 뷰어**: \`${normalizedPath}\`\n\n데이터가 존재하지 않거나 빈 시트입니다.`);
             }
           } catch (parseError) {
-            console.error("[useFileLoader v1.2] 엑셀 파싱 에러:", parseError);
             setMarkdown(`> **엑셀 로드 실패**: 파일이 손상되었거나 지원하지 않는 형식입니다.`);
           }
         } else {
@@ -105,9 +99,7 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
         window.history.pushState({ path: newUrl }, '', newUrl);
       }
     } catch (error) {
-      console.error("[useFileLoader v1.2] 파일 로드 실패:", error);
       if (isHistoryEvent) {
-        console.log("[useFileLoader v1.2] 유효하지 않은 URL 파라미터를 감지하여 주소창을 초기화합니다.");
         window.history.replaceState({ path: window.location.pathname }, '', window.location.pathname);
         setSelectedFile(null);
         setMarkdown('');
@@ -120,10 +112,8 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
     const targetFile = params.get('file');
 
     if (targetFile) {
-      console.log(`[useFileLoader v1.2] URL 파라미터 감지: ${targetFile} 로드 시도`);
       handleSelectFile(targetFile, true);
     } else {
-      console.log("[useFileLoader v1.2] 파라미터 없음: 에디터 대기 상태 진입");
       setSelectedFile(null);
       setMarkdown('');
     }
@@ -131,8 +121,6 @@ export const useFileLoader = (setMarkdown, setSelectedFile) => {
     const handlePopState = () => {
       const currentParams = new URLSearchParams(window.location.search);
       const currentFile = currentParams.get('file');
-      
-      console.log(`[useFileLoader v1.2] 브라우저 이동 감지 - 타겟 파일: ${currentFile || '없음'}`);
       
       if (currentFile) {
         handleSelectFile(currentFile, true);

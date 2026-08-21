@@ -1,6 +1,7 @@
-// src/components/html-table/HtmlTableControls.jsx v1.0
+// src/components/html-table/HtmlTableControls.jsx v1.1
 /*
- * 파일 설명: HTML 표 모달 상단에 위치하여 행/열 추가, 정렬 변경, 병합 및 분할 기능을 트리거하는 툴바 컴포넌트
+ * 파일 위치: src/components/html-table/HtmlTableControls.jsx
+ * 기능 요약: HTML 표 모달 상단에 위치하여 행/열 추가, 정렬 변경, 병합 및 분할 기능을 트리거하는 툴바 컴포넌트 (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 연결 위치: src/components/HtmlTableModal.jsx 내에서 렌더링됨
  */
 
@@ -8,8 +9,6 @@ function HtmlTableControls({
   grid, focusedCell, addRow, removeRow, addCol, removeCol, 
   handleAlignChange, mergeRight, mergeDown, unmerge 
 }) {
-  console.log("HtmlTableControls 렌더링 됨");
-
   // 현재 포커스된 셀의 정보를 가져와 버튼의 활성화/비활성화(disabled) 상태 및 하이라이트 여부를 결정
   const activeCell = focusedCell ? grid[focusedCell.r][focusedCell.c] : null;
   const hasFocus = !!activeCell;

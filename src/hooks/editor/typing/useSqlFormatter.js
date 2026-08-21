@@ -69,7 +69,6 @@ export function useSqlFormatter(markdown, setMarkdown, selectedFile, textareaRef
 
           // 6. React 상태 동기화
           setMarkdown(newValue);
-          console.log(`[useSqlFormatter v1.1] SQL 예약어 자동 치환 완료: ${matchedKeyword.toUpperCase()}`);
           
           return true; // 커스텀 포매팅 로직이 낚아채서 처리했음을 반환
         }

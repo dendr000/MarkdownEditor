@@ -10,7 +10,6 @@ import { parseMdToGrid, generateMdFromGrid } from '../../utils/tableConverter';
 import './TableModal.css';
 
 function TableModal({ isOpen, onClose, onInsert, initialTableMarkdown }) {
-  console.log("TableModal(MD 표 모달 v2.0) 렌더링 시작");
 
   const [grid, setGrid] = useState([]);
   const [rows, setRows] = useState(3);
@@ -117,7 +116,6 @@ function TableModal({ isOpen, onClose, onInsert, initialTableMarkdown }) {
   };
 
   const handleApply = () => {
-    console.log("MD 표 생성 적용 버튼 클릭됨");
     const mdOutput = generateMdFromGrid(grid);
     onInsert(mdOutput);
     onClose();

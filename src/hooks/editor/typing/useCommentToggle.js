@@ -15,17 +15,13 @@ export function useCommentToggle(markdown, setMarkdown, selectedFile, textareaRe
       
       const textarea = textareaRef.current;
       if (!textarea) {
-        console.warn("[useCommentToggle v1.0] textarea 참조를 찾을 수 없습니다.");
         return false;
       }
 
-      console.log("[useCommentToggle v1.0] 주석 토글 단축키(Ctrl+/) 감지됨");
-      
       const lang = getLanguage(selectedFile);
       const dict = COMMENT_DICT[lang];
       
       if (!dict) {
-        console.log(`[useCommentToggle v1.0] ${lang} 언어에 대한 주석 규칙이 없어 토글을 생략합니다.`);
         return true; 
       }
 
@@ -64,7 +60,6 @@ export function useCommentToggle(markdown, setMarkdown, selectedFile, textareaRe
         // 커서 위치 보정
         const diff = replacedLines.length - selectedLinesText.length;
         newCursorPos = end + diff;
-        console.log(`[useCommentToggle v1.0] 단일 줄 주석 처리 완료. 상태: ${allCommented ? '해제' : '적용'}`);
       } 
       // 다중 줄 주석 (HTML, CSS, 마크다운 등) 처리 로직
       else if (dict.type === 'multi') {
@@ -76,13 +71,11 @@ export function useCommentToggle(markdown, setMarkdown, selectedFile, textareaRe
           const innerText = selectedLinesText.substring(dict.start.length, selectedLinesText.length - dict.end.length);
           newText = text.substring(0, lineStart) + innerText + text.substring(lineEnd);
           newCursorPos = end - dict.start.length - dict.end.length;
-          console.log("[useCommentToggle v1.0] 다중 줄 주석 해제 완료");
         } else {
           // 주석 추가: 앞뒤 기호 래핑
           const wrappedText = dict.start + selectedLinesText + dict.end;
           newText = text.substring(0, lineStart) + wrappedText + text.substring(lineEnd);
           newCursorPos = end + dict.start.length + dict.end.length;
-          console.log("[useCommentToggle v1.0] 다중 줄 주석 적용 완료");
         }
       }
 

@@ -1,16 +1,13 @@
-// src/utils/editor/sqlDmlGenerator.js v1.0
+// src/utils/editor/sqlDmlGenerator.js v1.1
 /*
  * 파일 위치: src/utils/editor/sqlDmlGenerator.js
- * 파일 설명: React Flow의 노드(테이블), 엣지(연결선), 필터 패널의 상태 데이터를 취합하여
+ * 파일 설명: React Flow의 노드(테이블), 엣지(연결선), 필터 패널의 상태 데이터를 취합하여 (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
  * 실시간으로 실행 가능한 DML(SELECT, JOIN) 쿼리 문자열로 컴파일하는 유틸리티입니다.
  * 연결 위치: src/components/editor/toolbar/sqlBuilder/DmlWorkspacePanel.jsx
  */
 
 export const generateSelectQuery = (nodes, edges, filters) => {
-  console.log("[sqlDmlGenerator v1.0] SELECT 쿼리 컴파일 시작", { nodeCount: nodes.length, edgeCount: edges.length, filters });
-
   if (!nodes || nodes.length === 0) {
-    console.log("[sqlDmlGenerator v1.0] 배치된 테이블 노드가 없어 기본 안내 구문을 반환합니다.");
     return "-- 좌측 패널에서 테이블을 캔버스로 드래그하세요.\nSELECT * FROM ...";
   }
 
@@ -34,7 +31,6 @@ export const generateSelectQuery = (nodes, edges, filters) => {
         const targetColumn = edge.targetHandle;
 
         sql += `\nINNER JOIN ${targetTable} ON ${sourceTable}.${sourceColumn} = ${targetTable}.${targetColumn}`;
-        console.log(`[sqlDmlGenerator v1.0] JOIN 구문 추가: ${targetTable} ON ${sourceTable}.${sourceColumn} = ${targetTable}.${targetColumn}`);
       }
     });
   }
@@ -75,6 +71,5 @@ export const generateSelectQuery = (nodes, edges, filters) => {
   }
 
   sql += ';';
-  console.log("[sqlDmlGenerator v1.0] SELECT 쿼리 컴파일 완료");
   return sql;
 };
