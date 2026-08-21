@@ -1,8 +1,8 @@
-// src/App.jsx v13.0
+// src/App.jsx v13.1
 /*
  * 파일 위치: src/App.jsx
  * 파일 설명: 3단 레이아웃을 조율하는 최상위 컴포넌트입니다.
- * (v13.0 수정사항): 탐색기 투명 모드 시 클릭이 통과되게 할 것인지(Ghost Click) 결정하는 전역 상태 isGhostModeClickThrough가 추가되었습니다.
+ * (v13.1 수정사항): 탐색기 투명도(explorerOpacity)와 무관하게, 사용자가 '고정(Pin)' 토글을 켜면 에디터 본문을 항상 우측으로 밀어내도록 레이아웃 연산 로직을 수정했습니다.
  */
 import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
@@ -37,7 +37,6 @@ function App() {
     return savedOpacity !== null ? parseFloat(savedOpacity) : 1.0;
   });
 
-  // [신규] 고스트 클릭 (클릭 통과) 옵션 상태
   const [isGhostModeClickThrough, setIsGhostModeClickThrough] = useState(() => {
     const savedGhost = localStorage.getItem('md_editor_ghost_click');
     return savedGhost !== null ? JSON.parse(savedGhost) : true;
@@ -70,7 +69,6 @@ function App() {
     localStorage.setItem('md_editor_explorer_opacity', explorerOpacity);
   }, [explorerOpacity]);
 
-  // 고스트 클릭 상태 로컬 스토리지 동기화
   useEffect(() => {
     localStorage.setItem('md_editor_ghost_click', JSON.stringify(isGhostModeClickThrough));
   }, [isGhostModeClickThrough]);
@@ -139,8 +137,9 @@ function App() {
           className={`main-content mode-${viewMode}`}
           data-explorer-floating={!(isExplorerPinned && isExplorerOpen)}
           style={{
-            width: (isExplorerPinned && isExplorerOpen && explorerOpacity === 1) ? `calc(100% - ${explorerWidth}px)` : '100%',
-            marginLeft: (isExplorerPinned && isExplorerOpen && explorerOpacity === 1) ? `${explorerWidth}px` : '0',
+            // [핵심 패치] 투명도 조건(explorerOpacity === 1)을 제거하여, 고정 토글 상태(isExplorerPinned)만으로 레이아웃을 통제합니다.
+            width: (isExplorerPinned && isExplorerOpen) ? `calc(100% - ${explorerWidth}px)` : '100%',
+            marginLeft: (isExplorerPinned && isExplorerOpen) ? `${explorerWidth}px` : '0',
             transition: isResizing ? 'none' : 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
