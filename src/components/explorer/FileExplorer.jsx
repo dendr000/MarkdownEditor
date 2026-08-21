@@ -1,9 +1,9 @@
-// src/components/explorer/FileExplorer.jsx v6.4
+// src/components/explorer/FileExplorer.jsx v6.5
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 기능 요약: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
- * (v6.1 수정사항): 마우스 호버 시 경로 팝업(툴팁)이 즉시 열리고 오래 남아 갑자기 메뉴가 펼쳐진 것처럼 보이던 불편함을 개선했습니다. (0.6초 딜레이 후 열림, 마우스 이탈 시 즉시 닫힘)
+ * (v6.5 수정사항): 탐색기 본체뿐만 아니라, 좌측 상단의 접기/펴기(토글) 버튼도 설정된 투명도(explorerOpacity)를 완벽하게 따라가도록 동기화했습니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -100,8 +100,9 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
         style={{ 
           position: 'absolute', left: 0, top: 0, width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 1001, transition: 'background-color 0.2s ease',
-          opacity: isExplorerOpen ? explorerOpacity : 1 // 버튼 자체도 투명도 연동
+          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 1001, 
+          transition: 'background-color 0.2s ease, opacity 0.2s ease', 
+          opacity: explorerOpacity // [핵심 패치] 버튼 자체도 조건 없이 항상 투명도 완벽 연동
         }}
       >
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
