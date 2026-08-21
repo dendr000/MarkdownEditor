@@ -1,4 +1,4 @@
-// src/components/explorer/ExplorerTreeNode.jsx v2.3
+// src/components/explorer/ExplorerTreeNode.jsx v2.4
 /*
  * 파일 위치: src/components/explorer/ExplorerTreeNode.jsx
  * 기능 요약: 탐색기의 개별 폴더/파일 노드를 렌더링하는 메인 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
@@ -11,7 +11,7 @@ import { createFileOrFolder, deleteFileOrFolder, renameTarget } from '../../api/
 import { getRelativePath } from '../../utils/pathUtils';
 import NodeActions from './NodeActions';
 
-function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePath, activeTooltipNode, onTooltipOpen, onTooltipClose }) {
+function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePath, activeTooltipNode, onTooltipOpen, onTooltipClose, explorerOpacity }) {
   const [isOpen, setIsOpen] = useState(false);
   const nodeRef = useRef(null);
 
@@ -71,6 +71,8 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
           fontWeight: isSelected ? '600' : 'normal'
         }}
         onMouseEnter={(e) => { 
+          // 탐색기가 투명할 때는 호버 효과를 비활성화합니다.
+          if (explorerOpacity < 1) return;
           e.currentTarget.style.backgroundColor = isSelected ? 'var(--border-color, #d0d7de)' : 'rgba(140, 149, 159, 0.15)'; 
         }}
         onMouseLeave={(e) => { 
@@ -96,7 +98,10 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
               <div 
                 onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
                 style={{ display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '-2px', borderRadius: '4px' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--border-color, #d0d7de)'}
+                onMouseEnter={(e) => {
+                  if (explorerOpacity < 1) return;
+                  e.currentTarget.style.backgroundColor = 'var(--border-color, #d0d7de)';
+                }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 title="폴더 열기/닫기"
               >
@@ -137,6 +142,7 @@ function ExplorerTreeNode({ node, onSelect, onRefresh, selectedFile, workspacePa
               activeTooltipNode={activeTooltipNode}
               onTooltipOpen={onTooltipOpen}
               onTooltipClose={onTooltipClose}
+              explorerOpacity={explorerOpacity}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-// src/components/Header.jsx v6.1
+// src/components/Header.jsx v6.2
 /*
  * 파일 위치: src/components/Header.jsx
  * 연결 위치: src/App.jsx 내부에서 최상단 네비게이션 바로 렌더링됨
@@ -9,11 +9,12 @@ import { PanelLeft, Columns, PanelRight, Settings } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import './Header.css';
 
-// [핵심 수정] theme, setTheme Props 추가 전달받음
+// [핵심 수정] explorerOpacity, setExplorerOpacity Props 추가 전달받음
 function Header({ 
   markdown, viewMode, setViewMode, isExplorerOpen, setIsExplorerOpen, 
   selectedFile, isSyncScroll, setIsSyncScroll, isExplorerAutoClose, 
-  setIsExplorerAutoClose, onBreadcrumbClick, theme, setTheme
+  setIsExplorerAutoClose, onBreadcrumbClick, theme, setTheme,
+  explorerOpacity, setExplorerOpacity
 }) {
   const [copied, setCopied] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -93,11 +94,29 @@ function Header({
           <button className={`view-btn ${isSettingsOpen ? 'active' : ''}`} onClick={() => { setIsSettingsOpen(!isSettingsOpen); }} title="에디터 환경 설정" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Settings size={16} /></button>
           
           {isSettingsOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '4px', zIndex: 1000, minWidth: '220px' }}>
-              {/* [핵심 수정] 팝업 배경과 테두리를 CSS 변수(var)로 처리하여 다크 테마 시 눈부심 방지 */}
+            <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '4px', zIndex: 1000, minWidth: '240px' }}>
               <div style={{ backgroundColor: 'var(--bg-main, #ffffff)', border: '1px solid var(--border-color, #d0d7de)', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', padding: '12px' }}>
                 
-                {/* [핵심 수정] 다크 테마(눈뽕 방지) 토글 버튼 렌더링 */}
+                {/* 탐색기 투명도 조절 슬라이더 추가 */}
+                <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color, #d0d7de)' }}>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', color: 'var(--text-main, #24292f)', marginBottom: '8px' }}>
+                    <span>탐색기 배경 투명도</span>
+                    <span style={{ color: '#0969da' }}>{Math.round(explorerOpacity * 100)}%</span>
+                  </label>
+                  <input 
+                    type="range" 
+                    min="0.1" 
+                    max="1.0" 
+                    step="0.1" 
+                    value={explorerOpacity} 
+                    onChange={(e) => setExplorerOpacity(parseFloat(e.target.value))}
+                    style={{ width: '100%', cursor: 'pointer' }}
+                  />
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted, #8c959f)', marginTop: '4px', lineHeight: '1.4' }}>
+                    100% 미만일 경우 투명(고스트) 모드가 되어 에디터와 겹쳐지며, 클릭이 통과됩니다.
+                  </div>
+                </div>
+
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-main, #24292f)', cursor: 'pointer', marginBottom: '12px', whiteSpace: 'nowrap' }}>
                   <input type="checkbox" checked={theme === 'dark'} onChange={(e) => {
                     const newTheme = e.target.checked ? 'dark' : 'light';

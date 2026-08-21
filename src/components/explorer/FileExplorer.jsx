@@ -1,4 +1,4 @@
-// src/components/explorer/FileExplorer.jsx v6.3
+// src/components/explorer/FileExplorer.jsx v6.4
 /*
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
@@ -11,7 +11,7 @@ import { fetchTreeData, createFileOrFolder, fetchWorkspacePath, updateWorkspaceP
 import WorkspaceConfig from './WorkspaceConfig';
 import ExplorerTreeNode from './ExplorerTreeNode';
 
-function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode }) {
+function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selectedFile, explorerWidth, setExplorerWidth, isExplorerPinned, setIsExplorerPinned, setIsResizing, storageMode, explorerOpacity }) {
   const [treeData, setTreeData] = useState({ name: 'root', isFolder: true, children: [], path: '' });
   const [workspacePath, setWorkspacePath] = useState(''); 
   const [isEditingWorkspace, setIsEditingWorkspace] = useState(false); 
@@ -76,7 +76,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 100);
   };
 
-  // [신규] 새 파일/폴더 자동 네이밍 로직 (New.md, New_(1).md ...)
   const generateUniqueName = (baseName, extension = '', isFolder = false) => {
     const existingNames = treeData?.children?.map(child => child.name) || [];
     let newName = isFolder ? baseName : `${baseName}${extension}`;
@@ -89,6 +88,9 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     return newName;
   };
 
+  // 탐색기가 투명화된 상태에서는 뒷 배경 클릭 시 탐색기에 이벤트가 가로채이는 것을 방지합니다.
+  const isPointerEventsEnabled = explorerOpacity >= 1;
+
   return (
     <>
       <button 
@@ -98,23 +100,37 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
         style={{ 
           position: 'absolute', left: 0, top: 0, width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 1001, transition: 'background-color 0.2s ease'
+          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 1001, transition: 'background-color 0.2s ease',
+          opacity: isExplorerOpen ? explorerOpacity : 1 // 버튼 자체도 투명도 연동
         }}
       >
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
         <div style={{ position: 'absolute', top: 0, right: '-16px', width: '16px', height: '16px', backgroundColor: 'transparent', borderTopLeftRadius: '16px', boxShadow: '-8px -8px 0 8px #24292f', pointerEvents: 'none' }} />
       </button>
 
-      <div ref={resizeRef} className="file-explorer-container" style={{ position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', display: 'flex', flexDirection: 'column', boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', zIndex: isExplorerPinned ? 1 : 1000, flexShrink: 0 }}>
+      <div 
+        ref={resizeRef} 
+        className="file-explorer-container" 
+        style={{ 
+          position: 'absolute', left: isExplorerOpen ? '0px' : `-${explorerWidth}px`, top: '0', bottom: '0', width: `${explorerWidth}px`, 
+          borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', 
+          display: 'flex', flexDirection: 'column', 
+          boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', 
+          transition: isExplorerPinned ? 'opacity 0.2s ease' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, opacity 0.2s ease', 
+          zIndex: isExplorerPinned ? 1 : 1000, flexShrink: 0,
+          opacity: explorerOpacity,
+          pointerEvents: isPointerEventsEnabled ? 'auto' : 'none'
+        }}
+      >
         
         <div style={{ height: '46px', padding: '0 12px 0 54px', backgroundColor: '#24292f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>탐색기 (VFS)</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => setIsExplorerPinned(!isExplorerPinned)} title="고정 토글" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isExplorerPinned ? '#58a6ff' : '#8c959f' }}>
+            <button onClick={() => setIsExplorerPinned(!isExplorerPinned)} title="고정 토글" style={{ background: 'none', border: 'none', cursor: isPointerEventsEnabled ? 'pointer' : 'default', padding: '2px', display: 'flex', alignItems: 'center', color: isExplorerPinned ? '#58a6ff' : '#8c959f' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill={isExplorerPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-.89 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
             </button>
-            <FilePlus size={16} color="#4ac26b" style={{ cursor: 'pointer' }} onClick={() => { const name = generateUniqueName('New', '.md'); createFileOrFolder(name, false).then(loadTree); }} title="새 빈 문서 생성" />
-            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = generateUniqueName('NewFolder', '', true); createFileOrFolder(name, true).then(loadTree); }} title="새 폴더 생성" />
+            <FilePlus size={16} color="#4ac26b" style={{ cursor: isPointerEventsEnabled ? 'pointer' : 'default' }} onClick={() => { const name = generateUniqueName('New', '.md'); createFileOrFolder(name, false).then(loadTree); }} title="새 빈 문서 생성" />
+            <FolderPlus size={16} color="#58a6ff" style={{ cursor: isPointerEventsEnabled ? 'pointer' : 'default' }} onClick={() => { const name = generateUniqueName('NewFolder', '', true); createFileOrFolder(name, true).then(loadTree); }} title="새 폴더 생성" />
           </div>
         </div>
         
@@ -132,12 +148,13 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
               activeTooltipNode={activeTooltipNode} 
               onTooltipOpen={handleTooltipOpen} 
               onTooltipClose={handleTooltipClose} 
+              explorerOpacity={explorerOpacity}
             />
           ))}
           {(!treeData?.children?.length) && <div style={{ fontSize: '12px', color: 'var(--text-muted, #8c959f)', textAlign: 'center', marginTop: '20px' }}>표시할 문서 파일이 없습니다.</div>}
         </div>
         
-        <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: 'ew-resize', zIndex: 3900 }} title="폭 조절" />
+        <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: isPointerEventsEnabled ? 'ew-resize' : 'default', zIndex: 3900 }} title="폭 조절" />
       </div>
     </>
   );

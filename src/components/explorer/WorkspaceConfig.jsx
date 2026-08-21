@@ -1,5 +1,6 @@
-// src/components/explorer/WorkspaceConfig.jsx v1.1
+// src/components/explorer/WorkspaceConfig.jsx v1.2
 /*
+ * 파일 위치: src/components/explorer/WorkspaceConfig.jsx
  * 파일 설명: 탐색기 상단의 워크스페이스(루트 폴더) 경로를 설정하고 히스토리를 관리하는 컴포넌트입니다.
  * (v1.1 수정사항): 히스토리 드롭다운 텍스트 좌측 정렬 및 엔터 키 입력 시 타이핑 값이 무시되고 첫 번째 항목이 제출되는 버그 수정.
  * 연결 위치: src/components/explorer/FileExplorer.jsx 내부
@@ -15,7 +16,8 @@ function WorkspaceConfig({
   setIsEditingWorkspace, 
   handleWorkspaceSubmit, 
   workspaceHistory,
-  submitWorkspacePath
+  submitWorkspacePath,
+  explorerOpacity
 }) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [focusedHistoryIndex, setFocusedHistoryIndex] = useState(-1);
@@ -30,7 +32,6 @@ function WorkspaceConfig({
       e.preventDefault();
       setFocusedHistoryIndex((prev) => (prev > 0 ? prev - 1 : -1));
     } else if (e.key === 'Enter') {
-      // 방향키로 히스토리 목록을 명확히 선택한 상태(>= 0)일 때만 해당 항목으로 제출
       if (focusedHistoryIndex >= 0 && focusedHistoryIndex < workspaceHistory.length) {
         e.preventDefault();
         const selected = workspaceHistory[focusedHistoryIndex];
@@ -38,7 +39,6 @@ function WorkspaceConfig({
         submitWorkspacePath(selected);
         setIsHistoryOpen(false);
       } else {
-        // 직접 타이핑 중(-1)일 때는 가로채지 않고 form 태그의 기본 onSubmit 동작을 타도록 둡니다.
         setIsHistoryOpen(false);
       }
     } else if (e.key === 'Escape') {
@@ -47,11 +47,12 @@ function WorkspaceConfig({
     }
   };
 
+  const isPointerEventsEnabled = explorerOpacity >= 1;
+
   return (
     <div style={{ padding: '8px 12px', borderBottom: '1px solid #d0d7de', backgroundColor: '#ffffff', position: 'relative' }}>
       {isEditingWorkspace ? (
         <form onSubmit={(e) => {
-          // 기본 form 제출 시 확실하게 드롭다운을 닫도록 보강
           setIsHistoryOpen(false);
           handleWorkspaceSubmit(e);
         }} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -62,7 +63,6 @@ function WorkspaceConfig({
               value={tempWorkspacePath} 
               onChange={(e) => {
                 setTempWorkspacePath(e.target.value);
-                // 사용자가 타이핑을 하면 포커스 인덱스를 초기화하여 엔터 충돌 방지
                 setFocusedHistoryIndex(-1);
                 setIsHistoryOpen(true);
               }}
@@ -123,10 +123,10 @@ function WorkspaceConfig({
         </form>
       ) : (
         <div 
-          onClick={() => { setIsEditingWorkspace(true); setFocusedHistoryIndex(-1); }} 
+          onClick={() => { if (isPointerEventsEnabled) { setIsEditingWorkspace(true); setFocusedHistoryIndex(-1); } }} 
           title="클릭하여 워크스페이스 기준 폴더 변경"
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: isPointerEventsEnabled ? 'pointer' : 'default', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }}
+          onMouseEnter={(e) => { if (isPointerEventsEnabled) e.currentTarget.style.backgroundColor = '#f3f4f6'; }}
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
           <Folder size={14} color="#57606a" />
