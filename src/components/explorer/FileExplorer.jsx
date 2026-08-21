@@ -76,14 +76,14 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 100);
   };
 
-  // [신규] 새 파일/폴더 자동 네이밍 로직 (New.md, New (1).md ...)
+  // [신규] 새 파일/폴더 자동 네이밍 로직 (New.md, New_(1).md ...)
   const generateUniqueName = (baseName, extension = '', isFolder = false) => {
     const existingNames = treeData?.children?.map(child => child.name) || [];
     let newName = isFolder ? baseName : `${baseName}${extension}`;
     let counter = 1;
     
     while (existingNames.includes(newName)) {
-      newName = isFolder ? `${baseName} (${counter})` : `${baseName} (${counter})${extension}`;
+      newName = isFolder ? `${baseName}_(${counter})` : `${baseName}_(${counter})${extension}`;
       counter++;
     }
     return newName;
@@ -114,7 +114,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
               <svg width="15" height="15" viewBox="0 0 24 24" fill={isExplorerPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-.89 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
             </button>
             <FilePlus size={16} color="#4ac26b" style={{ cursor: 'pointer' }} onClick={() => { const name = generateUniqueName('New', '.md'); createFileOrFolder(name, false).then(loadTree); }} title="새 빈 문서 생성" />
-            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = generateUniqueName('New Folder', '', true); createFileOrFolder(name, true).then(loadTree); }} title="새 폴더 생성" />
+            <FolderPlus size={16} color="#58a6ff" style={{ cursor: 'pointer' }} onClick={() => { const name = generateUniqueName('New_Folder', '', true); createFileOrFolder(name, true).then(loadTree); }} title="새 폴더 생성" />
           </div>
         </div>
         
