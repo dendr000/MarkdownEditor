@@ -3,7 +3,7 @@
  * 파일 위치: src/components/explorer/FileExplorer.jsx
  * 연결 위치: src/App.jsx 내부 좌측 패널
  * 기능 요약: 파일/폴더 트리를 렌더링하고 탐색기 폭 조절 및 고정 기능을 제공하는 컴포넌트입니다. (배포를 위해 콘솔 로그 출력 기능이 제거되었습니다.)
- * (v6.5 수정사항): 탐색기 본체뿐만 아니라, 좌측 상단의 접기/펴기(토글) 버튼도 설정된 투명도(explorerOpacity)를 완벽하게 따라가도록 동기화했습니다.
+ * (v6.5 수정사항): 탐색기 본체와 토글 버튼이 겹칠 때 투명도가 이중으로 짙어지는 색상 왜곡 현상을 방지하기 위해, 두 요소를 단일 래퍼(Wrapper)로 묶어 투명도를 한 번에 렌더링하도록 구조를 개선했습니다.
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { FilePlus, FolderPlus, FolderTree, X } from 'lucide-react';
@@ -61,7 +61,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     };
   }, [storageMode]);
 
-  // 툴팁 제어 로직 모듈화 (0.6초 이상 머물러야 열림)
   const handleTooltipOpen = (nodePath) => {
     clearTimeout(tooltipHideTimer.current);
     if (activeTooltipNode !== nodePath) {
@@ -70,7 +69,6 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     }
   };
 
-  // 마우스가 벗어나면 즉시(0.1초) 닫힘
   const handleTooltipClose = () => {
     clearTimeout(tooltipShowTimer.current);
     tooltipHideTimer.current = setTimeout(() => setActiveTooltipNode(null), 100);
@@ -88,11 +86,23 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
     return newName;
   };
 
-  // 탐색기가 투명화된 상태에서는 뒷 배경 클릭 시 탐색기에 이벤트가 가로채이는 것을 방지합니다.
   const isPointerEventsEnabled = explorerOpacity >= 1;
 
   return (
-    <>
+    <div 
+      className="file-explorer-wrapper"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: 0, // 래퍼 자체는 공간을 차지하지 않음
+        zIndex: isExplorerPinned ? 1 : 1000,
+        opacity: explorerOpacity, // [핵심 패치] 버튼과 본체의 투명도를 한 번에 통제하여 이중 겹침 차단
+        transition: 'opacity 0.2s ease',
+        pointerEvents: 'none' // 래퍼 박스는 클릭 이벤트를 캡처하지 않음
+      }}
+    >
       <button 
         onClick={() => { 
           setIsExplorerOpen(!isExplorerOpen); 
@@ -100,9 +110,9 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         title={isExplorerOpen ? "탐색기 닫기" : "탐색기 열기"} 
         style={{ 
           position: 'absolute', left: 0, top: 0, width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', cursor: 'pointer', zIndex: 1001, 
-          transition: 'background-color 0.2s ease, opacity 0.2s ease', 
-          opacity: explorerOpacity // [핵심 패치] 버튼 자체도 조건 없이 항상 투명도 완벽 연동
+          backgroundColor: '#24292f', borderBottomRightRadius: '16px', border: 'none', outline: 'none', 
+          cursor: isPointerEventsEnabled ? 'pointer' : 'default', zIndex: 1001, transition: 'background-color 0.2s ease',
+          pointerEvents: isPointerEventsEnabled ? 'auto' : 'none'
         }}
       >
         {isExplorerOpen ? <X size={20} color="#c9d1d9" /> : <FolderTree size={20} color="#c9d1d9" />}
@@ -117,9 +127,8 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
           borderRight: '1px solid var(--border-color, #d0d7de)', backgroundColor: 'var(--explorer-bg, #f6f8fa)', 
           display: 'flex', flexDirection: 'column', 
           boxShadow: isExplorerOpen && !isExplorerPinned ? '4px 0 16px rgba(0,0,0,0.1)' : 'none', 
-          transition: isExplorerPinned ? 'opacity 0.2s ease' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, opacity 0.2s ease', 
-          zIndex: isExplorerPinned ? 1 : 1000, flexShrink: 0,
-          opacity: explorerOpacity,
+          transition: isExplorerPinned ? 'none' : 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', 
+          zIndex: 1000, flexShrink: 0,
           pointerEvents: isPointerEventsEnabled ? 'auto' : 'none'
         }}
       >
@@ -157,7 +166,7 @@ function FileExplorer({ isExplorerOpen, setIsExplorerOpen, onSelectFile, selecte
         
         <div data-resizer="true" style={{ position: 'absolute', right: '-3px', top: '0', bottom: '0', width: '6px', cursor: isPointerEventsEnabled ? 'ew-resize' : 'default', zIndex: 3900 }} title="폭 조절" />
       </div>
-    </>
+    </div>
   );
 }
 export default FileExplorer;
